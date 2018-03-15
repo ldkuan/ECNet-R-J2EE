@@ -24,4 +24,9 @@ public class ViewController {
     public String getNewView() {
         return "new";
     }
+
+    @RequestMapping(value = "/model")
+    public String getModelView() {
+        return "model";
+    }
 }
