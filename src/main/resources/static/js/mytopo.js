@@ -8,7 +8,7 @@ var jointList = {};//存储连接点（事实），{id:{'node':node,'type':'XXX'
 var arrowIndex = 0;//当前箭头id
 var arrowList = {};//存储箭头，{id:node}
 var operationList = [];//存储每一步操作，[{'type':'add/delete/copy','nodes':[]},
-                        // {'type':'move','nodes':[],'position_origin':[x,y]}]
+// {'type':'move','nodes':[],'position_origin':[x,y]}]
 
 var isNodeClicked_right = false;//节点（链头、链体、连接点、连线、箭头）右键点击
 var isNodeClicked_left = false;//节点（链头、链体、连接点、连线、箭头）左键点击
@@ -16,10 +16,16 @@ var nodeList_selected = [];//已选中的节点（链头、链体、连接点、
 var isCtrlPressed = false;//ctrl键是否按下
 var nodeFroms = [];//连线or箭头起始节点（允许同时创建多个连线或箭头），存储在nodeList_selected中的index
 var nodeTo;//连线or箭头终止节点
-var header_radius = 25;//链头节点半径
+var header_radius = 20;//链头节点半径
 var body_width = 80;//链体节点长
 var body_height = 30;//链体节点宽
 var joint_width = 30;//连接点边长
+var header_color = 'rgba(127,185,136,0.8)';
+var header_color_num = '127,185,136';
+var body_color = 'rgba(97,158,255,0.8)';
+var body_color_num = '97,158,255';
+var joint_color = 'rgba(101,43,105,0.8)';
+var joint_color_num = '101,43,105';
 var continuous_header = false;//是否连续绘制链头
 var continuous_body = false;//是否连续绘制链体
 var continuous_joint = false;//是否连续绘制连接点
@@ -323,6 +329,8 @@ function dragHandle() {
             $("#draggableDiv").html("");
             $("#draggableDiv").css({
                 "height": "0",
+                "width": "0",
+                "border": '0px',
                 "background-color":'transparent'});
         }
     });
@@ -346,7 +354,7 @@ function dragHandle() {
                         //添加操作至operationList
                         operationList.push({'type': 'add', 'nodes': [node]});
                     }
-                }else if($("#draggableDiv").width()==body_width) {
+                }else{
                     var node = drawBody(event.pageX - $("#canvas").offset().left, event.pageY - $("#canvas").offset().top);
                     //添加操作至operationList
                     operationList.push({'type': 'add', 'nodes': [node]});
@@ -368,10 +376,11 @@ function dragHeader() {
                 "height": (header_radius*2)+"px",
                 "top": event.pageY-$(this).offset().top-header_radius,
                 "left": event.pageX-$(this).offset().left,
-                "font-size": (header_radius*2)+"px",
-                "color": 'rgba(22,124,255,0.7)'});
+                "font-size": (header_radius*1.8)+"px",
+                "color": header_color,
+                "border":'0px'});
 
-            var clickElement = "<i class=\"fa fa-circle\" aria-hidden=\"true\"></i>";
+            var clickElement = "<i class=\"fa fa-circle-thin\" aria-hidden=\"true\"></i>";
             $("#draggableDiv").html(clickElement);
             draggableDiv.trigger(event);
         }
@@ -389,11 +398,11 @@ function dragBody() {
             // console.log('x:'+event.pageX+';y:'+event.pageY+';left:'+$(this).parent().offset().left+';top:'+$(this).parent().offset().top);
             $(draggableDiv).css({
                 "display": "block",
-                "width": body_width+"px",
-                "height": body_height+"px",
+                "width": body_width/1.2+"px",
+                "height": body_height/1.2+"px",
                 "top": event.pageY-$(this).parent().parent().offset().top,
                 "left": event.pageX-$(this).parent().parent().offset().left-(body_width/2),
-                "background-color":'rgba(22,124,255,0.7)'});
+                "border":'2px solid '+body_color});
 
             draggableDiv.trigger(event);
         }
@@ -416,9 +425,10 @@ function dragJoint() {
                 "top": event.pageY-$(this).parent().parent().offset().top-(joint_width/2),
                 "left": event.pageX-$(this).parent().parent().offset().left-(joint_width/2),
                 "font-size": joint_width+"px",
-                "color": 'rgba(22,124,255,0.7)'});
+                "color": joint_color,
+                "border":'0px'});
 
-            var clickElement = "<i class=\"fa fa-square\" aria-hidden=\"true\"></i>";
+            var clickElement = "<i class=\"fa fa-square-o\" aria-hidden=\"true\"></i>";
             $("#draggableDiv").html(clickElement);
             draggableDiv.trigger(event);
         }
@@ -710,7 +720,7 @@ function bindMenuClick() {
             nodes.push(node);
 
             if(node.node_type=='header'){
-               deleteHeader(node);
+                deleteHeader(node);
 
             }else if(node.node_type=='body'){
                 deleteBody(node);
@@ -853,12 +863,12 @@ function addLink(nodeFrom,nodeTo){
 
     if(!hasLink){
         var link = new JTopo.Link(nodeFrom, nodeTo);
-        link.lineWidth = 3; // 线宽
+        link.lineWidth = 2; // 线宽
         // link.dashedPattern = dashedPattern; // 虚线
         link.bundleOffset = 60; // 折线拐角处的长度
         link.bundleGap = 20; // 线条之间的间隔
         // link.textOffsetY = 3; // 文本偏移量（向下3个像素）
-        link.strokeColor = '0,200,255';
+        link.strokeColor = 'black';
         link.node_type = 'link';
 
         link.addEventListener('mouseup', function(event){
@@ -897,17 +907,18 @@ function addArrow(nodeFrom,nodeTo,name,content) {
     if(!hasArrow){
 
         if(name==null)
-             name = '新箭头'+(arrowIndex+1);
+            name = '新箭头'+(arrowIndex+1);
 
         var arrow = new JTopo.Link(nodeFrom, nodeTo, name);
         arrow.id = arrowIndex++;
         arrow.content = content;
-        arrow.lineWidth = 3; // 线宽
+        arrow.lineWidth = 2; // 线宽
         // arrow.dashedPattern = dashedPattern; // 虚线
         arrow.bundleOffset = 60; // 折线拐角处的长度
         arrow.bundleGap = 20; // 线条之间的间隔
         // arrow.textOffsetY = 3; // 文本偏移量（向下3个像素）
-        arrow.strokeColor = '0,200,255';
+        arrow.strokeColor = 'black';
+        arrow.fontColor = 'black';
         arrow.arrowsRadius = 10;
         arrow.node_type = 'arrow';
 
@@ -960,12 +971,15 @@ function drawHeader(x,y,name,content){
     circleNode.content = content;
     circleNode.radius = header_radius; // 半径
     // circleNode.alpha = 0.7;
-    // circleNode.fillColor = '0, 0, 150'; // 填充颜色
-    // circleNode.borderColor = "";
+    // circleNode.shadow = "true";
+    circleNode.fillColor = '255, 255, 255'; // 填充颜色
+    circleNode.borderColor = header_color_num;
+    circleNode.borderWidth = 2;
+    circleNode.borderRadius = header_radius+3;
     circleNode.setLocation(x-header_radius, y-header_radius);
     circleNode.textPosition = 'Bottom_Center'; // 文本位置
     circleNode.node_type = 'header';
-    
+
     headerList[circleNode.id] = circleNode;
     scene.add(circleNode);
 
@@ -1024,6 +1038,9 @@ function drawBody(x,y,name,content,type,committer,reason,conclusion){
     node.id = bodyIndex++;
     node.content = content;
     // node.alpha = 0.7;
+    node.fillColor = '255, 255, 255'; // 填充颜色
+    node.borderColor = body_color_num;
+    node.borderWidth = 2;
     node.setSize(body_width,body_height);
     node.setLocation(x-(body_width/2),y-(body_height/2));
     node.shadow = "true";
@@ -1095,6 +1112,9 @@ function drawJoint(x,y,name,content,type){
     var node = new JTopo.Node(name);
     node.id = jointIndex++;
     node.content = content;
+    node.fillColor = '255, 255, 255'; // 填充颜色
+    node.borderColor = joint_color_num;
+    node.borderWidth = 2;
     node.setSize(joint_width,joint_width);
     node.setLocation(x-(joint_width/2),y-(joint_width/2));
     node.shadow = "true";
