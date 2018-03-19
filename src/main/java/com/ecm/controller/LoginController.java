@@ -1,5 +1,6 @@
 package com.ecm.controller;
 
+import com.ecm.model.User;
 import com.ecm.service.UserManageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,14 +15,15 @@ public class LoginController {
     private UserManageService userService;
 
     @RequestMapping(value="/checkLogin")
-    public int getAllCourses(@RequestParam("username") String username, @RequestParam("password") String password){
-        String password_true = userService.getPassword(username);
+    public String getAllCourses(@RequestParam("username") String username, @RequestParam("password") String password){
+//        String password_true = userService.getPassword(username);
+        User user = userService.getUserByName(username);
 
-        if(password_true==null)
-            return 0;
-        else if(password.equals(password_true))
-            return 1;
+        if(user==null)
+            return "not exist";
+        else if(password.equals(user.getPassword()))
+            return user.getRealName();
         else
-            return -1;
+            return "wrong";
     }
 }

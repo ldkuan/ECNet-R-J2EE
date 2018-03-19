@@ -14,6 +14,7 @@
     <link rel="apple-touch-icon-precomposed" th:href="@{img/icon.png}">
     <link rel="shortcut icon" th:href="@{img/favicon.ico}">
     <script th:src="@{js/ref/jquery-2.1.4.min.js}"></script>
+    <script th:src="@{js/ref/jquerysession.js}"></script>
 
     <!--[if gte IE 9]>
     <script th:src="@{js/ref/jquery-1.11.1.min.js}"></script>
@@ -25,6 +26,14 @@
     <!--[if lt IE 9]>
     <script>window.location.href='upgrade-browser.html';</script>
     <![endif]-->
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        if($.session.get('username')==null){
+            window.location.href="http://localhost:8081/login";
+        }
+        /*]]>*/
+    </script>
 </head>
 
 <body class="user-select">
