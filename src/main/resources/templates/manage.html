@@ -10,7 +10,7 @@
     <link rel="stylesheet" th:href="@{css/bootstrap.css}"/>
     <link rel="stylesheet" th:href="@{css/font-awesome.css}"/>
     <link rel="stylesheet" th:href="@{css/style.css}"/>
-    <link rel="stylesheet" th:href="@{css/bootstrap.css}"/>
+    <link rel="stylesheet" th:href="@{css/custom.css}"/>
     <link rel="apple-touch-icon-precomposed" th:href="@{img/icon.png}">
     <link rel="shortcut icon" th:href="@{img/favicon.ico}">
     <script th:src="@{js/ref/jquery-2.1.4.min.js}"></script>
@@ -46,11 +46,12 @@
                     <a class="navbar-brand" href="/">法官工作空间</a> </div>
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav navbar-right">
-                        <li class="dropdown"> <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{user}} <span class="caret"></span></a>
-                            <ul class="dropdown-menu dropdown-menu-left">
-                                <li><a title="查看或修改个人信息" data-toggle="modal" data-target="#seeUserInfo">个人信息</a></li>
-                            </ul>
-                        </li>
+                        <!--<li class="dropdown"> <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{user}} <span class="caret"></span></a>-->
+                            <!--<ul class="dropdown-menu dropdown-menu-left">-->
+                                <!--<li><a title="查看或修改个人信息" data-toggle="modal" data-target="#seeUserInfo">个人信息</a></li>-->
+                            <!--</ul>-->
+                        <!--</li>-->
+                        <li class="menu-label"><a id="userLabel" title="查看或修改个人信息" data-toggle="modal" data-target="#seeUserInfo">个人信息</a></li>
                         <li><a id='exist_click'>退出登录</a></li>
                     </ul>
                     <form action="" method="post" class="navbar-form navbar-right" role="search">
@@ -189,16 +190,18 @@
 <script th:src="@{js/ref/bootstrap.js}"></script>
 <script th:src="@{js/ref/admin-scripts.js}"></script>
 <script>
+    var username = $.session.get('username');
+    $('#userLabel').text(username);
 //是否确认删除
-var dat_restore = []
-var dat_type = ''
+var dat_restore = [];
+var dat_type = '';
 var dat_page = {
     'finished':1,
     'processing':1,
     'raw':1,
     'all':1
-}
-const num_p_page = 10
+};
+const num_p_page = 10;
 $(function(){   
         $("#main table tbody tr td a").click(function(){
                 var name = $(this);
@@ -224,23 +227,23 @@ $(function(){
             $("#finish_li").addClass('active')
             getCase('finished',dat_page['finished'])
 
-        })
+        });
         $('#all-tag').click(function () {
             $(".type_switch").removeClass('active')
             $("#all_li").addClass('active')
             getCase('all',dat_page['all'])
 
-        })
+        });
         $('#processing-tag').click(function () {
             $(".type_switch").removeClass('active')
             $("#processing_li").addClass('active')
             getCase('processing',dat_page['processing'])
-        })
+        });
         $('#raw-tag').click(function () {
             $(".type_switch").removeClass('active')
             $("#raw_li").addClass('active')
             getCase('raw',dat_page['raw'])
-        })
+        });
         $('#exist_click').click(function () {
             if(confirm('是否确认退出？'))
             {
@@ -255,25 +258,24 @@ $(function(){
         })
 
         function refresh_table (page) {
-            let tr_html = ''
-            const case_num = dat_restore.length
-            let count = num_p_page
+            let tr_html = '';
+            const case_num = dat_restore.length;
+            let count = num_p_page;
 
-            let data_page = dat_restore.slice(num_p_page*(page-1),num_p_page*page)
+            let data_page = dat_restore.slice(num_p_page*(page-1),num_p_page*page);
 
             for (let item in data_page){
-                let html = ` <tr>
-                                <td>${data_page[item].id}</td>
-                                <td>${data_page[item].caseId}</td>
-                                <td class="article-title">${data_page[item].caseTitle}</td>
-                                <td>${data_page[item].caseDate.split(' ')[0]}</td>
-                                <td>${data_page[item].manageJudge}</td>
-                                <td>
-                                        <a href="/index.html?${data_page[item].id}" id="ecm${data_page[item].id}"  class="ecm_link" style="margin-right: 10px"> <i class="fa fa-link"></i>证据链   </a>
-                                        <a href="/logic.html?${data_page[item].id}"  id="logic${data_page[item].id}" class="logic_link" style="margin-right: 10px"> <i class="fa fa-code-fork"></i>文书说理   </a>
-                                        <a id="${data_page[item].id}" style="margin-right: 10px"> <i class="fa fa-indent"></i>说理语段   </a>
-                                </td>
-                            </tr>`
+                let html = '<tr><td>'+data_page[item].cid+'</td>'+
+                                '<td>'+data_page[item].caseNum+'</td>'+
+                                '<td class="article-title">'+data_page[item].cname+'</td>'+
+                    '<td>'+data_page[item].fillingDate.split(' ')[0]+'</td>'+
+                '<td>'+data_page[item].manageJudge+'</td>'+
+                ' <td>'+
+                '<a href="http://localhost:8081/model" id="ecm${data_page[item].id}"  class="ecm_link" style="margin-right: 10px"> <i class="fa fa-link"></i>证据链   </a>'+
+                ' <a href="/logic.html?${data_page[item].id}"  id="logic${data_page[item].id}" class="logic_link" style="margin-right: 10px"> <i class="fa fa-code-fork"></i>文书说理   </a>'+
+                ' <a id="${data_page[item].id}" style="margin-right: 10px"> <i class="fa fa-indent"></i>说理语段   </a>'+
+                '</td>'+
+                '</tr>';
                 tr_html = tr_html + html
                 if (count == 0)
                     break;
@@ -288,9 +290,9 @@ $(function(){
             if (page_num<5){
                 for (let i =1;i<=page_num;i++){
                     if (i == page){
-                        page_label_Html += `<li class="active"><a class="choosePage">${i}</a></li>`
+                        page_label_Html += '<li class="active"><a class="choosePage">'+i+'</a></li>'
                     }else {
-                        page_label_Html += `<li class="disabled"><a class="choosePage">${i}</a></li>`
+                        page_label_Html += '<li class="disabled"><a class="choosePage">'+i+'</a></li>'
                     }
                 }
             }else{
@@ -300,18 +302,18 @@ $(function(){
                         break;
                     }
                     if (i == page){
-                        page_label_Html += `<li class="active"><a class="choosePage">${i}</a></li>`
+                        page_label_Html += '<li class="active"><a class="choosePage">'+i+'</a></li>'
                     }else {
-                        page_label_Html += `<li class="disabled"><a class="choosePage">${i}</a></li>`
+                        page_label_Html += '<li class="disabled"><a class="choosePage">'+i+'</a></li>'
                     }
                 }
-                page_label_Html += `<li>...</li>`
+                page_label_Html += '<li>...</li>'
                 if (page>4){
-                    page_label_Html += `<li class="active"><a class="choosePage">${page}</a></li>`
+                    page_label_Html += '<li class="active"><a class="choosePage">'+page+'</a></li>'
                 }
                 if(page<page_num){
-                    page_label_Html +=`<li>...</li>`
-                    page_label_Html += `<li class="disabled"><a class="choosePage">${page_num}</a></li>`
+                    page_label_Html +='<li>...</li>'
+                    page_label_Html += '<li class="disabled"><a class="choosePage">'+page_num+'</a></li>'
                 }
 
             }
@@ -348,21 +350,22 @@ $(function(){
         function getCase(type,page) {
             if(dat_type == type)
             {
-                refresh_table(page)
+                refresh_table(page);
             }else {
                 $.ajax({
-                    url:'/case/'+type,
+                    url:"http://localhost:8081/case/getAll",
                     type:'POST',
+                    data:{"username":username},
                     success:function (data) {
-                        dat_restore = data
-                        dat_type = type
-                        refresh_table(page)
+                        dat_restore = data;
+                        dat_type = type;
+                        refresh_table(page);
                     }
                 })
             }
         }
-        getCase('raw',1)
-        $('#raw_li').addClass('active')
+        getCase('raw',1);
+        $('#raw_li').addClass('active');
 });
 </script>
 </body>
