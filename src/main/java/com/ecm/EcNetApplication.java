@@ -13,7 +13,7 @@ public class EcNetApplication extends SpringBootServletInitializer implements Em
 
 	@Override
 	public void customize(ConfigurableEmbeddedServletContainer container) {
-		container.setPort(8081);
+		container.setPort(8099);
 	}
 	public static void main(String[] args) {
 		SpringApplication.run(EcNetApplication.class, args);
