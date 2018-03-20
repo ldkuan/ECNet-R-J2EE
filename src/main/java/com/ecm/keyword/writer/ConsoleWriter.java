@@ -8,7 +8,7 @@ import com.ecm.keyword.model.EvidenceModel;
 import com.ecm.keyword.model.FactModel;
 import com.ecm.keyword.reader.ReaderFactory;
 import com.ecm.keyword.reader.XMLReader;
-import jdk.internal.org.xml.sax.SAXException;
+
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
