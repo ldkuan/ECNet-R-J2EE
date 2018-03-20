@@ -30,7 +30,7 @@
     <script th:inline="javascript">
         /*<![CDATA[*/
         if($.session.get('username')==null){
-            window.location.href="http://localhost:8099/login";
+            window.location.href="/login";
         }
         /*]]>*/
     </script>
@@ -353,7 +353,7 @@ $(function(){
                 refresh_table(page);
             }else {
                 $.ajax({
-                    url:"http://localhost:8099/case/getAll",
+                    url:"/case/getAll",
                     type:'POST',
                     data:{"username":username},
                     success:function (data) {
