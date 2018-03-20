@@ -1,16 +1,12 @@
 
 $(function(){
-    var caseID = "XXXXXXXXXX";
-    var caseBrief = "XXXXXXXXXX";
-    var caseContent = "XXXXXXXXX纠纷一案";
-    var underTaker = "XXX";
-    var caseDate = "XXX";
+    var caseInfo = $.session.get("caseInfo");
 
-    $("#caseID").text(caseID);
-    $("#caseBrief").text(caseBrief);
-    $("#caseContent").text(caseContent);
-    $("#underTaker").text(underTaker);
-    $("#caseDate").text(caseDate);
+    $("#caseNum").text(caseInfo['cNum']);
+    // $("#caseBrief").text(caseInfo['']);
+    $("#caseName").text(caseInfo['cname']);
+    $("#underTaker").text(caseInfo['undertaker']);
+    $("#caseDate").text(caseInfo['fillingDate']);
 
     initEvidences();
 });

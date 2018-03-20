@@ -247,15 +247,10 @@ $(function(){
         $('#exist_click').click(function () {
             if(confirm('是否确认退出？'))
             {
-                $.ajax({
-                    url:'/logout',
-                    type:'GET',
-                    success:function () {
-                        window.location.href = '/login'
-                    }
-                })
+                $.session.remove('username');
+                window.location.href = '/login';
             }
-        })
+        });
 
         function refresh_table (page) {
             let tr_html = '';
@@ -345,7 +340,19 @@ $(function(){
                     getCase(dat_type,  dat_page[dat_type])
                 }
 
-            })
+            });
+
+            $("a[class='ecm_link']").click(function () {
+
+                var cid = $(this).attr('data-cid');
+                $.session.set("cid",cid);
+                var caseInfo = {"cid":cid,'cNum':$(this).parent().parent().find('td:eq(1)').text(),
+                    'cname':$(this).parent().parent().find('td:eq(2)').text(),
+                "fillingDate":$(this).parent().parent().find('td:eq(3)').text(),
+                    "undertaker":$(this).parent().parent().find('td:eq(4)').text()};
+                $.session.set("caseInfo",caseInfo);
+                window.location.href = "/upload";
+            });
         }
         function getCase(type,page) {
             if(dat_type == type)
