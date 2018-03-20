@@ -266,10 +266,13 @@ public class KeyWordCalculator {
         String content = "2、证人周金荣的证言及公安机关照片，证明2007年3月24日其在废品站吃午饭，晚上宁某某一个人在废品站吃晚饭，吃的是其午饭剩下的一盘包菜，一盘油焖笋和一盘红烧肉，估计宁某某是吃不完的。平时剩菜都放在屋内冰箱里。饭是放在煤气灶上的高压锅上。其平时用玻璃茶杯，茶杯一直放在屋内方桌上，当天其离开废品站时没有将茶叶倒掉，另看到一些饼干放在电视机桌上，瓜子则放在枕头边。宁某某平时抽烟的，一般用一次性塑料打火机。发现宁某某被害时，看到有把铁锤放在床边地上几件破衣服上，原先铁锤是放在废品站门边。屋内床上有两条被子，其和宁某某各一条。宁某某因为自己的被子短，平时经常盖其被子，被害当天晚上也是盖其的被子。宁某某被害之前，约在今年二月份，其左手无名指被铁板压伤了，流了很多血，干活时一碰就出血，有时睡觉时也会有血流到被子上。";
         List<String> list = new ArrayList<String>();
         List<String> result = keyWordCalculator.hanlpParse(content,list);
-        for (String value: result) {
-            System.out.print(value+" ");
-        }
-        System.out.println();
+        HashMap<String, List<String>> res=keyWordCalculator.calcKeyWord(content);
+
+        System.out.println(res.toString());
+//        for (String value: result) {
+//            System.out.print(value+" ");
+//        }
+//        System.out.println();
 //            WordFilter wordFilter1 = new WordFilter();
 //            List<String> resultList = wordFilter1.filterStopWords(result);
 //            for (String value: resultList) {

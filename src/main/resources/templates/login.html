@@ -80,7 +80,7 @@
 
             $.ajax({
                 type:"post",
-                url:"http://localhost:8081/checkLogin",
+                url:"http://localhost:8099/checkLogin",
                 data:{"username":$('#userName').val(),"password":$('#userPwd').val()},
                 // dataType:"json",
                 async:false,
@@ -97,7 +97,7 @@
 					}else{
                         $('#failInfo').css('display','none');
                         $.session.set("username",data);
-                        window.location.href = "http://localhost:8081/manage";
+                        window.location.href = "http://localhost:8099/manage";
 					}
 
                 },error: function(XMLHttpRequest, textStatus, errorThrown) {
