@@ -18,17 +18,17 @@ public class Main {
 
     public static void main(String[] args) throws IOException{
         //遍历文件夹下所有的文件
-        String path = "/Users/sweets/Documents/故意杀人罪/2015";
-        File folder = new File(path);
-        if (folder.exists()) {
-            File[] files = folder.listFiles();
-            for (File file2: files) {
-                if (file2.isFile() && file2.getAbsolutePath().endsWith("444.xml")) {
-                    System.out.println("processing:"+file2.getName());
-                    generateIntermediateResult(file2.getName());
-                }
-            }
-        }
+//        String path = "/Users/sweets/Documents/故意杀人罪/2015";
+//        File folder = new File(path);
+//        if (folder.exists()) {
+//            File[] files = folder.listFiles();
+//            for (File file2: files) {
+//                if (file2.isFile() && file2.getAbsolutePath().endsWith("444.xml")) {
+//                    System.out.println("processing:"+file2.getName());
+//                    generateIntermediateResult(file2.getName());
+//                }
+//            }
+//        }
 
         //遍历中间结果文件夹下的所有文件，生成Excel
 //        String jsonPath = "/Users/dongyixuan/workspace/证据链/裁判文书/JsonResult";
@@ -43,6 +43,9 @@ public class Main {
 //                }
 //            }
 //        }
+
+
+
     }
 
     public static void generateIntermediateResult(String fileName) {

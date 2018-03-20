@@ -43,7 +43,10 @@
         }
         body{ background:#ffffff}
 
-
+    </style>
+    <style>
+    myDelete { color:rgba(0,0,0,0); transition:0.5s; }
+    myDelete:hover { color:rgba(78,78,78,1); }
     </style>
 </head>
 
@@ -260,6 +263,7 @@
 
 
 
+    //hide
     $(function(){
         $("#list_hide").click(
             function(){
@@ -287,6 +291,10 @@
                 }
             });
     });
+
+
+
+
     //是否确认删除
     var dat_restore = []
     var dat_type = ''
@@ -466,57 +474,68 @@
 
 
 <script>
+    //显示用户信息
     var username = $.session.get('username');
     $('#userLabel').text(username);
-
-
+    var trustHtml="";
     var temp=new Array(true,true,true,true,true,true,true,true,true,true);
 
     function mySplit(num) {
-
-        var html;
-        var trustHtml="";
-
-
         str="2,2,3,5,6,6"; //这是一字符串
         if(num==1){
             str=$("#mystr1").val();
         }else{
             str=$("#mystr2").val();
         }
+        $.ajax({
+            url:"/evidence/document",
+            type:'POST',
+            data:{"type":num,"ajxh":0,"text":str},
+            success:function(data) {
+                //分解
+                for (var i = 0; i < data.length; i++) {
+                    //result[i]表示获得第i个json对象即JSONObject
+                    //result[i]通过.字段名称即可获得指定字段的值
+                    var id=data[i].id;
+                    var body=data[i].body;
+                    var type="";
 
-        var strs= new Array(); //定义一数组
+                    switch (data[i].type)
+                    {
+                        case 0:
+                            type="证人证言";
+                            break;
+                        case 1:
+                            type="被告人供述和辩解";
+                            break;
+                        case 2:
+                            type="书证";
+                            break;
+                        case 3:
+                            type="鉴定结论";
+                            break;
+                        case 4:
+                            type="勘验、检查笔录";
+                            break;
+                        default:
+                            type="其他";
+                            break;
 
-        strs=str.split(/[0-9]+/); //字符分割
-        for (i=0;i<strs.length ;i++ )
-        {
-            if(num==1){
-                trustHtml+="<br><div class='form-group row'><div class='col-md-10'><input   type='text' class='form-control myinfo1' value='"+strs[i]+"'></div><div class='col-md-2'><button class='btn btn-danger' id='"+i+"' onclick='Myclick("+i+")'>不采信</button></div></div>";
+                    }
+                    trustHtml+="<br><div class='form-group row'><div class='col-md-10'><input type='text' class='form-control myinfo1' value='"+body+"'><a class=\"glyphicon myDelete\n" +
+                        " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" id='"+id+"'></a>\n" +
+                        "\n</div><div class='col-md-2'><button class='btn btn-danger' id='"+i+"' onclick='Myclick("+i+")'>不采信</button></div></div>";
 
-            }else {
-                trustHtml+="<br><div class='form-group row'><div class='col-md-10'><input   type='text' class='form-control myinfo2' value='"+strs[i]+"'></div><div class='col-md-2'><button class='btn btn-danger' id='"+i+"' onclick='Myclick("+i+")'>不采信</button></div></div>";
+                }
+                if(num==1){
+                    $("#after1").append(trustHtml);
+                }else {
+                    $("#after2").append(trustHtml);
+                }
+
 
             }
-
-
-       //     lawHtml+="<br><div class='form-group row'><div class='col-md-10'><input readonly type='text' class='form-control' placeholder='"+strs[i]+"'></div><div class='col-md-2'><input type='checkbox' class='form-control'></div></div>";
-            //
-            // html="<input type='text' class='form-control myinfo' placeholder="+strs[i]+"><br>";
-
-
-
-
-            console.log(strs[i]);
-        }
-        if(num==1){
-            $("#after1").append(trustHtml);
-
-        }else{
-            $("#after2").append(trustHtml);
-        }
-
-     //   myTrust(trustHtml);
-    //    myLaw(lawHtml);
+        });
     }
     function myHead(num) {
         var html;
@@ -549,21 +568,6 @@
 
     }
 
-    function myTrust(trustHtml){
-        $("#trust").append(trustHtml);
-    }
-
-
-    function myLaw(lawHtml){
-        $("#law").append(lawHtml);
-
-    }
-
-    function addTruth(){
-        var html=" <hr><p class='pull-left'>证据xxx<span  onclick='alertLaw()'>&nbsp;&nbsp;&nbsp;法条推荐</span></p><textarea id=\"mytruth\" class=\"form-control\" rows=\"2\"></textarea>";
-        $("#truth").append(html);
-    }
-
 
     function Myclick(i){
         if(temp[i]){
@@ -579,11 +583,6 @@
 
     }
 
-    function alertLaw(){
-        alert("弹出推荐法条和法条数据库树状查询");
-    }
-
-
 
     function myDelete(num) {
         if(num==1){
@@ -594,11 +593,6 @@
             $("#mystr2").val('');
         }
     }
-
-
-
-
-
 
 </script>
 
