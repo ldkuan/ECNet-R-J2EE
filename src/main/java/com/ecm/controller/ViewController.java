@@ -40,4 +40,8 @@ public class ViewController {
     public String getModelView() {
         return "model";
     }
+    @RequestMapping(value = "/upload")
+    public String getUploadView() {
+        return "upload";
+    }
 }
