@@ -1,16 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>新建文书说理逻辑图 - 文书可视化工具集</title>
     <script>isPageNew = true;</script>
-    <!--<script src="/js/logic.js"></script>-->
 
-    <link rel="stylesheet" href="/css/logic.css" type="text/css" media="screen">
-    <link rel="stylesheet" href="/css/common.css" type="text/css" media="screen">
-    <link rel="stylesheet" href="/css/bootstrap.min.css" type="text/css" media="screen">
-    <link rel="stylesheet" href="/css/font-awesome.min.css" type="text/css" media="screen">
-    <link rel="stylesheet" href="/css/smart-menu.css" type="text/css" media="screen">
+    <link rel="stylesheet" th:href="@{css/bootstrap.css}"/>
+    <link rel="stylesheet" th:href="@{css/font-awesome.css}"/>
+    <link rel="stylesheet" th:href="@{css/index.css}"/>
+    <link rel="stylesheet" th:href="@{css/common.css}"/>
+    <link rel="stylesheet" th:href="@{css/custom.css}"/>
+
+    <script th:src="@{js/ref/jquery-3.2.1.min.js}"></script>
+    <script th:src="@{js/ref/jquery-ui.js}"></script>
+    <script th:src="@{js/ref/bootstrap.js}"></script>
+    <script th:src="@{js/ref/jtopo-0.4.8-min.js}"></script>
+    <script th:src="@{js/logic-new.js}"></script>
 </head>
 <body>
 <nav class="navbar navbar-default navbar-fixed-top no-print">
@@ -41,9 +46,12 @@
         </section>
 
         <!--画布-->
-        <section class="graph-wrapper show-bar col-md-9 print">
-            <svg width="2000" height="2000"></svg>
-        </section>
+        <!--<section class="graph-wrapper show-bar col-md-9 print">-->
+        <!--<svg width="2000" height="2000"></svg>-->
+        <!--</section>-->
+        <div class="graph-wrapper col-md-9 show-bar" style="margin-top: 20px;">
+            <canvas id="canvas" width="2000" height="1000"></canvas>
+        </div>
 
         <!--图元信息-->
         <section class="node-info-wrapper col-md-3 no-print">
@@ -129,7 +137,7 @@
                 <h4 class="modal-title" id="node-del-modal-title">删除节点</h4>
             </div>
             <div class="modal-body">
-                <h5>你确定要删除这个节点吗？注意：删除根结点将清空整个图像</h5>
+                <h5>你确定要删除这个节点吗？注意：删除根结点将清除整颗树</h5>
                 <table class="table table-bordered">
                     <thead>
                     <tr>
@@ -150,8 +158,12 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" id="node-del-btn">删除节点，子节点连接到上级</button>
-                <button type="button" class="btn btn-danger" id="node-delWithChildren-btn">删除节点及子节点</button>
+                <button type="button" class="btn btn-danger" id="node-del-btn" onclick="delNodeBtnEvent()">
+                    删除节点，子节点连接到上级
+                </button>
+                <button type="button" class="btn btn-danger" id="node-delWithChildren-btn"
+                        onclick="delNodeAndItsChildrenBtnEvent()">删除节点及子节点
+                </button>
                 <button type="button" class="btn btn-success" data-dismiss="modal">返回</button>
             </div>
         </div>
@@ -194,7 +206,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-success" id="node-add-btn">添加节点</button>
+                <button type="button" class="btn btn-success" id="node-add-btn" onclick="addBtnEvent()">添加节点</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
             </div>
         </div>
@@ -228,7 +240,7 @@
                         <option value="事实">事实</option>
                         <option value="法条">法条</option>
                         <option value="结论">结论</option>
-                        <option value="最终结论">最终结论</option>
+                        <!--<option value="最终结论">最终结论</option>-->
                     </select>
                 </div>
                 <div class="form-group">
@@ -242,11 +254,22 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-success" id="node-edit-btn">保存</button>
+                <button type="button" class="btn btn-success" id="node-edit-btn" onclick="editBtnEvent()">保存</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
             </div>
         </div>
     </div>
 </div>
+<ul id="stageMenu" class="dropdown-menu menu_graph" style="font-size: 10px;">
+
+    <li id="element-id"><a>id：2</a></li>
+    <li id="element-name"><a>名称：最终结论</a></li>
+
+    <hr id="hr" style="margin-top: 7px;margin-bottom: 7px;"/>
+
+    <li id="add-element-li"><a>新增节点</a></li>
+    <li id="del-element-li"><a>删除节点</a></li>
+    <li id="mod-element-li"><a>编辑节点</a></li>
+</ul>
 </body>
 </html>
