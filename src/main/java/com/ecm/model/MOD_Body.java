@@ -1,18 +1,8 @@
 package com.ecm.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
-
-@Entity
-@Table(name="MOD_BODY")
-@IdClass(MODPK.class)
 public class MOD_Body {
 
-    @Id
     private int id;
-    @Id
     private int cid;
     private String name;
     private String content;
@@ -22,6 +12,7 @@ public class MOD_Body {
     private String committer;
     private String reason;
     private String conclusion;
+    private int isDefendant;//0-原告证据   1-被告证据
 
     public int getId() {
         return id;
@@ -101,5 +92,30 @@ public class MOD_Body {
 
     public void setConclusion(String conclusion) {
         this.conclusion = conclusion;
+    }
+
+    public int transTypeToInt(){
+        switch(type)
+        {
+            case "证人证言":
+                return 0;
+
+            case "被告人供述和辩解":
+                return 1;
+
+            case "书证":
+                return 2;
+
+            case "鉴定结论":
+                return 3;
+
+            case "勘验、-检查笔录":
+                return 4;
+
+            default:
+                return 5;
+
+        }
+
     }
 }

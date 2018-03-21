@@ -10,7 +10,7 @@ public interface ModelManageService {
 
     public void deleteHeadersByCid(int cid);
 
-    public void saveBodies(List<MOD_Body> bodies);
+    public void saveBodies(List<Evidence_Body> bodies);
 
     public void deleteBodiesByCid(int cid);
 

@@ -29,7 +29,7 @@ public class ModelController {
     }
 
     @RequestMapping(value="/saveBodies")
-    public void saveBodies(@RequestBody List<MOD_Body> bodies){
+    public void saveBodies(@RequestBody List<Evidence_Body> bodies){
 
         modelManageService.saveBodies(bodies);
     }

@@ -13,16 +13,19 @@ import java.util.List;
 
 public interface EvidenceBodyDao extends JpaRepository<Evidence_Body, Integer> {
 
-
-
-    @Query(value = "select u from  Evidence_Body u where u.documentid= ?1")
+    @Query(value = "select u from Evidence_Body u where u.documentid= ?1")
     public List<Evidence_Body> getAllByDocumentid(int documentid);
+
+    @Query(value = "select u from Evidence_Body u where u.documentid= ?1 and u.trust=1")
+    public List<Evidence_Body> findByDocumentidAndTrust(int documentID);
 
     public Evidence_Body save(Evidence_Body evi);
 
     public void deleteById(int id);
 
     public void deleteAllByDocumentid(int document_id);
+
+//    public void deleteAllByCase_id(int caseID);
 
     @Modifying
     @Query("update Evidence_Body c set c.body = ?1 where c.id=?2")

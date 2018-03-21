@@ -14,6 +14,7 @@ public class MOD_Header {
     private int id;
     @Id
     private int cid;
+    private int ehid;
     private String name;
     private String content;
     private int x;
@@ -33,6 +34,14 @@ public class MOD_Header {
 
     public void setCid(int cid) {
         this.cid = cid;
+    }
+
+    public int getEhid() {
+        return ehid;
+    }
+
+    public void setEhid(int ehid) {
+        this.ehid = ehid;
     }
 
     public String getName() {

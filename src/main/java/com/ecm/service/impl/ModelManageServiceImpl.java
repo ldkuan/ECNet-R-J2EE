@@ -13,9 +13,12 @@ import java.util.List;
 public class ModelManageServiceImpl implements ModelManageService {
 
     @Autowired
+    private EvidenceDocuDao evidenceDocuDao;
+    @Autowired
     private MOD_HeaderDao headerDao;
     @Autowired
-    private MOD_BodyDao bodyDao;
+    private EvidenceBodyDao evidenceBodyDao;
+//    private MOD_BodyDao bodyDao;
     @Autowired
     private MOD_JointDao jointDao;
     @Autowired
@@ -37,15 +40,15 @@ public class ModelManageServiceImpl implements ModelManageService {
     }
 
     @Override
-    public void saveBodies(List<MOD_Body> bodies) {
+    public void saveBodies(List<Evidence_Body> bodies) {
         for(int i = 0;i<bodies.size();i++){
-            bodyDao.save(bodies.get(i));
+            evidenceBodyDao.save(bodies.get(i));
         }
     }
 
     @Override
     public void deleteBodiesByCid(int cid) {
-        bodyDao.deleteAllByCid(cid);
+//        evidenceBodyDao.deleteAllByCase_id(cid);
     }
 
     @Override
