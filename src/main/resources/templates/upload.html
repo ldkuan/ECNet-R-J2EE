@@ -141,7 +141,7 @@
 
 
                 <br>
-
+                <br>
 
             </div>
         </div>
@@ -174,7 +174,7 @@
 
             <div id="after2">
 
-
+                <br>
                 <br>
 
 
@@ -276,6 +276,22 @@
 
     //hide
     $(function(){
+
+        $.ajax({
+            url:"/evidence/getContent",
+            type:'GET',
+            data:{"ajxh":cid},
+            success:function (data) {
+                for(var i=0;i<data.length;i++){
+                   loadData(data[i].type,data[i]);
+                }
+            }
+        });
+
+
+
+
+
         $("#list_hide").click(
             function(){
 
@@ -305,6 +321,87 @@
     });
 
 
+    function loadData(type,data){
+        document_id[type]=data.id;
+            if(type==0){
+                $("#mystr1").val(data.text);
+
+
+            }else{
+                $("#mystr2").val(data.text);
+            }
+
+        var bodylist=data.bodylist;
+        for(var i=0;i<bodylist.length;i++){
+            createHtml(bodylist[i].id,bodylist[i].body,bodylist[i].type,bodylist[i].trust,type);
+        }
+
+
+    }
+
+
+    function createHtml(id,body,type,trust,num){
+        var html="";
+        var select="<div class=\"col-md-2\"><select onchange='myUpdateType(this)' value='"+type+"' bodyid='"+id+"' class=\"mySelect form-control\">\n" +
+            "    <option value =\"0\">证人证言</option>\n" +
+            "    <option value =\"1\">被告人供述和辩解</option>\n" +
+            "    <option value=\"2\">书证</option>\n" +
+            "    <option value=\"3\">鉴定结论</option>\n" +
+            "    <option value=\"4\">勘验、检查笔录</option>\n" +
+            "    <option value=\"5\">其他</option>\n" +
+            "</select></div>";
+
+
+
+        html="<div id='"+id+"' class='form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
+            " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
+            "\n</div>"
+        html+=select;
+
+        html+="<div class='col-md-2'><button value="+trust+" class='trustBut btn btn-danger' bodyid='"+id+"' onclick='myUpdateTrust(this)'>不采信</button></div></div>";
+
+        if(num==0){
+            // $("#after1").html("");
+            $("#after1").append(html);
+        }else {
+            // $("#after2").html("");
+            $("#after2").append(html);
+        }
+        var options =$(".mySelect[bodyid="+id+"]").find("option[value='"+type+"']");
+        options.attr("selected",true);
+
+        var but=$(".trustBut[bodyid="+id+"]");
+        if(but.val()==0){
+            $(but).removeClass("btn-danger");
+            $(but).addClass("btn-success");
+            $(but).text("采信");
+
+        }else{
+            $(but).removeClass("btn-success");
+            $(but).addClass("btn-danger");
+            $(but).text("不采信");
+
+        }
+
+        $(".myRemove").click(
+            function(){
+                var id=$(this).attr("bodyid");
+                console.log("bodyid"+id);
+                $.ajax({
+                    url:"/evidence/deleteBody",
+                    type:'POST',
+                    data:{"id":id},
+                    success:function(data) {
+                        console.log("delete");
+                    }
+                });
+
+                $("#"+id).remove();
+
+            });
+
+
+    }
 
 
 </script>
@@ -327,10 +424,10 @@
         $.ajax({
             url:"/evidence/document",
             type:'POST',
-            data:{"type":num,"ajxh":cid,"text":str},
+            data:{"type":num-1,"ajxh":cid,"text":str},
             success:function(data) {
                 //分解
-                document_id[num]=data[0].document_id;
+                document_id[num-1]=data[0].document_id;
                 for (var i = 0; i < data.length; i++) {
                     //result[i]表示获得第i个json对象即JSONObject
                     //result[i]通过.字段名称即可获得指定字段的值
@@ -338,7 +435,7 @@
                     var body=data[i].body;
                     var type=data[i].type;
 
-                    var select="<div class=\"col-md-2\"><select value='"+type+"' bodyid='"+id+"' class=\"mySelect form-control\">\n" +
+                    var select="<div class=\"col-md-2\"><select onchange='myUpdateType(this)' value='"+type+"' bodyid='"+id+"' class=\"mySelect form-control\">\n" +
                         "    <option value =\"0\">证人证言</option>\n" +
                         "    <option value =\"1\">被告人供述和辩解</option>\n" +
                         "    <option value=\"2\">书证</option>\n" +
@@ -349,16 +446,17 @@
 
 
 
-                    trustHtml="<br><div id='"+id+"' class='form-group row'><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
+                    trustHtml="<div id='"+id+"' class='form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
                         " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
                         "\n</div>"
                     trustHtml+=select;
 
-                    trustHtml+="<div class='col-md-2'><button class='btn btn-danger' id='"+i+"' onclick='Myclick("+i+")'>不采信</button></div></div>";
+                    trustHtml+="<div class='col-md-2'><button value=1 class='btn btn-danger' bodyid='"+id+"' onclick='myUpdateTrust(this)'>不采信</button></div></div>";
 
                     if(num==1){
                        // $("#after1").html("");
                         $("#after1").append(trustHtml);
+
                     }else {
                        // $("#after2").html("");
                         $("#after2").append(trustHtml);
@@ -379,7 +477,7 @@
                         $.ajax({
                             url:"/evidence/deleteBody",
                             type:'POST',
-                            data:{"int":id},
+                            data:{"id":id},
                             success:function(data) {
                                 console.log("delete");
                             }
@@ -391,6 +489,32 @@
             }
         });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     function myHead(num) {
         var html;
 
@@ -423,19 +547,7 @@
     }
 
 
-    function Myclick(i){
-        if(temp[i]){
-            $("#"+i).removeClass("btn-danger");
-            $("#"+i).addClass("btn-success");
-            $("#"+i).text("采信");
-        }else{
-            $("#"+i).removeClass("btn-success");
-            $("#"+i).addClass("btn-danger");
-            $("#"+i).text("不采信");
-        }
-        temp[i]=!temp[i];
 
-    }
 
 
     function myDelete(num) {
@@ -457,12 +569,52 @@
             success:function(data) {
                 console.log(data);
                 var id=data.id;
-                var html="<br><div id='"+id+"' class='form-group row'><div class='col-md-10'><input type='text' class='form-control myinfo1' value=''><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback\\\"style=\\\"pointer-events:auto;padding-left: 1%\\\" bodyid='\"+id+\"'></a></div><div class='col-md-2'><button class='btn btn-danger' id='\"+i+\"' onclick='Myclick(\"+i+\")'>不采信</button></div></div>";
+                var html="";
+
+
+                var select="<div class=\"col-md-2\"><select onchange='myUpdateType(this)' value='"+5+"' bodyid='"+id+"' class=\"mySelect form-control\">\n" +
+                    "    <option value =\"0\">证人证言</option>\n" +
+                    "    <option value =\"1\">被告人供述和辩解</option>\n" +
+                    "    <option value=\"2\">书证</option>\n" +
+                    "    <option value=\"3\">鉴定结论</option>\n" +
+                    "    <option value=\"4\">勘验、检查笔录</option>\n" +
+                    "    <option value=\"5\">其他</option>\n" +
+                    "</select></div>";
+
+
+
+                html="<div id='"+id+"' class='form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+""+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
+                    " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
+                    "\n</div>"
+                html+=select;
+
+                html+="<div class='col-md-2'><button value=1 class='btn btn-danger' bodyid='"+id+"' onclick='myUpdateTrust(this)'>不采信</button></div></div>";
                 if(num==1){
                     $("#after1").append(html);
                 }else{
                     $("#after2").append(html);
-                }}
+                }
+                var options =$(".mySelect[bodyid="+id+"]").val(5);
+
+                options.attr("selected",true);
+
+                $(".myRemove").click(
+                    function(){
+                        var id=$(this).attr("bodyid");
+                        console.log("bodyid"+id);
+                        $.ajax({
+                            url:"/evidence/deleteBody",
+                            type:'POST',
+                            data:{"id":id},
+                            success:function(data) {
+                                console.log("delete");
+                            }
+                        });
+
+                        $("#"+id).remove();
+
+                    });
+            }
         });
 
     }
@@ -498,6 +650,40 @@
         });
 
     }
+
+    function myUpdateTrust(select) {
+
+        var trust=1;
+        console.log($(select).val());
+        if($(select).val()==0){
+            $(select).removeClass("btn-success");
+            $(select).addClass("btn-danger");
+            $(select).text("不采信");
+            $(select).val(1);
+            trust=1;
+        }else{
+            $(select).removeClass("btn-danger");
+            $(select).addClass("btn-success");
+            $(select).text("采信");
+            $(select).val(0);
+            trust=0;
+        }
+        var id = $(select).attr("bodyid"); //对应id
+
+        console.log(id);console.log(trust);
+        $.ajax({
+            url:"/evidence/updateTrustById",
+            type:'POST',
+            data:{"trust":trust,"id":id},
+            success:function(data) {
+
+            }
+        });
+    }
+
+
+
+
 </script>
 
 

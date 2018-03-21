@@ -12,13 +12,14 @@ public class Evidence_Body {
     @Column(name = "ajxh")
     private int case_id;
     @Column(name = "document_id")
-    private int document_id;
+    private int documentid;
     @Column(name = "body")
     private String body;
     @Column(name = "type")
     private int type;//0-证人证言，1-被告人供述和辩解，2-书证，3-鉴定结论，4-勘验、-检查笔录，5-其他
 
-
+    @Column(name = "trust")
+    private int trust=1;//0-不采信 1-采信
 
     public int getId() {
         return id;
@@ -36,12 +37,12 @@ public class Evidence_Body {
         this.case_id = case_id;
     }
 
-    public int getDocument_id() {
-        return document_id;
+    public int getDocumentid() {
+        return documentid;
     }
 
-    public void setDocument_id(int document_id) {
-        this.document_id = document_id;
+    public void setDocumentid(int document_id) {
+        this.documentid = document_id;
     }
 
     public String getBody() {
@@ -58,5 +59,13 @@ public class Evidence_Body {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public int getTrust() {
+        return trust;
+    }
+
+    public void setTrust(int trust) {
+        this.trust = trust;
     }
 }
