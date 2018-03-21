@@ -36,7 +36,7 @@ public class KeyWordCalculator {
         }
     }
 
-    private HashMap<String, List<String>> calcKeyWord(String content){
+    public HashMap<String, List<String>> calcKeyWord(String content){
         HashMap<String, List<String>> keyWordMap = new HashMap<String, List<String>>();
 
         //How Much
@@ -269,14 +269,8 @@ public class KeyWordCalculator {
         HashMap<String, List<String>> res=keyWordCalculator.calcKeyWord(content);
 
         System.out.println(res.toString());
-//        for (String value: result) {
-//            System.out.print(value+" ");
-//        }
-//        System.out.println();
-//            WordFilter wordFilter1 = new WordFilter();
-//            List<String> resultList = wordFilter1.filterStopWords(result);
-//            for (String value: resultList) {
-//                System.out.print(value+" ");
-//        }
+
     }
+
+
 }

@@ -2,6 +2,7 @@ package com.ecm.service;
 
 import com.ecm.model.Evidence_Body;
 import com.ecm.model.Evidence_Document;
+import com.ecm.model.Evidence_Head;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
@@ -27,4 +28,6 @@ public interface EvidenceService{
 
     public void updateTypeById(int type, int id);
     public void updateTrustById(int trust, int id);
+
+    List<Evidence_Head> createHead(int documentid);
 }

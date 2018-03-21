@@ -4,8 +4,8 @@ import com.ecm.keyword.manager.TypeCalculator;
 import com.ecm.model.Evidence_Body;
 import com.ecm.model.Evidence_Document;
 
+import com.ecm.model.Evidence_Head;
 import com.ecm.service.EvidenceService;
-import com.google.gson.JsonArray;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,4 +132,10 @@ public class EvidenceController {
     }
 
 
+    @PostMapping(value = "/createHead")
+    public List<Evidence_Head> createHead(@RequestParam("document_id") int document_id){
+        List<Evidence_Head> headList=evidenceService.createHead(document_id);
+        JSONArray res=new JSONArray();
+        return headList;
+    }
     }

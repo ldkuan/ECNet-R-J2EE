@@ -68,4 +68,31 @@ public class Evidence_Body {
     public void setTrust(int trust) {
         this.trust = trust;
     }
+
+    public String getTypeToString(){
+        switch(type)
+        {
+            case 0:
+                return "证人证言";
+
+            case 1:
+                return "被告人供述和辩解";
+
+            case 2:
+                return "书证";
+
+            case 3:
+                return "鉴定结论";
+
+            case 4:
+                return "勘验、-检查笔录";
+
+            default:
+                return "其他";
+
+        }
+
+    }
+
+
 }

@@ -11,11 +11,14 @@
 
     <link rel="stylesheet" th:href="@{css/bootstrap.css}"/>
     <link rel="stylesheet" th:href="@{css/style.css}"/>
+    <link rel="stylesheet" th:href="@{css/jquery.edittable.min.css}"/>
+
     <!--<link rel="stylesheet" th:href="@{css/login.css}"/>-->
     <!--<link rel="apple-touch-icon-precomposed" th:href="@{img/icon.png}">-->
     <!--<link rel="shortcut icon" th:href="@{img/favicon.ico}">-->
     <script th:src="@{js/ref/jquery-2.1.4.min.js}"></script>
     <script th:src="@{js/ref/jquerysession.js}"></script>
+    <script th:src="@{js/jquery.edittable.min.js}"></script>
 
     <!--[if gte IE 9]>
     <script th:src="@{js/ref/jquery-1.11.1.min.js}"></script>
@@ -45,8 +48,8 @@
 
     </style>
     <style>
-    myRemove { color:rgba(0,0,0,0); transition:0.5s; }
-    myRemove:hover { color:rgba(78,78,78,1); }
+        myRemove { color:rgba(0,0,0,0); transition:0.5s; }
+        myRemove:hover { color:rgba(78,78,78,1); }
     </style>
 </head>
 
@@ -102,10 +105,23 @@
         <div class="col-md-6 pull-left" > <h4 >原告证据 <a id="list_hide" style="font-size: 12px;" href="#">隐藏<<</a> </h4></div>
         <div class="col-md-5"  > <h4 class="pull-right">被告证据 <a id="graph_hide" style="font-size: 12px;" href="#">隐藏<<</a> </h4></div>
 
-
         <br>
 
 
+    </div>
+    <div class="table">
+        <table class="table " id="edittable" >
+            <tbody>
+            <tr>
+                <td><input type="text" class="form-control" value="链头1"></td>
+                <td><input type="text" value="链头1"></td>
+                <td><input type="text" value="链头1"></td>
+                <td><a href="${basePath}course/updateCourseIni?id=${row[0]}"><span class="glyphicon glyphicon-pencil"></span></a> &nbsp;</td>
+                <td><a href="${basePath}course/charpterList?cid=${row[0]}"><span class="glyphicon glyphicon-share"></span></a> &nbsp;</td>
+                <td><a href="${basePath}course/deleteCourse?id=${row[0]}"><span class="glyphicon glyphicon-remove"></span></a> &nbsp;</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 
 
@@ -283,7 +299,7 @@
             data:{"ajxh":cid},
             success:function (data) {
                 for(var i=0;i<data.length;i++){
-                   loadData(data[i].type,data[i]);
+                    loadData(data[i].type,data[i]);
                 }
             }
         });
@@ -323,13 +339,13 @@
 
     function loadData(type,data){
         document_id[type]=data.id;
-            if(type==0){
-                $("#mystr1").val(data.text);
+        if(type==0){
+            $("#mystr1").val(data.text);
 
 
-            }else{
-                $("#mystr2").val(data.text);
-            }
+        }else{
+            $("#mystr2").val(data.text);
+        }
 
         var bodylist=data.bodylist;
         for(var i=0;i<bodylist.length;i++){
@@ -454,11 +470,11 @@
                     trustHtml+="<div class='col-md-2'><button value=1 class='btn btn-danger' bodyid='"+id+"' onclick='myUpdateTrust(this)'>不采信</button></div></div>";
 
                     if(num==1){
-                       // $("#after1").html("");
+                        // $("#after1").html("");
                         $("#after1").append(trustHtml);
 
                     }else {
-                       // $("#after2").html("");
+                        // $("#after2").html("");
                         $("#after2").append(trustHtml);
                     }
                     var options =$(".mySelect[bodyid="+id+"]").find("option[value='"+type+"']");
@@ -516,10 +532,12 @@
 
 
     function myHead(num) {
-        var html;
+        var html="";
 
 
-        html="  <div class=\"form-group\">\n" +
+
+
+        html=" <br> <div class=\"form-group\">\n" +
             "\n" +
             "                                            <div class=\"col-md-4\">\n" +
             "                                                <input name=\"cid\" type=\"text\" class=\"form-control\" value=\"链头1\">\n" +
@@ -687,7 +705,23 @@
 </script>
 
 
+<script>
+    var mytable = $('#edittable').editTable({
+        data: [['']],           // Fill the table with a js array (this is overridden by the textarea content if not empty)
+        tableClass: 'inputtable',   // Table class, for styling
+        jsonData: false,        // Fill the table with json data (this will override data property)
+        headerCols: false,      // Fix columns number and names (array of column names)
+        maxRows: 999,           // Max number of rows which can be added
+        first_row: true,        // First row should be highlighted?
+        row_template: false,    // An array of column types set in field_templates
+        field_templates: false, // An array of custom field type objects
 
+        // Validate fields
+        validate_field: function (col_id, value, col_type, $element) {
+            return true;
+        }
+    });
+</script>
 
 </body>
 </html>
