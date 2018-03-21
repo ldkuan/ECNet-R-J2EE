@@ -6,6 +6,7 @@ import javax.persistence.*;
 public class Evidence_Document {
 
         @Id
+        @GeneratedValue(strategy=GenerationType.IDENTITY)
         @Column(name = "id")
         private int id;
         @Column(name = "ajxh")
