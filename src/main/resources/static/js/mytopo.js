@@ -7,6 +7,8 @@ var jointIndex = 0;//当前连接点（事实）id
 var jointList = {};//存储连接点（事实），{id:{'node':node,'type':'XXX'}}
 var arrowIndex = 0;//当前箭头id
 var arrowList = {};//存储箭头，{id:node}
+var linkIndex = 0;//当前连线id
+var linkList = {};//存储连线，{id:node}
 var operationList = [];//存储每一步操作，[{'type':'add/delete/copy','nodes':[]},
 // {'type':'move','nodes':[],'position_origin':[x,y]}]
 
@@ -160,6 +162,9 @@ $(document).ready(function(){
     bindRightPanel();
 
 
+    $('#save-btn').click(function () {
+        saveHeaders();
+    });
     $('#saveImg-btn').click(function () {
         stage.saveImageInfo();
     });
@@ -176,6 +181,32 @@ $(document).ready(function(){
     initGraph(evidences_adoption);
 
 });
+
+//存储链头
+function saveHeaders() {
+    var hList = [];
+    for(var hid in headerList){
+        var node = headerList[hid];
+        var h = {"id":hid,"cid":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y};
+        hList.push(h);
+    }
+
+    $.ajax({
+        type: "post",
+        url: "/model/saveHeaders",
+        data: JSON.stringify(hList),
+        // dataType:"json",
+        contentType: "application/json; charset=utf-8",
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+}
 
 //将移动操作加入operationList
 function addMoveOperations() {
@@ -220,7 +251,7 @@ function undo() {
                 deleteArrow(node);
 
             }else if(node.node_type=='link'){
-                scene.remove(node);
+                deleteLink(node);
             }
         }
 
@@ -230,17 +261,17 @@ function undo() {
             var node = operation['nodes'][i];
 
             if(node.node_type=='header'){
-                drawHeader(node.x,node.y,node.text,node.content);
+                drawHeader(node.x,node.y,node.id,node.text,node.content);
 
             }else if(node.node_type=='body'){
-                drawBody(node.x,node.y,node.text,node.content,bodyList[node.id]['type'],
+                drawBody(node.x,node.y,node.id,node.text,node.content,bodyList[node.id]['type'],
                     bodyList[node.id]['committer'],bodyList[node.id]['reason'],bodyList[node.id]['conclusion']);
 
             }else if(node.node_type=='joint'){
-                drawJoint(node.x,node.y,node.text,node.content,jointList[node.id]['type']);
+                drawJoint(node.x,node.y,node.id,node.text,node.content,jointList[node.id]['type']);
 
             }else if(node.node_type=='arrow'){
-                addArrow(node.nodeA,node.nodeZ,node.text,node.content);
+                addArrow(node.nodeA,node.nodeZ,node.id,node.text,node.content);
 
             }else if(node.node_type=='link'){
                 addLink(node.nodeA,node.nodeZ);
@@ -643,7 +674,7 @@ function bindMenuClick() {
         var nodes = [];
         for(var i = 0;i<nodeFroms.length;i++){
 
-            var node = addArrow(nodeList_selected[nodeFroms[i]],nodeTo,null,'');
+            var node = addArrow(nodeList_selected[nodeFroms[i]],nodeTo);
             if(node!=-1){
                 nodes.push(node);
             }
@@ -694,7 +725,7 @@ function bindMenuClick() {
     $('#delete-link-li').click(function () {
         $(this).parent().hide();
 
-        scene.remove(nodeList_selected[0]);
+        deleteLink(node);
 
         //添加操作至operationList
         operationList.push({'type':'delete','nodes':[nodeList_selected[0]]});
@@ -732,7 +763,7 @@ function bindMenuClick() {
                 deleteArrow(node);
 
             }else if(node.node_type=='link'){
-                scene.remove(node);
+                deleteLink(node);
             }
         }
 
@@ -849,7 +880,7 @@ function bindRightPanel() {
 }
 
 //添加连线
-function addLink(nodeFrom,nodeTo){
+function addLink(nodeFrom,nodeTo,id){
     var hasLink = false;
 
     //判断是否已存在连线
@@ -862,7 +893,11 @@ function addLink(nodeFrom,nodeTo){
         }
 
     if(!hasLink){
+        if(id==null)
+            id = linkIndex++;
+
         var link = new JTopo.Link(nodeFrom, nodeTo);
+        link.id = id;
         link.lineWidth = 2; // 线宽
         // link.dashedPattern = dashedPattern; // 虚线
         link.bundleOffset = 60; // 折线拐角处的长度
@@ -880,6 +915,7 @@ function addLink(nodeFrom,nodeTo){
             isNodeClicked_left = false;
         });
 
+        linkList[link.id] = link;
         scene.add(link);
 
         addHeaderofChain(nodeFrom.text,nodeFrom.id,nodeTo.id);
@@ -890,8 +926,14 @@ function addLink(nodeFrom,nodeTo){
     return -1;
 }
 
+//删除连线
+function deleteLink(link) {
+    linkList[link.id] = null;
+    scene.remove(link);
+}
+
 //添加箭头，返回箭头节点，未创建返回-1
-function addArrow(nodeFrom,nodeTo,name,content) {
+function addArrow(nodeFrom,nodeTo,id,name,content) {
 
     var hasArrow = false;
 
@@ -908,9 +950,11 @@ function addArrow(nodeFrom,nodeTo,name,content) {
 
         if(name==null)
             name = '新箭头'+(arrowIndex+1);
+        if(id==null)
+            id = arrowIndex++;
 
         var arrow = new JTopo.Link(nodeFrom, nodeTo, name);
-        arrow.id = arrowIndex++;
+        arrow.id = id;
         arrow.content = content;
         arrow.lineWidth = 2; // 线宽
         // arrow.dashedPattern = dashedPattern; // 虚线
@@ -959,15 +1003,17 @@ function deleteArrow(arrow) {
 }
 
 //绘制链头，返回链头节点
-function drawHeader(x,y,name,content){
+function drawHeader(x,y,id,name,content){
 
     if(name==null)
         name = '新链头'+(headerIndex+1);
     if(content==null)
         content = name;
+    if(id==null)
+        id = headerIndex++;
 
     var circleNode = new JTopo.CircleNode(name);
-    circleNode.id = headerIndex++;
+    circleNode.id = id;
     circleNode.content = content;
     circleNode.radius = header_radius; // 半径
     // circleNode.alpha = 0.7;
@@ -1029,13 +1075,15 @@ function deleteHeader(header) {
 }
 
 //绘制链体，返回链体节点
-function drawBody(x,y,name,content,type,committer,reason,conclusion){
+function drawBody(x,y,id,name,content,type,committer,reason,conclusion){
 
     if(name==null)
         name = '新链体'+(bodyIndex+1);
+    if(id==null)
+        id = bodyIndex++;
 
     var node = new JTopo.Node(name);
-    node.id = bodyIndex++;
+    node.id = id;
     node.content = content;
     // node.alpha = 0.7;
     node.fillColor = '255, 255, 255'; // 填充颜色
@@ -1104,13 +1152,15 @@ function deleteBody(body) {
 }
 
 //绘制连接点，返回连接点节点
-function drawJoint(x,y,name,content,type){
+function drawJoint(x,y,id,name,content,type){
 
     if(name==null)
         name = '新连接点'+(jointIndex+1);
+    if(id==null)
+        id = jointIndex++;
 
     var node = new JTopo.Node(name);
-    node.id = jointIndex++;
+    node.id = id;
     node.content = content;
     node.fillColor = '255, 255, 255'; // 填充颜色
     node.borderColor = joint_color_num;
@@ -1195,19 +1245,23 @@ function initGraph(data) {
 
     var x = 35;
     var y = 35;
+    var k = 0;
 
     for(var i = 0;i<data.length;i++){
-        var bid = drawBody(x+100,y,'证据'+(i+1),data[i]['证据'],"XX","XXX","XXX","XXXX").id;
+        var bid = drawBody(x+100,y,i,'证据'+(i+1),data[i]['证据'],"XX","XXX","XXX","XXXX").id;
 
         var headers = data[i]['链头'];
         for(var j = 0;j<headers.length;j++){
-            var hid = drawHeader(x,y,headers[j],headers[j]).id;
+            var hid = drawHeader(x,y,k,headers[j],headers[j]).id;
             y+=70;
-            addLink(headerList[hid], bodyList[bid]['node']);
+            addLink(headerList[hid], bodyList[bid]['node'],k++);
         }
         x+=100;
 
     }
+    bodyIndex = data.length;
+    headerIndex = k+1;
+    linkIndex = k+1;
 
     // JTopo.layout.layoutNode(scene, bodyList['证据0'], true);
 }

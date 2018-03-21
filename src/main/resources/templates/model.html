@@ -472,7 +472,7 @@
     /*<![CDATA[*/
     var username = $.session.get('username');
     $('#userLabel').text(username);
-    console.log($.session.get('cid'));
+    var cid = $.session.get('cid');
 
     $('#exist_click').click(function () {
         if(confirm('是否确认退出？'))
