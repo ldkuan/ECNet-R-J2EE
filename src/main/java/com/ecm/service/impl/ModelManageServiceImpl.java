@@ -32,10 +32,20 @@ public class ModelManageServiceImpl implements ModelManageService {
     }
 
     @Override
-    public void saveBodys(List<MOD_Body> bodies) {
+    public void deleteHeadersByCid(int cid) {
+        headerDao.deleteAllByCid(cid);
+    }
+
+    @Override
+    public void saveBodies(List<MOD_Body> bodies) {
         for(int i = 0;i<bodies.size();i++){
             bodyDao.save(bodies.get(i));
         }
+    }
+
+    @Override
+    public void deleteBodiesByCid(int cid) {
+        bodyDao.deleteAllByCid(cid);
     }
 
     @Override
@@ -46,6 +56,11 @@ public class ModelManageServiceImpl implements ModelManageService {
     }
 
     @Override
+    public void deleteJointsByCid(int cid) {
+        jointDao.deleteAllByCid(cid);
+    }
+
+    @Override
     public void saveArrows(List<MOD_Arrow> arrows) {
         for(int i = 0;i<arrows.size();i++){
             arrowDao.save(arrows.get(i));
@@ -53,9 +68,19 @@ public class ModelManageServiceImpl implements ModelManageService {
     }
 
     @Override
+    public void deleteArrowsByCid(int cid) {
+        arrowDao.deleteAllByCid(cid);
+    }
+
+    @Override
     public void saveLinks(List<MOD_Link> links) {
         for(int i = 0;i<links.size();i++){
             linkDao.save(links.get(i));
         }
+    }
+
+    @Override
+    public void deleteLinksByCid(int cid) {
+        linkDao.deleteAllByCid(cid);
     }
 }

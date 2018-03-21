@@ -164,6 +164,10 @@ $(document).ready(function(){
 
     $('#save-btn').click(function () {
         saveHeaders();
+        saveBodies();
+        saveJoints();
+        saveArrows();
+        saveLinks();
     });
     $('#saveImg-btn').click(function () {
         stage.saveImageInfo();
@@ -175,10 +179,7 @@ $(document).ready(function(){
         typeSetting();
     });
 
-    var evidences_adoption = [{"证据":"证据1XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":1},
-        {"证据":"证据2XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0},
-        {"证据":"证据3XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0}];
-    initGraph(evidences_adoption);
+    initGraph();
 
 });
 
@@ -193,8 +194,186 @@ function saveHeaders() {
 
     $.ajax({
         type: "post",
+        url: "/model/deleteHeaders",
+        data:{"cid":cid},
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+
+    $.ajax({
+        type: "post",
         url: "/model/saveHeaders",
         data: JSON.stringify(hList),
+        // dataType:"json",
+        contentType: "application/json; charset=utf-8",
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+}
+
+//存储链体
+function saveBodies() {
+    var bList = [];
+    for(var bid in bodyList){
+        var body = bodyList[bid];
+        var node = body['node'];
+        var b = {"id":bid,"cid":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,
+        "type":body['type'],"committer":body['committer'],"reason":body['reason'],"conclusion":body['conclusion']};
+        bList.push(b);
+    }
+
+    $.ajax({
+        type: "post",
+        url: "/model/deleteBodies",
+        data:{"cid":cid},
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+
+    $.ajax({
+        type: "post",
+        url: "/model/saveBodies",
+        data: JSON.stringify(bList),
+        // dataType:"json",
+        contentType: "application/json; charset=utf-8",
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+}
+
+//存储连接点
+function saveJoints() {
+    var jList = [];
+    for(var jid in jointList){
+        var joint = jointList[jid];
+        var node = joint['node'];
+        var j = {"id":jid,"cid":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,"type":joint['type']};
+        jList.push(j);
+    }
+
+    $.ajax({
+        type: "post",
+        url: "/model/deleteBodies",
+        data:{"cid":cid},
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+
+    $.ajax({
+        type: "post",
+        url: "/model/saveJoints",
+        data: JSON.stringify(jList),
+        // dataType:"json",
+        contentType: "application/json; charset=utf-8",
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+}
+
+//存储连接点
+function saveArrows() {
+    var aList = [];
+    for(var aid in arrowList){
+        var node = arrowList[aid];
+        var a = {"id":aid,"cid":cid,"nodeFrom_hid":node.nodeA.id,"nodeTo_jid":node.nodeZ.id,
+            "name":node.text,"content":node.content};
+        aList.push(a);
+    }
+
+    $.ajax({
+        type: "post",
+        url: "/model/deleteArrows",
+        data:{"cid":cid},
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+
+    $.ajax({
+        type: "post",
+        url: "/model/saveArrows",
+        data: JSON.stringify(aList),
+        // dataType:"json",
+        contentType: "application/json; charset=utf-8",
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+}
+
+//存储连线
+function saveLinks() {
+    var lList = [];
+    for(var lid in linkList){
+        var node = linkList[lid];
+        var l = {"id":lid,"cid":cid,"nodeFrom_hid":node.nodeA.id,"nodeTo_bid":node.nodeZ.id};
+        lList.push(l);
+    }
+
+    $.ajax({
+        type: "post",
+        url: "/model/deleteLinks",
+        data:{"cid":cid},
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+
+    $.ajax({
+        type: "post",
+        url: "/model/saveLinks",
+        data: JSON.stringify(lList),
         // dataType:"json",
         contentType: "application/json; charset=utf-8",
         async: false,
@@ -1241,7 +1420,11 @@ function highlightEvidence() {
 }
 
 //初始化右侧建模图
-function initGraph(data) {
+function initGraph() {
+
+    var evidences_adoption = [{"证据":"证据1XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":1},
+        {"证据":"证据2XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0},
+        {"证据":"证据3XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0}];
 
     var x = 35;
     var y = 35;
