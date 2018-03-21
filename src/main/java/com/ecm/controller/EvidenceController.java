@@ -59,8 +59,31 @@ public class EvidenceController {
 
     }
 
+    @PostMapping(value = "/deleteBody")
+    public int deleteBody(@RequestParam("id") int id){
+        evidenceService.deleteById(id);
+        return 0;
+    }
 
 
+    @PostMapping(value = "/addBody")
+    public Evidence_Body addBody(@RequestParam("ajxh") int ajxh, @RequestParam("type") int type, @RequestParam("body") String body,@RequestParam("document_id") int document_id){
+        Evidence_Body evidence_body=new Evidence_Body();
+        evidence_body.setCase_id(ajxh);
+        evidence_body.setDocument_id(document_id);
+        evidence_body.setType(type);
+        evidence_body.setBody(body);
+        evidenceService.save(evidence_body);
+        return evidence_body;
+    }
+    @PostMapping(value = "/updateBodyById")
+    public void updateBodyById(@RequestParam("id") int id,@RequestParam("body") String body){
+         evidenceService.updateBodyById(body,id);
 
+    }
+    @PostMapping(value = "/updateTypeById")
+    public void updateTypeById(@RequestParam("id") int id,@RequestParam("type") int type){
+        evidenceService.updateTypeById(type,id);
 
-}
+    }
+    }
