@@ -12,5 +12,7 @@ public interface MOD_HeaderDao extends JpaRepository<MOD_Header, MODPK> {
 
     public void deleteByIdAndCid(int id,int cid);
 
+    public void deleteAllByCid(int cid);
+
     public List<MOD_Header> findByCid(int cid);
 }

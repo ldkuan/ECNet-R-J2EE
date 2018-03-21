@@ -12,5 +12,7 @@ public interface MOD_LinkDao extends JpaRepository<MOD_Link, MODPK> {
 
     public void deleteByIdAndCid(int id,int cid);
 
+    public void deleteAllByCid(int cid);
+
     public List<MOD_Link> findByCid(int cid);
 }
