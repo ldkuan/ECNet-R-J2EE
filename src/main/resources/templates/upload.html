@@ -11,14 +11,14 @@
 
     <link rel="stylesheet" th:href="@{css/bootstrap.css}"/>
     <link rel="stylesheet" th:href="@{css/style.css}"/>
-    <link rel="stylesheet" th:href="@{css/jquery.edittable.min.css}"/>
+
 
     <!--<link rel="stylesheet" th:href="@{css/login.css}"/>-->
     <!--<link rel="apple-touch-icon-precomposed" th:href="@{img/icon.png}">-->
     <!--<link rel="shortcut icon" th:href="@{img/favicon.ico}">-->
     <script th:src="@{js/ref/jquery-2.1.4.min.js}"></script>
     <script th:src="@{js/ref/jquerysession.js}"></script>
-    <script th:src="@{js/jquery.edittable.min.js}"></script>
+  d
 
     <!--[if gte IE 9]>
     <script th:src="@{js/ref/jquery-1.11.1.min.js}"></script>
@@ -109,20 +109,19 @@
 
 
     </div>
-    <div class="table">
-        <table class="table " id="edittable" >
-            <tbody>
-            <tr>
-                <td><input type="text" class="form-control" value="链头1"></td>
-                <td><input type="text" value="链头1"></td>
-                <td><input type="text" value="链头1"></td>
-                <td><a href="${basePath}course/updateCourseIni?id=${row[0]}"><span class="glyphicon glyphicon-pencil"></span></a> &nbsp;</td>
-                <td><a href="${basePath}course/charpterList?cid=${row[0]}"><span class="glyphicon glyphicon-share"></span></a> &nbsp;</td>
-                <td><a href="${basePath}course/deleteCourse?id=${row[0]}"><span class="glyphicon glyphicon-remove"></span></a> &nbsp;</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+    <!--<div class="row">-->
+        <!--<table class="table "  style="border: 0px solid transparent" >-->
+            <!--<tbody>-->
+            <!--<tr>-->
+                <!--<td><input type="text" class="form-control" value="链头1"><a class="glyphicon myRemove glyphicon-remove btn form-control-feedback " style="pointer-events:auto;padding-left: 1%"></a></td>-->
+                <!--<td><input type="text" class="form-control" value="链头1"><a class="glyphicon myRemove glyphicon-remove btn form-control-feedback " style="pointer-events:auto;padding-left: 1%"></a></td>-->
+                <!--<td><input type="text" class="form-control" value="链头1"><a class="glyphicon myRemove glyphicon-remove btn form-control-feedback " style="pointer-events:auto;padding-left: 1%"></a></td>-->
+                <!--<td><input type="text" class="form-control" value="链头1"><a class="glyphicon myRemove glyphicon-remove btn form-control-feedback " style="pointer-events:auto;padding-left: 1%"></a></td>-->
+                <!--<td><a onclick="addHead(this)"><span class="glyphicon glyphicon-plus"></span></a> &nbsp;</td>-->
+            <!--</tr>-->
+            <!--</tbody>-->
+        <!--</table>-->
+    <!--</div>-->
 
 
 
@@ -369,7 +368,7 @@
 
 
 
-        html="<div id='"+id+"' class='form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
+        html="<div id='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
             " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
             "\n</div>"
         html+=select;
@@ -462,7 +461,7 @@
 
 
 
-                    trustHtml="<div id='"+id+"' class='form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
+                    trustHtml="<div id='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
                         " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
                         "\n</div>"
                     trustHtml+=select;
@@ -508,63 +507,77 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     function myHead(num) {
-        var html="";
+        var html=" ";
+        $.ajax({
+            url:"/evidence/createHead",
+            type:'POST',
+            data:{"ajxh":cid,"head":"","document_id":document_id[num-1],"body_id":body_id},
+            success:function(data) {
+             for(var i=0;i<data.length;i++){
+                 html="   <div class=\"row\">\n" +
+                     "        <table class=\"table \"  style=\"border: 0px solid transparent\" >\n" +
+                     "            <tbody>\n" +
+                     "            <tr class='tr'>\n" +
+                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头1\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头2\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头3\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头4\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+                     "             <td><a onclick=\"addHead(this)\"><span class=\"glyphicon glyphicon-plus\"></span></a> &nbsp;</td>\n" +
+                     "            </tr>\n" +
+                     "            </tbody>\n" +
+                     "        </table>\n" +
+                     "    </div>";
+                   $(".evibody[bodyid='"+data.bodyid+"']").after(html);
+
+             }
+
+
+            }
+        });
 
 
 
 
-        html=" <br> <div class=\"form-group\">\n" +
-            "\n" +
-            "                                            <div class=\"col-md-4\">\n" +
-            "                                                <input name=\"cid\" type=\"text\" class=\"form-control\" value=\"链头1\">\n" +
-            "                                            </div>\n" +
-            "\n" +
-            "                                            <div class=\"col-md-4\">\n" +
-            "                                                <input name=\"cid\" type=\"text\" class=\"form-control\" value=\"链头2\">\n" +
-            "                                            </div>\n" +
-            "\n" +
-            "                                            <div class=\"col-md-4\">\n" +
-            "                                                <input name=\"cid\" type=\"text\" class=\"form-control\" value=\"链头3\">\n" +
-            "                                            </div>\n" +
-            "                                        </div><hr>";
 
+        html="   <div class=\"row\">\n" +
+            "        <table class=\"table \"  style=\"border: 0px solid transparent\" >\n" +
+            "            <tbody>\n" +
+            "            <tr class='tr'>\n" +
+            "                <td><input type=\"text\" class=\"form-control\" value=\"链头1\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+            "                <td><input type=\"text\" class=\"form-control\" value=\"链头2\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+            "                <td><input type=\"text\" class=\"form-control\" value=\"链头3\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+            "                <td><input type=\"text\" class=\"form-control\" value=\"链头4\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+            "             <td><a onclick=\"addHead(this)\"><span class=\"glyphicon glyphicon-plus\"></span></a> &nbsp;</td>\n" +
+            "            </tr>\n" +
+            "            </tbody>\n" +
+            "        </table>\n" +
+            "    </div>";
+          //  $(".evibody[bodyid='"+id+"']").after(html);
+        $(".evibody").after(html);
 
-        if(num==1){
-            $(".myinfo1").after(html);
-        }else {
-            $(".myinfo2").after(html);
-        }
+    }
+
+    function addHead(but) {
+        // $.ajax({
+        //     url:"/evidence/addHead",
+        //     type:'POST',
+        //     data:{"ajxh":cid,"head":"","document_id":document_id[num-1],"body_id":body_id},
+        //     success:function(data) {
+        //         console.log(data);
+        //         var id=data.id;
+        //         var html="";
+        //
+        //
+        //
+        //     }
+        // });
+
 
 
 
 
     }
-
-
 
 
 
@@ -601,7 +614,7 @@
 
 
 
-                html="<div id='"+id+"' class='form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+""+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
+                html="<div id='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+""+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
                     " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
                     "\n</div>"
                 html+=select;
@@ -698,30 +711,9 @@
             }
         });
     }
-
-
-
-
 </script>
 
 
-<script>
-    var mytable = $('#edittable').editTable({
-        data: [['']],           // Fill the table with a js array (this is overridden by the textarea content if not empty)
-        tableClass: 'inputtable',   // Table class, for styling
-        jsonData: false,        // Fill the table with json data (this will override data property)
-        headerCols: false,      // Fix columns number and names (array of column names)
-        maxRows: 999,           // Max number of rows which can be added
-        first_row: true,        // First row should be highlighted?
-        row_template: false,    // An array of column types set in field_templates
-        field_templates: false, // An array of custom field type objects
-
-        // Validate fields
-        validate_field: function (col_id, value, col_type, $element) {
-            return true;
-        }
-    });
-</script>
 
 </body>
 </html>

@@ -102,8 +102,13 @@ public class EvidenceServiceImpl implements EvidenceService {
             jsonArray.add(jsonObject);
         }
 
+
+
+//jsonObject传递
         String resultFromApi= Api.sendPost("192.168.0.23:5000/getHeadOfEvidence",jsonArray.toString(),false);
         System.out.println(resultFromApi);
+
+        JSONArray headResult=new JSONArray();
 
         List<Evidence_Head> list=evidenceHeadDao.getEvidenceHead(documentid);
         return list;
