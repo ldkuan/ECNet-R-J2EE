@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface JudgmentDao extends JpaRepository<Judgment, String> {
 
-    @Query(value = "select j from Judgment j where j.realName = ?1 and (j.isUndertaker= 'Y' OR j.hasJudge='0')")
+    @Query(value = "select j from Judgment j where j.realName = ?1 and (j.isUndertaker= 'Y' OR j.isJudge='0')")
     public List<Judgment> getAllByName(String name);
 }
