@@ -266,9 +266,9 @@ $(function(){
                     '<td>'+data_page[item].fillingDate.split(' ')[0]+'</td>'+
                 '<td>'+data_page[item].manageJudge+'</td>'+
                 ' <td>'+
-                '<a href="/upload" id="ecm${data_page[item].id}"  class="ecm_link" style="margin-right: 10px"> <i class="fa fa-link"></i>证据链   </a>'+
-                ' <a href="/logic.html?${data_page[item].id}"  id="logic${data_page[item].id}" class="logic_link" style="margin-right: 10px"> <i class="fa fa-code-fork"></i>文书说理   </a>'+
-                ' <a id="${data_page[item].id}" style="margin-right: 10px"> <i class="fa fa-indent"></i>说理语段   </a>'+
+                '<a class="ecm_link" style="margin-right: 10px"> <i class="fa fa-link"></i>证据链建模工具</a>'+
+                // ' <a href="/logic.html?${data_page[item].id}"  id="logic${data_page[item].id}" class="logic_link" style="margin-right: 10px"> <i class="fa fa-code-fork"></i>文书说理   </a>'+
+                // ' <a id="${data_page[item].id}" style="margin-right: 10px"> <i class="fa fa-indent"></i>说理语段   </a>'+
                 '</td>'+
                 '</tr>';
                 tr_html = tr_html + html
@@ -344,12 +344,13 @@ $(function(){
 
             $("a[class='ecm_link']").click(function () {
 
-                var cid = $(this).attr('data-cid');
+                var cid = $(this).parent().parent().find('td:eq(0)').text();
                 $.session.set("cid",cid);
-                var caseInfo = {"cid":cid,'cNum':$(this).parent().parent().find('td:eq(1)').text(),
-                    'cname':$(this).parent().parent().find('td:eq(2)').text(),
-                "fillingDate":$(this).parent().parent().find('td:eq(3)').text(),
-                    "undertaker":$(this).parent().parent().find('td:eq(4)').text()};
+
+                var caseInfo = '{"cid":"'+cid+'","cNum":"'+$(this).parent().parent().find('td:eq(1)').text()+
+                    '", "cname":"'+$(this).parent().parent().find('td:eq(2)').text()+
+                '", "fillingDate":"'+$(this).parent().parent().find('td:eq(3)').text()+
+                    '", "undertaker":"'+$(this).parent().parent().find('td:eq(4)').text()+'"}';
                 $.session.set("caseInfo",caseInfo);
                 window.location.href = "/upload";
             });

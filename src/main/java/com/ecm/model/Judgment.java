@@ -9,23 +9,23 @@ public class Judgment {
 
     @Id
     @Column(name = "AJXH")
-    private String aid;
+    private String cid;
     @Id
     @Column(name = "SPRYBH")
     private String jid;
     @Column(name = "FG")
-    private String hasJudge;
+    private String isJudge;
     @Column(name = "SFCBR")
     private String isUndertaker;
     @Column(name = "XM")
     private String realName;
 
-    public String getAid() {
-        return aid;
+    public String getCid() {
+        return cid;
     }
 
-    public void setAid(String aid) {
-        this.aid = aid;
+    public void setCid(String cid) {
+        this.cid = cid;
     }
 
     public String getJid() {
@@ -36,12 +36,12 @@ public class Judgment {
         this.jid = jid;
     }
 
-    public String getHasJudge() {
-        return hasJudge;
+    public String getIsJudge() {
+        return isJudge;
     }
 
-    public void setHasJudge(String hasJudge) {
-        this.hasJudge = hasJudge;
+    public void setIsJudge(String isJudge) {
+        this.isJudge = isJudge;
     }
 
     public String getIsUndertaker() {

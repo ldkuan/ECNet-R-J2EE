@@ -29,9 +29,9 @@ public class CaseManageServiceImpl implements CaseManageService {
             JSONObject jsonObject = new JSONObject();
 
             Judgment j = judges.get(i);
-            Case c = caseDao.findById(Integer.parseInt(j.getAid()));
+            Case c = caseDao.findById(Integer.parseInt(j.getCid()));
 
-            jsonObject.put("cid",j.getAid());
+            jsonObject.put("cid",j.getCid());
             jsonObject.put("caseNum",c.getCaseNum());
             jsonObject.put("cname",c.getName());
             jsonObject.put("type",c.getType());
@@ -40,7 +40,7 @@ public class CaseManageServiceImpl implements CaseManageService {
 //            if(j.getHasJudge().equals('0')){
 //                jsonObject.put("courtClerk",j.getRealName());
 //            }else
-            if (j.getHasJudge().equals('0')||j.getIsUndertaker().equals('Y')){
+            if (j.getIsJudge().equals('0')||j.getIsUndertaker().equals('Y')){
                 jsonObject.put("manageJudge",j.getRealName());
             }
 

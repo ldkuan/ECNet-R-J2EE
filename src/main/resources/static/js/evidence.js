@@ -1,12 +1,12 @@
 
 $(function(){
-    var caseInfo = $.session.get("caseInfo");
-
-    $("#caseNum").text(caseInfo['cNum']);
+    var caseInfoStr = $.session.get("caseInfo");
+    var caseInfo = JSON.parse(caseInfoStr);
+    $("#caseNum").text(caseInfo.cNum);
     // $("#caseBrief").text(caseInfo['']);
-    $("#caseName").text(caseInfo['cname']);
-    $("#underTaker").text(caseInfo['undertaker']);
-    $("#caseDate").text(caseInfo['fillingDate']);
+    $("#caseName").text(caseInfo.cname);
+    $("#underTaker").text(caseInfo.undertaker);
+    $("#caseDate").text(caseInfo.fillingDate);
 
     initEvidences();
 });

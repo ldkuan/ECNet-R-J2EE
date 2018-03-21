@@ -4,15 +4,15 @@ import java.io.Serializable;
 
 public class JudgmentPK implements Serializable {
 
-    private String aid;
+    private String cid;
     private String jid;
 
-    public String getAid() {
-        return aid;
+    public String getCid() {
+        return cid;
     }
 
-    public void setAid(String aid) {
-        this.aid = aid;
+    public void setCid(String cid) {
+        this.cid = cid;
     }
 
     public String getJid() {
