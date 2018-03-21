@@ -1,0 +1,68 @@
+package com.ecm.model;
+
+import javax.persistence.*;
+
+@Entity
+@Table(name="MOD_ARROW")
+@IdClass(MODPK.class)
+public class MOD_Arrow {
+
+    @Id
+    private int id;
+    @Id
+    private int cid;
+    @Column(name = "headerId")
+    private int nodeFrom_hid;
+    @Column(name = "jointId")
+    private int nodeTo_jid;
+    private String name;
+    private String content;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getCid() {
+        return cid;
+    }
+
+    public void setCid(int cid) {
+        this.cid = cid;
+    }
+
+    public int getNodeFrom_hid() {
+        return nodeFrom_hid;
+    }
+
+    public void setNodeFrom_hid(int nodeFrom_hid) {
+        this.nodeFrom_hid = nodeFrom_hid;
+    }
+
+    public int getNodeTo_jid() {
+        return nodeTo_jid;
+    }
+
+    public void setNodeTo_jid(int nodeTo_jid) {
+        this.nodeTo_jid = nodeTo_jid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+}
