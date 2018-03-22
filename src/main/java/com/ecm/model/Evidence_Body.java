@@ -105,7 +105,7 @@ public class Evidence_Body {
                 return "鉴定结论";
 
             case 4:
-                return "勘验、-检查笔录";
+                return "勘验、检查笔录";
 
             default:
                 return "其他";

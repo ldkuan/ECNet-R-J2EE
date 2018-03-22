@@ -125,7 +125,7 @@ public class EvidenceServiceImpl implements EvidenceService {
 //                evidence_body.setCaseID(bodies.get(0).getCaseID());
 //                evidence_body.setBody(evidence.getString("content"));
 //                evidence_body.setDocumentid(documentid);
-//                evidence_body.setType(EvidenceType.getTpeByName(evidence.getString("type")).getIndex());
+//                evidence_body.setType(EvidenceType.getTypeByName(evidence.getString("type")).getIndex());
                 evidence_body.setId(evidence.getInt("id"));
 
                 JSONArray headArray=evidence.getJSONArray("headList");
