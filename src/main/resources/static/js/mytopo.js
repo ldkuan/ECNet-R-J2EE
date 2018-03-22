@@ -2,7 +2,7 @@
 var headerIndex = 0;//当前链头id
 var headerList = {};//存储链头，{id:node}
 var bodyIndex = 0;//当前链体id
-var bodyList = {};//存储链体，{id:{'node':node,'type':'XXX','committer':'XXX','reason':'XXXXXX','conclusion':'XXXXXX'}}
+var bodyList = {};//存储链体，{id:{'node':node,'type':'XXX','committer':'XXX','reason':'XXXXXX','conclusion':'XXXXXX','documentID':-1}}
 var jointIndex = 0;//当前连接点（事实）id
 var jointList = {};//存储连接点（事实），{id:{'node':node,'type':'XXX'}}
 var arrowIndex = 0;//当前箭头id
@@ -44,6 +44,7 @@ $(document).ready(function(){
     canvas = document.getElementById('canvas');
     stage = new JTopo.Stage(canvas); // 创建一个舞台对象
     scene = new JTopo.Scene(stage); // 创建一个场景对象
+    stage.mode = "select";
 
     stage.addEventListener("mouseover", function(event){
         console.log("鼠标进入");
@@ -1060,18 +1061,18 @@ function bindRightPanel() {
 
 //添加连线
 function addLink(nodeFrom,nodeTo,id){
-    var hasLink = false;
+    // var hasLink = false;
+    //
+    // //判断是否已存在连线
+    // if(nodeFrom.outLinks!=null)
+    //     for(var i = 0;i<nodeFrom.outLinks.length;i++){
+    //         if(nodeFrom.outLinks[i].nodeZ==nodeTo){
+    //             hasLink = true;
+    //             break;
+    //         }
+    //     }
 
-    //判断是否已存在连线
-    if(nodeFrom.outLinks!=null)
-        for(var i = 0;i<nodeFrom.outLinks.length;i++){
-            if(nodeFrom.outLinks[i].nodeZ==nodeTo){
-                hasLink = true;
-                break;
-            }
-        }
-
-    if(!hasLink){
+    if(nodeFrom.outLinks==null||nodeFrom.outLinks.length<1){
         if(id==null)
             id = linkIndex++;
 
@@ -1422,7 +1423,7 @@ function highlightEvidence() {
 //初始化右侧建模图
 function initGraph() {
 
-    var evidences_adoption = [{"证据":"证据1XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":1},
+    var data = [{"证据":"证据1XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":1},
         {"证据":"证据2XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0},
         {"证据":"证据3XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0}];
 

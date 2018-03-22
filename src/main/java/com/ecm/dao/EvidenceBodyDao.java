@@ -16,8 +16,12 @@ public interface EvidenceBodyDao extends JpaRepository<Evidence_Body, Integer> {
     @Query(value = "select u from Evidence_Body u where u.documentid= ?1")
     public List<Evidence_Body> getAllByDocumentid(int documentid);
 
-    @Query(value = "select u from Evidence_Body u where u.documentid= ?1 and u.trust=1")
-    public List<Evidence_Body> findByDocumentidAndTrust(int documentID);
+//    @Query(value = "select u from Evidence_Body u where u.documentid= ?1 and u.trust=1")
+    public List<Evidence_Body> findAllByDocumentidAndTrust(int documentID,int trust);
+
+    public List<Evidence_Body> findAllByCaseIDAndTrust(int caseID,int trust);
+
+    public List<Evidence_Body> findAllByCaseID(int caseID);
 
     public Evidence_Body save(Evidence_Body evi);
 
@@ -25,7 +29,7 @@ public interface EvidenceBodyDao extends JpaRepository<Evidence_Body, Integer> {
 
     public void deleteAllByDocumentid(int document_id);
 
-//    public void deleteAllByCase_id(int caseID);
+    public void deleteAllByCaseID(int caseID);
 
     @Modifying
     @Query("update Evidence_Body c set c.body = ?1 where c.id=?2")

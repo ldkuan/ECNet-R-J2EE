@@ -12,6 +12,21 @@ $(function(){
 });
 
 function initEvidences() {
+
+    $.ajax({
+        type: "post",
+        url: "/model/getEvidences",
+        data:{"cid":cid},
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+
     var evidences_adoption = [{"证据":"证据1XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":1},
         {"证据":"证据2XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0},
         {"证据":"证据3XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0}];
