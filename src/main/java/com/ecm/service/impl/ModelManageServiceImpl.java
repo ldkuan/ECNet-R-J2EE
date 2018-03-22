@@ -15,8 +15,6 @@ import java.util.List;
 public class ModelManageServiceImpl implements ModelManageService {
 
     @Autowired
-    private EvidenceDocuDao evidenceDocuDao;
-    @Autowired
     private EvidenceBodyDao evidenceBodyDao;
     @Autowired
     private EvidenceHeadDao evidenceHeadDao;
@@ -24,8 +22,6 @@ public class ModelManageServiceImpl implements ModelManageService {
     private MOD_JointDao jointDao;
     @Autowired
     private MOD_ArrowDao arrowDao;
-    @Autowired
-    private MOD_LinkDao linkDao;
 
     @Override
     public JSONObject getEvidences(int cid) {
@@ -75,16 +71,26 @@ public class ModelManageServiceImpl implements ModelManageService {
     }
 
     @Override
+    public List<MOD_Joint> getJoints(int cid) {
+        return jointDao.findAllByCaseID(cid);
+    }
+
+    @Override
+    public List<MOD_Arrow> getArrows(int cid) {
+        return arrowDao.findAllByCaseID(cid);
+    }
+
+    @Override
     @Transactional
-    public void saveHeaders(List<MOD_Header> headers) {
+    public void saveHeaders(List<Evidence_Head> headers) {
         for(int i = 0;i<headers.size();i++){
-//            headerDao.save(headers.get(i));
+            evidenceHeadDao.save(headers.get(i));
         }
     }
 
     @Override
     public void deleteHeadersByCid(int cid) {
-//        headerDao.deleteAllByCid(cid);
+        evidenceHeadDao.deleteAllByCaseID(cid);
     }
 
     @Override
@@ -96,7 +102,7 @@ public class ModelManageServiceImpl implements ModelManageService {
 
     @Override
     public void deleteBodiesByCid(int cid) {
-//        evidenceBodyDao.deleteAllByCase_id(cid);
+        evidenceBodyDao.deleteAllByCaseID(cid);
     }
 
     @Override
@@ -108,7 +114,7 @@ public class ModelManageServiceImpl implements ModelManageService {
 
     @Override
     public void deleteJointsByCid(int cid) {
-        jointDao.deleteAllByCid(cid);
+        jointDao.deleteAllByCaseID(cid);
     }
 
     @Override
@@ -120,18 +126,6 @@ public class ModelManageServiceImpl implements ModelManageService {
 
     @Override
     public void deleteArrowsByCid(int cid) {
-        arrowDao.deleteAllByCid(cid);
-    }
-
-    @Override
-    public void saveLinks(List<MOD_Link> links) {
-        for(int i = 0;i<links.size();i++){
-            linkDao.save(links.get(i));
-        }
-    }
-
-    @Override
-    public void deleteLinksByCid(int cid) {
-        linkDao.deleteAllByCid(cid);
+        arrowDao.deleteAllByCaseID(cid);
     }
 }
