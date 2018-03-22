@@ -67,7 +67,7 @@ public class ModelManageServiceImpl implements ModelManageService {
         }
 
         List<Evidence_Head> freeHeaders = evidenceHeadDao.findAllByCaseIDAndBodyid(cid,-1);
-        res.put("trust",trusts);
+        res.put("trusts",trusts);
         res.put("untrusts",untrusts);
         res.put("freeHeaders",freeHeaders);
 

@@ -2,7 +2,8 @@
 var headerIndex = 0;//当前链头id
 var headerList = {};//存储链头，{id:node}
 var bodyIndex = 0;//当前链体id
-var bodyList = {};//存储链体，{id:{'node':node,'type':'XXX','committer':'XXX','reason':'XXXXXX','conclusion':'XXXXXX','documentID':-1}}
+var bodyList = {};//存储链体，{id:{'node':node,'type':'XXX','committer':'XXX','reason':'XXXXXX',
+// 'conclusion':'XXXXXX','documentID':-1,'isDefendant':1,'trust':1}}
 var jointIndex = 0;//当前连接点（事实）id
 var jointList = {};//存储连接点（事实），{id:{'node':node,'type':'XXX'}}
 var arrowIndex = 0;//当前箭头id
@@ -60,7 +61,7 @@ $(document).ready(function(){
 
         tranX_scene = scene.translateX;
         tranY_scene = scene.translateY;
-        console.log(tranX_scene+'@@'+tranY_scene);
+        // console.log(tranX_scene+'@@'+tranY_scene);
     });
 
     stage.addEventListener("mouseup", function(event){
@@ -164,11 +165,11 @@ $(document).ready(function(){
 
 
     $('#save-btn').click(function () {
-        saveHeaders();
-        saveBodies();
-        saveJoints();
-        saveArrows();
-        saveLinks();
+        // saveHeaders();
+        // saveBodies();
+        // saveJoints();
+        // saveArrows();
+        // saveLinks();
     });
     $('#saveImg-btn').click(function () {
         stage.saveImageInfo();
@@ -180,7 +181,7 @@ $(document).ready(function(){
         typeSetting();
     });
 
-    initGraph();
+    // initGraph();
 
 });
 
@@ -964,6 +965,10 @@ function bindRightPanel() {
         bodyList[bid]['conclusion'] = $('#body-evidenceConclusion').val();
         var con = $('#body-content').val();
         bodyList[bid]['node'].content = con;
+        var name = $('#body-name').val();
+        if(name==null||name.length==0){
+            bodyList[bid]['node'].text = con;
+        }
 
         var filter_content = '.evidence[data-id='+bid+']';
         var p_div = $(filter_content);
@@ -997,6 +1002,11 @@ function bindRightPanel() {
         headerList[hid].text = $('#head-name').val();
         var con = $('#head-content').val();
         headerList[hid].content = con;
+
+        var name = $('#head-name').val();
+        if(name==null||name.length==0){
+            headerList[hid].text = con;
+        }
 
         var filter_content = '.head_chain[data-id='+hid+']';
         var p_div = $(filter_content);
@@ -1185,10 +1195,15 @@ function deleteArrow(arrow) {
 //绘制链头，返回链头节点
 function drawHeader(x,y,id,name,content){
 
-    if(name==null)
-        name = '新链头'+(headerIndex+1);
-    if(content==null)
+    if(name==null||name.length==0){
+        if(content==null||content.length==0)
+            name = '新链头'+(headerIndex+1);
+        else
+            name = content;
+    }
+    if(content==null||content.length==0){
         content = name;
+    }
     if(id==null)
         id = headerIndex++;
 
@@ -1255,12 +1270,25 @@ function deleteHeader(header) {
 }
 
 //绘制链体，返回链体节点
-function drawBody(x,y,id,name,content,type,committer,reason,conclusion){
+function drawBody(x,y,id,name,content,type,committer,reason,conclusion,documentID,isDefendant,trust){
 
-    if(name==null)
-        name = '新链体'+(bodyIndex+1);
+    if(name==null||name.length==0){
+        if(content==null||content.length==0)
+            name = '新链体'+(bodyIndex+1);
+        else
+            name = content;
+    }
+    if(content==null||content.length==0){
+        content = name;
+    }
     if(id==null)
         id = bodyIndex++;
+    if(documentID==null)
+        documentID = -1;
+    if(isDefendant==null)
+        isDefendant = 1;
+    if(trust==null)
+        trust = 1;
 
     var node = new JTopo.Node(name);
     node.id = id;
@@ -1271,11 +1299,12 @@ function drawBody(x,y,id,name,content,type,committer,reason,conclusion){
     node.borderWidth = 2;
     node.setSize(body_width,body_height);
     node.setLocation(x-(body_width/2),y-(body_height/2));
-    node.shadow = "true";
+    // node.shadow = "true";
     node.textPosition = 'Bottom_Center'; // 文本位置
     node.node_type = 'body';
 
-    bodyList[node.id] = {'node':node,'type':type,'committer':committer,'reason':reason,'conclusion':conclusion};
+    bodyList[node.id] = {'node':node,'type':type,'committer':committer,'reason':reason,'conclusion':conclusion,
+    'documentID':documentID,'isDefendant':isDefendant,'trust':trust};
     scene.add(node);
 
     node.click(function () {
@@ -1421,33 +1450,67 @@ function highlightEvidence() {
 }
 
 //初始化右侧建模图
-function initGraph() {
-
-    var data = [{"证据":"证据1XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":1},
-        {"证据":"证据2XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0},
-        {"证据":"证据3XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0}];
+function initGraph(trusts,freeHeaders) {
 
     var x = 35;
     var y = 35;
-    var k = 0;
+    var y_1 = 35;
+    var x_sum = 0;
 
-    for(var i = 0;i<data.length;i++){
-        var bid = drawBody(x+100,y,i,'证据'+(i+1),data[i]['证据'],"XX","XXX","XXX","XXXX").id;
+    for(var i = 0;i<trusts.length;i++){
+        var body = trusts[i]['body'];
+        var b_x = body['x'];
+        var b_y = body['y'];
+        x_sum+=b_x;
+        if(b_x<=0)
+            b_x = x+100;
+        if(b_y<=0)
+            b_y = y;
 
-        var headers = data[i]['链头'];
+        var b = drawBody(b_x,b_y,body['id'],body['name'],body['body'],body['type'],body['committer'],
+            body['reason'],body['conclusion'],body['documentid'],body['isDefendant'],body['trust']);
+
+        var headers = trusts[i]['headers'];
         for(var j = 0;j<headers.length;j++){
-            var hid = drawHeader(x,y,k,headers[j],headers[j]).id;
-            y+=70;
-            addLink(headerList[hid], bodyList[bid]['node'],k++);
+            var header = headers[j];
+            var h_x = header['x'];
+            var h_y = header['y'];
+
+            if(h_x<=0)
+                h_x = x;
+            if(h_y<=0)
+                h_y = y_1;
+            var h = drawHeader(h_x,h_y,header['id'],header['name'],header['head']);
+            addLink(h,b);
+            y_1+=70;
+
+            if(j==headers.length-1){
+                headerIndex = header['id']+1;
+            }
         }
-        x+=100;
-
+        // x+=100;
+        y+=70;
+        if(i==trusts.length-1){
+            bodyIndex = body['id']+1;
+        }
     }
-    bodyIndex = data.length;
-    headerIndex = k+1;
-    linkIndex = k+1;
 
-    // JTopo.layout.layoutNode(scene, bodyList['证据0'], true);
+    for(var i = 0;i<freeHeaders.length;i++){
+        var header = freeHeaders[i];
+        var h_x = header['x'];
+        var h_y = header['y'];
+
+        if(h_x<=0)
+            h_x = x;
+        if(h_y<=0)
+            h_y = y;
+        drawHeader(h_x,h_y,header['id'],header['name'],header['head']);
+        y+=70;
+    }
+
+    if(x_sum<=0){
+        typeSetting();
+    }
 }
 
 //排版
@@ -1457,22 +1520,30 @@ function typeSetting() {
     var headerGap_x = 100;
     var headerGap_y = 40;
     var jointGap = 150;
+    var t = 0;
 
     for(var bid in bodyList){
+
         var body = bodyList[bid]['node'];
         body.x = x;
 
         var inLinks = body.inLinks;
-        body.y = y+((inLinks.length-1)*(2*header_radius + headerGap_y)/2);
+        if(inLinks!=null)
+            body.y = y+((inLinks.length-1)*(2*header_radius + headerGap_y)/2);
+        else
+            body.y = y+(body_height + headerGap_y)*t;
 
+        if(inLinks!=null)
         for(var i = 0;i<inLinks.length;i++){
             var header = inLinks[i].nodeA;
             header.x = x + body_width/2 + headerGap_x + header_radius;
             header.y = y;
             y += headerGap_y + (header_radius*2);
         }
+        t++;
     }
 
+    t = 0;
     x+=body_width/2 + headerGap_x + header_radius;
     for(var jid in jointList){
         var joint = jointList[jid]['node'];
@@ -1481,15 +1552,20 @@ function typeSetting() {
         var y_min = 10000000;
         var inLinks = joint.inLinks;
 
-        for(var i = 0;i<inLinks.length;i++){
-            var header = inLinks[i].nodeA;
-            if(header.y>y_max){
-                y_max = header.y;
+        if(inLinks!=null){
+            for(var i = 0;i<inLinks.length;i++){
+                var header = inLinks[i].nodeA;
+                if(header.y>y_max){
+                    y_max = header.y;
+                }
+                if(header.y<y_min){
+                    y_min = header.y;
+                }
             }
-            if(header.y<y_min){
-                y_min = header.y;
-            }
+            joint.y = (y_min + y_max)/2;
+        }else{
+            joint.y = y+(joint_width + headerGap_y)*t;
         }
-        joint.y = (y_min + y_max)/2;
+        t++;
     }
 }
