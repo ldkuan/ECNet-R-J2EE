@@ -12,6 +12,8 @@ import java.util.List;
 public class WordFilter {
 
     ArrayList<String> stopWords;
+    final String stopWordUrl="C:\\Users\\nju\\Downloads\\stopWords.txt";
+    //final String stopWordUrl="\Users\sweets\Documents\stopWords.txt";
 
     public WordFilter(){
         stopWords = getStopWords();
@@ -57,7 +59,7 @@ public class WordFilter {
         ArrayList<String> stopWords = new ArrayList<String>();
 
         try {
-            FileInputStream fis = new FileInputStream("/Users/sweets/Documents/stopWords.txt");
+            FileInputStream fis = new FileInputStream(stopWordUrl);
             BufferedReader reader = new BufferedReader(new InputStreamReader(fis,"UTF-8"));
             String tempString = null;
             while ((tempString = reader.readLine())!=null) {

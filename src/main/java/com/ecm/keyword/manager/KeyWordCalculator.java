@@ -267,10 +267,8 @@ public class KeyWordCalculator {
         List<String> list = new ArrayList<String>();
         List<String> result = keyWordCalculator.hanlpParse(content,list);
         HashMap<String, List<String>> res=keyWordCalculator.calcKeyWord(content);
-
         System.out.println(res.toString());
 
     }
-
 
 }

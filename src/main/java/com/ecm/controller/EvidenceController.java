@@ -133,9 +133,8 @@ public class EvidenceController {
 
 
     @PostMapping(value = "/createHead")
-    public List<Evidence_Head> createHead(@RequestParam("document_id") int document_id){
-        List<Evidence_Head> headList=evidenceService.createHead(document_id);
-        JSONArray res=new JSONArray();
+    public List<Evidence_Body> createHead(@RequestParam("document_id") int document_id){
+        List<Evidence_Body> headList=evidenceService.createHead(document_id);
         return headList;
     }
     }

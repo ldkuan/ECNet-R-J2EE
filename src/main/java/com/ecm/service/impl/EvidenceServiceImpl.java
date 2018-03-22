@@ -3,19 +3,20 @@ package com.ecm.service.impl;
 import com.ecm.dao.EvidenceBodyDao;
 import com.ecm.dao.EvidenceDocuDao;
 import com.ecm.dao.EvidenceHeadDao;
-import com.ecm.keyword.manager.Api;
+import com.ecm.keyword.manager.HeadCreator;
 import com.ecm.keyword.manager.KeyWordCalculator;
 import com.ecm.model.Evidence_Body;
 import com.ecm.model.Evidence_Document;
 import com.ecm.model.Evidence_Head;
 import com.ecm.service.EvidenceService;
-import com.google.gson.JsonArray;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -88,7 +89,7 @@ public class EvidenceServiceImpl implements EvidenceService {
     }
 
     @Override
-    public List<Evidence_Head> createHead(int documentid) {
+    public List<Evidence_Body> createHead(int documentid) {
         List<Evidence_Body> bodies=evidenceBodyDao.getAllByDocumentid(documentid);
         JSONArray jsonArray=new JSONArray();
         for(Evidence_Body body:bodies){
@@ -98,19 +99,54 @@ public class EvidenceServiceImpl implements EvidenceService {
             jsonObject.put("id",body.getId());
             jsonObject.put("content",body.getBody());
             jsonObject.put("type",body.getTypeToString());
-            jsonObject.put("keyWordMap",res.toString());
+            jsonObject.put("keyWordMap",res);
+            jsonObject.put("headList",new JSONArray());
             jsonArray.add(jsonObject);
+        }
+        JSONObject jsonObject=new JSONObject();
+        jsonObject.put("evidenceList",jsonArray);
+
+        try {
+            jsonObject= HeadCreator.getHead(jsonObject);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("网络传输错误");
+            return null;
+        }
+
+        if(jsonObject==null){
+            System.out.println("提取链头失败");
+            return null;
+        }else{
+            JSONArray evidenceList=(JSONArray)jsonObject.get("evidenceList");
+            List<Evidence_Body> evidenceBodyList=new ArrayList<>();
+            for(Object object:evidenceList){
+                JSONObject evidence=(JSONObject)object;
+                Evidence_Body evidence_body=new Evidence_Body();
+//                evidence_body.setCaseID(bodies.get(0).getCaseID());
+//                evidence_body.setBody(evidence.getString("content"));
+//                evidence_body.setDocumentid(documentid);
+//                evidence_body.setType(EvidenceType.getTpeByName(evidence.getString("type")).getIndex());
+                evidence_body.setId(evidence.getInt("id"));
+
+                JSONArray headArray=evidence.getJSONArray("headList");
+
+                //List<String> headNameList=(ArrayList<String>)evidence.get("headList");
+                for(Object headname:headArray){
+                    Evidence_Head head = new Evidence_Head();
+                    head.setBodyid(evidence.getInt("id"));
+                    head.setCaseID(bodies.get(0).getCaseID());
+                    head.setDocumentid(documentid);
+                    head.setHead(headname.toString());
+                    head=evidenceHeadDao.save(head);
+                    evidence_body.addHead(head);
+                }
+                evidenceBodyList.add(evidence_body);
+            }
+
+            return evidenceBodyList;
         }
 
 
-
-//jsonObject传递
-        String resultFromApi= Api.sendPost("192.168.0.23:5000/getHeadOfEvidence",jsonArray.toString(),false);
-        System.out.println(resultFromApi);
-
-        JSONArray headResult=new JSONArray();
-
-        List<Evidence_Head> list=evidenceHeadDao.getEvidenceHead(documentid);
-        return list;
     }
 }

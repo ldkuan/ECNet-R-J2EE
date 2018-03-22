@@ -156,7 +156,7 @@
 
 
                 <br>
-                <br>
+                <br>      <br>
 
             </div>
         </div>
@@ -512,25 +512,38 @@
         $.ajax({
             url:"/evidence/createHead",
             type:'POST',
-            data:{"ajxh":cid,"head":"","document_id":document_id[num-1],"body_id":body_id},
+            data:{"ajxh":cid,"head":"","document_id":document_id[num-1]},
             success:function(data) {
-             for(var i=0;i<data.length;i++){
-                 html="   <div class=\"row\">\n" +
-                     "        <table class=\"table \"  style=\"border: 0px solid transparent\" >\n" +
-                     "            <tbody>\n" +
-                     "            <tr class='tr'>\n" +
-                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头1\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头2\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头3\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头4\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-                     "             <td><a onclick=\"addHead(this)\"><span class=\"glyphicon glyphicon-plus\"></span></a> &nbsp;</td>\n" +
-                     "            </tr>\n" +
-                     "            </tbody>\n" +
-                     "        </table>\n" +
-                     "    </div>";
-                   $(".evibody[bodyid='"+data.bodyid+"']").after(html);
+                console.log(data);
+                for(var i=0;i<data.length;i++){
+                    var bodyid=data[i].id;
+                    var headList=data[i].headList;
+                    for(var j=0;j<headList.length;j++){
 
-             }
+
+                    }
+
+                }
+
+
+
+//             for(var i=0;i<data.length;i++){
+//                 html="   <div class=\"row\">\n" +
+//                     "        <table class=\"table \"  style=\"border: 0px solid transparent\" >\n" +
+//                     "            <tbody>\n" +
+//                     "            <tr class='tr'>\n" +
+//                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头1\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+//                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头2\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+//                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头3\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+//                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头4\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
+//                     "             <td><a onclick=\"addHead(this)\"><span class=\"glyphicon glyphicon-plus\"></span></a> &nbsp;</td>\n" +
+//                     "            </tr>\n" +
+//                     "            </tbody>\n" +
+//                     "        </table>\n" +
+//                     "    </div>";
+//                   $(".evibody[bodyid='"+data.bodyid+"']").after(html);
+
+//             }
 
 
             }

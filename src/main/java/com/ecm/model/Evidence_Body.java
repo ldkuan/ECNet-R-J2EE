@@ -1,6 +1,8 @@
 package com.ecm.model;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="EVIDENCE_BODY")
@@ -24,6 +26,17 @@ public class Evidence_Body {
     private int x = -1;//链体x坐标
     private int y = -1;//链体y坐标
     private int isDefendant;//0-原告证据   1-被告证据
+
+    @Transient
+    private List<Evidence_Head> headList=new ArrayList<>();//持有的head
+
+    public List<Evidence_Head> getHeadList() {
+        return headList;
+    }
+
+    public void setHeadList(List<Evidence_Head> headList) {
+        this.headList = headList;
+    }
 
     @Column(name = "trust")
     private int trust=1;//0-不采信 1-采信
@@ -155,5 +168,9 @@ public class Evidence_Body {
 
     public void setIsDefendant(int isDefendant) {
         this.isDefendant = isDefendant;
+    }
+
+    public void addHead(Evidence_Head head) {
+        headList.add(head);
     }
 }
