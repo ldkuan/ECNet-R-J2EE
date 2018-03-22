@@ -15,13 +15,21 @@ var isNodeRightClick = false; // 用来判断右键点击来源
 var mouseX;
 var mouseY;
 
+//用于记录鼠标拖拽框选的变量
+var selectedRangeNode;
+var isMouseDown = false;
+var startPosX;
+var startPosY;
+var endPosX;
+var endPosY;
+
 $(document).ready(function () {
     canvas = document.getElementById('canvas');
     stage = new JTopo.Stage(canvas); // 创建一个舞台对象
     scene = new JTopo.Scene(stage); // 创建一个场景对象
 
     stage.addEventListener("mousemove", function (event) {
-        $("#posX").text(event.pageX - $("#canvas").offset().left)
+        $("#posX").text(event.pageX - $("#canvas").offset().left);
         $("#posY").text(event.pageY - $("#canvas").offset().top);
     });
 
@@ -44,8 +52,82 @@ $(document).ready(function () {
             }).show();
         } else if (event.button == 0) {
             $("#stageMenu").hide();
+            isMouseDown = true;
+            endPosX = event.pageX - $("#canvas").offset().left;
+            endPosY = event.pageY - $("#canvas").offset().top;
+            $("#endPosX").text(endPosX);
+            $("#endPosY").text(endPosY);
+            $("#myAction").text("鼠标左键松开");
+
+            //注：只考虑肉眼能看见的选中框，非常小的区域画出来会是一个小点，不予考虑
+            if (Math.abs(startPosX - endPosX) > 0.05 && Math.abs(startPosY - endPosY) > 0.05) {
+                //删除之前画的选中框
+                if (selectedRangeNode != undefined) {
+                    scene.remove(selectedRangeNode);
+                }
+
+                //在场景上添加一个近似透明、不覆盖其他节点的节点，作为选中框
+                selectedRangeNode = new JTopo.Node("");
+                selectedRangeNode.setBound(startPosX, startPosY, Math.abs(endPosX - startPosX), Math.abs(endPosY - startPosY));
+                selectedRangeNode.borderColor = '222,222,222';
+                selectedRangeNode.fillColor = '255, 255, 255';
+                selectedRangeNode.borderWidth = 1;
+                selectedRangeNode.borderRadius = 1;
+                selectedRangeNode.alpha = 0.2;
+                selectedRangeNode.zIndex = 11;  // 是否覆盖其他，这里设置为可选的最小值，不覆盖其他
+                scene.add(selectedRangeNode);
+
+                var areaLeftPos = endPosX > startPosX ? startPosX : endPosX;
+                var areaRightPos = endPosX > startPosX ? endPosX : startPosX;
+                var areaTopPos = endPosY > startPosY ? startPosY : endPosY;
+                var areaBottomPos = endPosY > startPosY ? endPosY : startPosY;
+                console.log("left:"+areaLeftPos+",right:"+areaRightPos+",top:"+areaTopPos+",bottom:"+areaBottomPos);
+                var nodeList = scene.getDisplayedNodes();
+                var length = nodeList.length;
+                for (var i = 0; i < length; i++) {
+                    var tempNode = nodeList[i];
+                    var thisLeftPos = tempNode.x;
+                    var thisRightPos = tempNode.x+tempNode.width;
+                    var thisTopPos = tempNode.y;
+                    var thisBottomPos = tempNode.y+tempNode.height;
+                    console.log("left:"+thisLeftPos+",right:"+thisRightPos+",top:"+thisTopPos+",bottom:"+thisBottomPos);
+                    if ( ( (thisLeftPos >= areaLeftPos) || (thisRightPos <= areaRightPos) ) &&
+                         ( (thisTopPos >= areaTopPos) || (thisBottomPos <= areaBottomPos) ) &&
+                         ( tempNode != selectedRangeNode) ) {
+                        //只要和被选中区域有交叉，这个节点就算是在选中区域内，改为被选中状态
+                        tempNode.selected = true;
+                        tempNode.borderColor = "(0,0,0)";
+                    }
+                }
+            }
         }
     });
+
+    stage.addEventListener("mousedown", function (event) {
+        console.log("mouse down");
+
+        if (event.button == 0) {
+            isMouseDown = true;
+            startPosX = event.pageX - $("#canvas").offset().left;
+            startPosY = event.pageY - $("#canvas").offset().top;
+            $("#startPosX").text(startPosX);
+            $("#startPosY").text(startPosY);
+            $("#myAction").text("鼠标左键按下");
+        }
+    });
+
+    stage.addEventListener("onkeydown", function(event) {
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        if (e && e.keyCode == 17) {
+            console.log("press control");
+            $("#myAction").text("Ctrl键按下");
+        }
+        if(event.ctrlKey && event.keyCode === 67) {
+            $("#myAction").text('你按下了CTRL+C');
+        }
+    });
+
+
 
     bindMenuClickEvent();
 
