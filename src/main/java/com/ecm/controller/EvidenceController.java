@@ -29,7 +29,7 @@ public class EvidenceController {
         JSONArray res = new JSONArray();
         TypeCalculator typeCalculator=new TypeCalculator();
       Evidence_Document evidence_document=new Evidence_Document();
-      evidence_document.setAjxh(ajxh);
+      evidence_document.setCaseID(ajxh);
       evidence_document.setText(text);
       evidence_document.setType(type);
 
@@ -46,7 +46,7 @@ public class EvidenceController {
       for(String str:tests){
             if(!str.isEmpty()){
                 Evidence_Body evidence_body=new Evidence_Body();
-                evidence_body.setCase_id(ajxh);
+                evidence_body.setCaseID(ajxh);
                 evidence_body.setDocumentid(evidence_document.getId());
                 evidence_body.setBody(str);
                 evidence_body.setType(typeCalculator.calType(str));
@@ -79,7 +79,7 @@ public class EvidenceController {
     @PostMapping(value = "/addBody")
     public Evidence_Body addBody(@RequestParam("ajxh") int ajxh, @RequestParam("type") int type, @RequestParam("body") String body,@RequestParam("document_id") int document_id){
         Evidence_Body evidence_body=new Evidence_Body();
-        evidence_body.setCase_id(ajxh);
+        evidence_body.setCaseID(ajxh);
         evidence_body.setDocumentid(document_id);
         evidence_body.setType(type);
         evidence_body.setBody(body);

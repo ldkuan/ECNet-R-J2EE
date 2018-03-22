@@ -2,6 +2,7 @@ package com.ecm.controller;
 
 import com.ecm.model.*;
 import com.ecm.service.ModelManageService;
+import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,8 +17,26 @@ public class ModelController {
     @Autowired
     private ModelManageService modelManageService;
 
+    @RequestMapping(value="/getEvidences")
+    public JSONObject getEvidences(@RequestParam("cid") int cid){
+
+        return modelManageService.getEvidences(cid);
+    }
+
+    @RequestMapping(value="/getJoints")
+    public List<MOD_Joint> getJoints(@RequestParam("cid") int cid){
+
+        return modelManageService.getJoints(cid);
+    }
+
+    @RequestMapping(value="/getArrows")
+    public List<MOD_Arrow> getArrows(@RequestParam("cid") int cid){
+
+        return modelManageService.getArrows(cid);
+    }
+
     @RequestMapping(value="/saveHeaders")
-    public void saveHeaders(@RequestBody List<MOD_Header> headers){
+    public void saveHeaders(@RequestBody List<Evidence_Head> headers){
 
         modelManageService.saveHeaders(headers);
     }
@@ -62,17 +81,5 @@ public class ModelController {
     public void deleteArrows(@RequestParam("cid") int cid){
 
         modelManageService.deleteArrowsByCid(cid);
-    }
-
-    @RequestMapping(value="/saveLinks")
-    public void saveLinks(@RequestBody List<MOD_Link> links){
-
-        modelManageService.saveLinks(links);
-    }
-
-    @RequestMapping(value="/deleteLinks")
-    public void deleteLinks(@RequestParam("cid") int cid){
-
-        modelManageService.deleteLinksByCid(cid);
     }
 }

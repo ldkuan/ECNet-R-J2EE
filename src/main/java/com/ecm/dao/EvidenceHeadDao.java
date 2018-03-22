@@ -14,8 +14,14 @@ public interface EvidenceHeadDao extends JpaRepository<Evidence_Head, Integer> {
     @Query(value = "select u from  Evidence_Head u where u.documentid=?1")
     public List<Evidence_Head> getEvidenceHead(int documentid);
 
+    public List<Evidence_Head> findAllByCaseIDAndBodyid(int caseID, int bodyID);
 
+    public List<Evidence_Head> findAllByCaseIDAndDocumentidAndBodyid(int c,int d,int b);
 
+    @Query(value = "select u.head from  Evidence_Head u where u.caseID=?1 and u.bodyid=?2")
+    public List<String> findContentsByCaseIDAndBodyid(int caseID, int bodyID);
 
+    public Evidence_Head save(Evidence_Head head);
 
+    public void deleteAllByCaseID(int caseID);
 }

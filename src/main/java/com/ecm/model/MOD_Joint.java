@@ -13,7 +13,7 @@ public class MOD_Joint {
     @Id
     private int id;
     @Id
-    private int cid;
+    private int caseID;
     private String name;
     private String content;
     private int x;
@@ -28,12 +28,12 @@ public class MOD_Joint {
         this.id = id;
     }
 
-    public int getCid() {
-        return cid;
+    public int getCaseID() {
+        return caseID;
     }
 
-    public void setCid(int cid) {
-        this.cid = cid;
+    public void setCaseID(int caseID) {
+        this.caseID = caseID;
     }
 
     public String getName() {

@@ -10,7 +10,7 @@ public class MOD_Arrow {
     @Id
     private int id;
     @Id
-    private int cid;
+    private int caseID;
     @Column(name = "headerId")
     private int nodeFrom_hid;
     @Column(name = "jointId")
@@ -26,12 +26,12 @@ public class MOD_Arrow {
         this.id = id;
     }
 
-    public int getCid() {
-        return cid;
+    public int getCaseID() {
+        return caseID;
     }
 
-    public void setCid(int cid) {
-        this.cid = cid;
+    public void setCaseID(int caseID) {
+        this.caseID = caseID;
     }
 
     public int getNodeFrom_hid() {

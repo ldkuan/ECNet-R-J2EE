@@ -10,9 +10,9 @@ public interface MOD_ArrowDao extends JpaRepository<MOD_Arrow, MODPK> {
 
     public MOD_Arrow save(MOD_Arrow arrow);
 
-    public void deleteByIdAndCid(int id,int cid);
+    public void deleteByIdAndCaseID(int id,int cid);
 
-    public void deleteAllByCid(int cid);
+    public void deleteAllByCaseID(int cid);
 
-    public List<MOD_Arrow> findByCid(int cid);
+    public List<MOD_Arrow> findAllByCaseID(int cid);
 }
