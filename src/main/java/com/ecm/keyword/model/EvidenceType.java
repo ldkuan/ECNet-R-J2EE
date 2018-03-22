@@ -29,7 +29,7 @@ public enum EvidenceType {
     }
 
 
-    public static EvidenceType getTpeByName(String name){
+    public static EvidenceType getTypeByName(String name){
         for(EvidenceType type:EvidenceType.values()){
             if(type.getName().endsWith(name)){
             return type;
@@ -37,5 +37,8 @@ public enum EvidenceType {
         }
         return EvidenceType.其他;
     }
+
+
+
 
 }
