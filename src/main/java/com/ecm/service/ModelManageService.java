@@ -10,9 +10,9 @@ public interface ModelManageService {
 
     public JSONObject getEvidences(int cid);
 
-    public List<MOD_Joint> getJoints(int cid);
-
-    public List<MOD_Arrow> getArrows(int cid);
+//    public List<MOD_Joint> getJoints(int cid);
+//
+//    public List<MOD_Arrow> getArrows(int cid);
 
     public void saveHeaders(List<Evidence_Head> headers);
 

@@ -66,19 +66,21 @@ public class ModelManageServiceImpl implements ModelManageService {
         res.put("trusts",trusts);
         res.put("untrusts",untrusts);
         res.put("freeHeaders",freeHeaders);
+        res.put("joints",jointDao.findAllByCaseID(cid));
+        res.put("arrows",arrowDao.findAllByCaseID(cid));
 
         return res;
     }
 
-    @Override
-    public List<MOD_Joint> getJoints(int cid) {
-        return jointDao.findAllByCaseID(cid);
-    }
-
-    @Override
-    public List<MOD_Arrow> getArrows(int cid) {
-        return arrowDao.findAllByCaseID(cid);
-    }
+//    @Override
+//    public List<MOD_Joint> getJoints(int cid) {
+//        return jointDao.findAllByCaseID(cid);
+//    }
+//
+//    @Override
+//    public List<MOD_Arrow> getArrows(int cid) {
+//        return arrowDao.findAllByCaseID(cid);
+//    }
 
     @Override
     @Transactional
@@ -89,6 +91,7 @@ public class ModelManageServiceImpl implements ModelManageService {
     }
 
     @Override
+    @Transactional
     public void deleteHeadersByCid(int cid) {
         evidenceHeadDao.deleteAllByCaseID(cid);
     }
@@ -101,6 +104,7 @@ public class ModelManageServiceImpl implements ModelManageService {
     }
 
     @Override
+    @Transactional
     public void deleteBodiesByCid(int cid) {
         evidenceBodyDao.deleteAllByCaseID(cid);
     }
@@ -113,6 +117,7 @@ public class ModelManageServiceImpl implements ModelManageService {
     }
 
     @Override
+    @Transactional
     public void deleteJointsByCid(int cid) {
         jointDao.deleteAllByCaseID(cid);
     }
@@ -125,6 +130,7 @@ public class ModelManageServiceImpl implements ModelManageService {
     }
 
     @Override
+    @Transactional
     public void deleteArrowsByCid(int cid) {
         arrowDao.deleteAllByCaseID(cid);
     }

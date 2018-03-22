@@ -23,17 +23,17 @@ public class ModelController {
         return modelManageService.getEvidences(cid);
     }
 
-    @RequestMapping(value="/getJoints")
-    public List<MOD_Joint> getJoints(@RequestParam("cid") int cid){
-
-        return modelManageService.getJoints(cid);
-    }
-
-    @RequestMapping(value="/getArrows")
-    public List<MOD_Arrow> getArrows(@RequestParam("cid") int cid){
-
-        return modelManageService.getArrows(cid);
-    }
+//    @RequestMapping(value="/getJoints")
+//    public List<MOD_Joint> getJoints(@RequestParam("cid") int cid){
+//
+//        return modelManageService.getJoints(cid);
+//    }
+//
+//    @RequestMapping(value="/getArrows")
+//    public List<MOD_Arrow> getArrows(@RequestParam("cid") int cid){
+//
+//        return modelManageService.getArrows(cid);
+//    }
 
     @RequestMapping(value="/saveHeaders")
     public void saveHeaders(@RequestBody List<Evidence_Head> headers){

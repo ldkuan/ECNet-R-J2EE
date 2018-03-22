@@ -165,11 +165,10 @@ $(document).ready(function(){
 
 
     $('#save-btn').click(function () {
-        // saveHeaders();
         // saveBodies();
+        // saveHeaders();
         // saveJoints();
         // saveArrows();
-        // saveLinks();
     });
     $('#saveImg-btn').click(function () {
         stage.saveImageInfo();
@@ -181,8 +180,6 @@ $(document).ready(function(){
         typeSetting();
     });
 
-    // initGraph();
-
 });
 
 //存储链头
@@ -190,7 +187,15 @@ function saveHeaders() {
     var hList = [];
     for(var hid in headerList){
         var node = headerList[hid];
-        var h = {"id":hid,"cid":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y};
+        var documentID = -1;
+        var bodyID = -1;
+        if(node.outLinks!=null){
+            bodyID = node.outLinks[0].nodeZ.id;
+            documentID = bodyList[bodyID]['documentID'];
+        }
+        console.log('hid:'+hid);
+        var h = {"id":hid,"caseID":cid,"documentid":documentID,"bodyid":bodyID,
+            "name":node.text,"head":node.content,"x":node.x,"y":node.y};
         hList.push(h);
     }
 
@@ -202,6 +207,7 @@ function saveHeaders() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("1!");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -218,6 +224,7 @@ function saveHeaders() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("1*");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -231,8 +238,8 @@ function saveBodies() {
     for(var bid in bodyList){
         var body = bodyList[bid];
         var node = body['node'];
-        var b = {"id":bid,"cid":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,
-        "type":body['type'],"committer":body['committer'],"reason":body['reason'],"conclusion":body['conclusion']};
+        var b = {"id":bid,"caseID":cid,"documentid":body['documentID'],"name":node.text,"body":node.content,"x":node.x,"y":node.y,
+        "type":body['type'],"committer":body['committer'],"reason":body['reason'],"conclusion":body['conclusion'],"isDefendant":body['isDefendant']};
         bList.push(b);
     }
 
@@ -244,6 +251,7 @@ function saveBodies() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("2!");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -260,6 +268,7 @@ function saveBodies() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("2*");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -273,18 +282,20 @@ function saveJoints() {
     for(var jid in jointList){
         var joint = jointList[jid];
         var node = joint['node'];
-        var j = {"id":jid,"cid":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,"type":joint['type']};
+        alert(node.text);
+        var j = {"id":jid,"caseID":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,"type":joint['type']};
         jList.push(j);
     }
 
     $.ajax({
         type: "post",
-        url: "/model/deleteBodies",
+        url: "/model/deleteJoints",
         data:{"cid":cid},
         async: false,
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("3!");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -301,6 +312,7 @@ function saveJoints() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("3*");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -313,7 +325,7 @@ function saveArrows() {
     var aList = [];
     for(var aid in arrowList){
         var node = arrowList[aid];
-        var a = {"id":aid,"cid":cid,"nodeFrom_hid":node.nodeA.id,"nodeTo_jid":node.nodeZ.id,
+        var a = {"id":aid,"caseID":cid,"nodeFrom_hid":node.nodeA.id,"nodeTo_jid":node.nodeZ.id,
             "name":node.text,"content":node.content};
         aList.push(a);
     }
@@ -326,6 +338,7 @@ function saveArrows() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("4!");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -342,46 +355,7 @@ function saveArrows() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
-            alert(XMLHttpRequest.status);
-            alert(XMLHttpRequest.readyState);
-            alert(textStatus);
-        }
-    });
-}
-
-//存储连线
-function saveLinks() {
-    var lList = [];
-    for(var lid in linkList){
-        var node = linkList[lid];
-        var l = {"id":lid,"cid":cid,"nodeFrom_hid":node.nodeA.id,"nodeTo_bid":node.nodeZ.id};
-        lList.push(l);
-    }
-
-    $.ajax({
-        type: "post",
-        url: "/model/deleteLinks",
-        data:{"cid":cid},
-        async: false,
-        success: function (data) {
-
-        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
-            alert(XMLHttpRequest.status);
-            alert(XMLHttpRequest.readyState);
-            alert(textStatus);
-        }
-    });
-
-    $.ajax({
-        type: "post",
-        url: "/model/saveLinks",
-        data: JSON.stringify(lList),
-        // dataType:"json",
-        contentType: "application/json; charset=utf-8",
-        async: false,
-        success: function (data) {
-
-        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("4*");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -1196,8 +1170,8 @@ function deleteArrow(arrow) {
 function drawHeader(x,y,id,name,content){
 
     if(name==null||name.length==0){
-        if(content==null||content.length==0)
-            name = '新链头'+(headerIndex+1);
+        if(content==null||content.length==0||content.length>10)
+            name = '链头'+(headerIndex+1);
         else
             name = content;
     }
@@ -1273,8 +1247,8 @@ function deleteHeader(header) {
 function drawBody(x,y,id,name,content,type,committer,reason,conclusion,documentID,isDefendant,trust){
 
     if(name==null||name.length==0){
-        if(content==null||content.length==0)
-            name = '新链体'+(bodyIndex+1);
+        if(content==null||content.length==0||content.length>10)
+            name = '链体'+(bodyIndex+1);
         else
             name = content;
     }
@@ -1364,7 +1338,7 @@ function deleteBody(body) {
 function drawJoint(x,y,id,name,content,type){
 
     if(name==null)
-        name = '新连接点'+(jointIndex+1);
+        name = '连接点'+(jointIndex+1);
     if(id==null)
         id = jointIndex++;
 
@@ -1450,22 +1424,43 @@ function highlightEvidence() {
 }
 
 //初始化右侧建模图
-function initGraph(trusts,freeHeaders) {
+function initGraph(trusts,freeHeaders,joints,arrows) {
 
-    var x = 35;
-    var y = 35;
-    var y_1 = 35;
-    var x_sum = 0;
+    var x = 10 + (body_width/2);
+    var y = 10 + header_radius;
+    var headerGap_x = 100;
+    var headerGap_y = 40;
+    var jointGap = 150;
+    var pre_bx = -1;
+    var pre_by = -1;
+    var pre_hx = -1;
+    var pre_hy = -1;
+    var pre_jx = -1;
+    var pre_jy = -1;
 
     for(var i = 0;i<trusts.length;i++){
         var body = trusts[i]['body'];
         var b_x = body['x'];
         var b_y = body['y'];
-        x_sum+=b_x;
-        if(b_x<=0)
-            b_x = x+100;
-        if(b_y<=0)
-            b_y = y;
+
+        if(b_x<=0){
+            if(pre_bx>=0){
+                b_x = pre_bx;
+            }else{
+                b_x = x;
+            }
+        }else{
+            pre_bx = b_x;
+        }
+        if(b_y<=0){
+            if(pre_by>=0){
+                b_y = pre_by + body_height + headerGap_y;
+            }else{
+                b_y = y+(body_height + headerGap_y)*i;
+            }
+        }else{
+            pre_by = b_y;
+        }
 
         var b = drawBody(b_x,b_y,body['id'],body['name'],body['body'],body['type'],body['committer'],
             body['reason'],body['conclusion'],body['documentid'],body['isDefendant'],body['trust']);
@@ -1476,20 +1471,34 @@ function initGraph(trusts,freeHeaders) {
             var h_x = header['x'];
             var h_y = header['y'];
 
-            if(h_x<=0)
-                h_x = x;
-            if(h_y<=0)
-                h_y = y_1;
+            if(h_x<=0){
+                if(pre_hx>=0){
+                    h_x = pre_hx;
+                }else{
+                    h_x = x + body_width/2 + headerGap_x + header_radius;
+                }
+            }else{
+                pre_hx = h_x;
+            }
+            if(h_y<=0){
+                if(pre_hy>=0){
+                    h_y = pre_hy + headerGap_y + (header_radius*2);
+                }else{
+                    h_y = y;
+                    y += headerGap_y + (header_radius*2);
+                }
+            }else{
+                pre_hy = h_y;
+            }
+
             var h = drawHeader(h_x,h_y,header['id'],header['name'],header['head']);
             addLink(h,b);
-            y_1+=70;
 
             if(j==headers.length-1){
                 headerIndex = header['id']+1;
             }
         }
-        // x+=100;
-        y+=70;
+
         if(i==trusts.length-1){
             bodyIndex = body['id']+1;
         }
@@ -1500,17 +1509,62 @@ function initGraph(trusts,freeHeaders) {
         var h_x = header['x'];
         var h_y = header['y'];
 
-        if(h_x<=0)
-            h_x = x;
-        if(h_y<=0)
-            h_y = y;
+        if(h_x<=0){
+            if(pre_hx>=0){
+                h_x = pre_hx;
+            }else{
+                h_x = x + body_width/2 + headerGap_x + header_radius;
+            }
+        }else{
+            pre_hx = h_x;
+        }
+        if(h_y<=0){
+            if(pre_hy>=0){
+                h_y = pre_hy + headerGap_y + (header_radius*2);
+            }else{
+                h_y = y;
+                y += headerGap_y + (header_radius*2);
+            }
+        }else{
+            pre_hy = h_y;
+        }
+
         drawHeader(h_x,h_y,header['id'],header['name'],header['head']);
-        y+=70;
     }
 
-    if(x_sum<=0){
-        typeSetting();
+    x+=body_width/2 + headerGap_x + header_radius;
+    for(var i = 0;i<joints.length;i++){
+        var joint = joints[i];
+        var j_x = joint['x'];
+        var j_y = joint['y'];
+
+        if(j_x<=0){
+            if(pre_jx>=0){
+                j_x = pre_jx;
+            }else{
+                j_x = x + header_radius + jointGap + joint_width/2;
+            }
+        }else{
+            pre_jx = j_x;
+        }
+        if(j_y<=0){
+            if(pre_jy>=0){
+                j_y = pre_jy + joint_width + headerGap_y;
+            }else{
+                j_y = y+(joint_width + headerGap_y)*i;
+            }
+        }else{
+            pre_jy = j_y;
+        }
+
+        drawJoint(j_x,j_y,joint['id'],joint['name'],joint['content'],joint['type']);
     }
+
+    for(var i = 0;i<arrows.length;i++){
+        var arrow = arrows[i];
+        addArrow(headerList[arrow['nodeFrom_hid']],bodyList[arrow['nodeTo_jid']],arrow['id'],arrow['name'],arrow['content']);
+    }
+
 }
 
 //排版

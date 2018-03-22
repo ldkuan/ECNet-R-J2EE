@@ -179,7 +179,7 @@
                         <!--证据链集图-->
                         <!--startprint-->
                         <div class="graph-wrapper col-md-9 show-bar" style="margin-top: 20px;">
-                            <canvas id="canvas" width="1000" height="1000"></canvas>
+                            <canvas id="canvas" width="3000" height="3000"></canvas>
                         </div>
                         <!--endprint-->
 
@@ -242,7 +242,15 @@
 
                                             <div class="form-group">
                                                 <label for="body-evidenceType">证据类型</label>
-                                                <input class="form-control" id="body-evidenceType"/>
+                                                <!--<input class="form-control" id="body-evidenceType"/>-->
+                                                <select class="form-control" id="body-evidenceType">
+                                                    <option value ="0">证人证言</option>
+                                                    <option value ="1">被告人供述和辩解</option>
+                                                    <option value="2">书证</option>
+                                                    <option value="3">鉴定结论</option>
+                                                    <option value="4">勘验、检查笔录</option>
+                                                    <option value="5">其他</option>
+                                                </select>
                                             </div>
 
                                             <div class="form-group">
