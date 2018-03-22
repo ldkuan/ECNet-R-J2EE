@@ -24,4 +24,8 @@ public interface EvidenceHeadDao extends JpaRepository<Evidence_Head, Integer> {
     public Evidence_Head save(Evidence_Head head);
 
     public void deleteAllByCaseID(int caseID);
+
+    public void deleteAllByDocumentid(int documentid);
+
+    public void deleteAllByBodyid(int bodyid);
 }

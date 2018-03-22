@@ -71,13 +71,12 @@ public class EvidenceServiceImpl implements EvidenceService {
     public void deleteBodyAll(int document_id) {
         evidenceBodyDao.deleteAllByDocumentid(document_id);
     }
-
     @Transactional
     @Override
     public void updateBodyById(String body, int id) {
         evidenceBodyDao.updateBodyById(body,id);
     }
-@Transactional
+    @Transactional
     @Override
     public void updateTypeById(int type, int id) {
         evidenceBodyDao.updateTypeById(type,id);
@@ -87,7 +86,7 @@ public class EvidenceServiceImpl implements EvidenceService {
     public void updateTrustById(int trust, int id) {
         evidenceBodyDao.updateTrustById(trust,id);
     }
-
+    @Transactional
     @Override
     public List<Evidence_Body> createHead(int documentid) {
         List<Evidence_Body> bodies=evidenceBodyDao.getAllByDocumentid(documentid);
@@ -130,7 +129,7 @@ public class EvidenceServiceImpl implements EvidenceService {
                 evidence_body.setId(evidence.getInt("id"));
 
                 JSONArray headArray=evidence.getJSONArray("headList");
-
+                evidenceHeadDao.deleteAllByBodyid(evidence.getInt("id"));
                 //List<String> headNameList=(ArrayList<String>)evidence.get("headList");
                 for(Object headname:headArray){
                     Evidence_Head head = new Evidence_Head();

@@ -11,6 +11,8 @@
 
     <link rel="stylesheet" th:href="@{css/bootstrap.css}"/>
     <link rel="stylesheet" th:href="@{css/style.css}"/>
+    <link rel="stylesheet" th:href="@{css/loading.css}"/>
+
 
 
     <!--<link rel="stylesheet" th:href="@{css/login.css}"/>-->
@@ -18,7 +20,7 @@
     <!--<link rel="shortcut icon" th:href="@{img/favicon.ico}">-->
     <script th:src="@{js/ref/jquery-2.1.4.min.js}"></script>
     <script th:src="@{js/ref/jquerysession.js}"></script>
-  d
+    <script th:src="@{js/loading.js}"></script>
 
     <!--[if gte IE 9]>
     <script th:src="@{js/ref/jquery-1.11.1.min.js}"></script>
@@ -46,10 +48,16 @@
         }
         body{ background:#ffffff}
 
-    </style>
-    <style>
-        myRemove { color:rgba(0,0,0,0); transition:0.5s; }
-        myRemove:hover { color:rgba(78,78,78,1); }
+        .head_chain {
+            /* display: inline-block; */
+            border: 1px solid black;
+            margin-left: 2%;
+            padding: 3px;
+        }
+        .myRemove { color:rgba(0,0,0,0); transition:0.5s; }
+        .myRemove:hover { color:rgba(78,78,78,1); }
+
+
     </style>
 </head>
 
@@ -109,22 +117,6 @@
 
 
     </div>
-    <!--<div class="row">-->
-        <!--<table class="table "  style="border: 0px solid transparent" >-->
-            <!--<tbody>-->
-            <!--<tr>-->
-                <!--<td><input type="text" class="form-control" value="链头1"><a class="glyphicon myRemove glyphicon-remove btn form-control-feedback " style="pointer-events:auto;padding-left: 1%"></a></td>-->
-                <!--<td><input type="text" class="form-control" value="链头1"><a class="glyphicon myRemove glyphicon-remove btn form-control-feedback " style="pointer-events:auto;padding-left: 1%"></a></td>-->
-                <!--<td><input type="text" class="form-control" value="链头1"><a class="glyphicon myRemove glyphicon-remove btn form-control-feedback " style="pointer-events:auto;padding-left: 1%"></a></td>-->
-                <!--<td><input type="text" class="form-control" value="链头1"><a class="glyphicon myRemove glyphicon-remove btn form-control-feedback " style="pointer-events:auto;padding-left: 1%"></a></td>-->
-                <!--<td><a onclick="addHead(this)"><span class="glyphicon glyphicon-plus"></span></a> &nbsp;</td>-->
-            <!--</tr>-->
-            <!--</tbody>-->
-        <!--</table>-->
-    <!--</div>-->
-
-
-
 
     <div style="display: inline-block;width:45%;min-height: 300px;vertical-align: top;margin-top:15px;margin-left: 2%" id="list_div">
 
@@ -368,7 +360,7 @@
 
 
 
-        html="<div id='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
+        html="<div id='"+id+"' bodyid='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
             " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
             "\n</div>"
         html+=select;
@@ -461,7 +453,7 @@
 
 
 
-                    trustHtml="<div id='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
+                    trustHtml="<div id='"+id+"' bodyid='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
                         " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
                         "\n</div>"
                     trustHtml+=select;
@@ -508,7 +500,7 @@
 
 
     function myHead(num) {
-        var html=" ";
+        var html="";
         $.ajax({
             url:"/evidence/createHead",
             type:'POST',
@@ -516,34 +508,21 @@
             success:function(data) {
                 console.log(data);
                 for(var i=0;i<data.length;i++){
+                    html="";
                     var bodyid=data[i].id;
+
                     var headList=data[i].headList;
+
                     for(var j=0;j<headList.length;j++){
-
-
+                        html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable style='padding-left: 2%;'>"+headList[j].head+"</label><span class='glyphicon glyphicon-remove myRemove'></span></span>";
                     }
 
+                    $(".evibody[bodyid='"+bodyid+"']").after(html);
                 }
 
 
 
-//             for(var i=0;i<data.length;i++){
-//                 html="   <div class=\"row\">\n" +
-//                     "        <table class=\"table \"  style=\"border: 0px solid transparent\" >\n" +
-//                     "            <tbody>\n" +
-//                     "            <tr class='tr'>\n" +
-//                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头1\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-//                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头2\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-//                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头3\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-//                     "                <td><input type=\"text\" class=\"form-control\" value=\"链头4\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-//                     "             <td><a onclick=\"addHead(this)\"><span class=\"glyphicon glyphicon-plus\"></span></a> &nbsp;</td>\n" +
-//                     "            </tr>\n" +
-//                     "            </tbody>\n" +
-//                     "        </table>\n" +
-//                     "    </div>";
-//                   $(".evibody[bodyid='"+data.bodyid+"']").after(html);
 
-//             }
 
 
             }
@@ -553,21 +532,6 @@
 
 
 
-        html="   <div class=\"row\">\n" +
-            "        <table class=\"table \"  style=\"border: 0px solid transparent\" >\n" +
-            "            <tbody>\n" +
-            "            <tr class='tr'>\n" +
-            "                <td><input type=\"text\" class=\"form-control\" value=\"链头1\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-            "                <td><input type=\"text\" class=\"form-control\" value=\"链头2\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-            "                <td><input type=\"text\" class=\"form-control\" value=\"链头3\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-            "                <td><input type=\"text\" class=\"form-control\" value=\"链头4\"><a class=\"glyphicon myRemove glyphicon-remove btn form-control-feedback \" style=\"pointer-events:auto;padding-left: 1%\"></a></td>\n" +
-            "             <td><a onclick=\"addHead(this)\"><span class=\"glyphicon glyphicon-plus\"></span></a> &nbsp;</td>\n" +
-            "            </tr>\n" +
-            "            </tbody>\n" +
-            "        </table>\n" +
-            "    </div>";
-          //  $(".evibody[bodyid='"+id+"']").after(html);
-        $(".evibody").after(html);
 
     }
 
@@ -627,7 +591,7 @@
 
 
 
-                html="<div id='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+""+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
+                html="<div id='"+id+"' bodyid='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+""+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
                     " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
                     "\n</div>"
                 html+=select;
