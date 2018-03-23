@@ -81,19 +81,19 @@ $(document).ready(function () {
                 var areaRightPos = endPosX > startPosX ? endPosX : startPosX;
                 var areaTopPos = endPosY > startPosY ? startPosY : endPosY;
                 var areaBottomPos = endPosY > startPosY ? endPosY : startPosY;
-                console.log("left:"+areaLeftPos+",right:"+areaRightPos+",top:"+areaTopPos+",bottom:"+areaBottomPos);
+                console.log("left:" + areaLeftPos + ",right:" + areaRightPos + ",top:" + areaTopPos + ",bottom:" + areaBottomPos);
                 var nodeList = scene.getDisplayedNodes();
                 var length = nodeList.length;
                 for (var i = 0; i < length; i++) {
                     var tempNode = nodeList[i];
                     var thisLeftPos = tempNode.x;
-                    var thisRightPos = tempNode.x+tempNode.width;
+                    var thisRightPos = tempNode.x + tempNode.width;
                     var thisTopPos = tempNode.y;
-                    var thisBottomPos = tempNode.y+tempNode.height;
-                    console.log("left:"+thisLeftPos+",right:"+thisRightPos+",top:"+thisTopPos+",bottom:"+thisBottomPos);
-                    if ( ( (thisLeftPos >= areaLeftPos) || (thisRightPos <= areaRightPos) ) &&
-                         ( (thisTopPos >= areaTopPos) || (thisBottomPos <= areaBottomPos) ) &&
-                         ( tempNode != selectedRangeNode) ) {
+                    var thisBottomPos = tempNode.y + tempNode.height;
+                    console.log("left:" + thisLeftPos + ",right:" + thisRightPos + ",top:" + thisTopPos + ",bottom:" + thisBottomPos);
+                    if (( (thisLeftPos >= areaLeftPos) || (thisRightPos <= areaRightPos) ) &&
+                        ( (thisTopPos >= areaTopPos) || (thisBottomPos <= areaBottomPos) ) &&
+                        ( tempNode != selectedRangeNode)) {
                         //只要和被选中区域有交叉，这个节点就算是在选中区域内，改为被选中状态
                         tempNode.selected = true;
                         tempNode.borderColor = "(0,0,0)";
@@ -116,17 +116,16 @@ $(document).ready(function () {
         }
     });
 
-    stage.addEventListener("onkeydown", function(event) {
+    stage.addEventListener("onkeydown", function (event) {
         var e = event || window.event || arguments.callee.caller.arguments[0];
         if (e && e.keyCode == 17) {
             console.log("press control");
             $("#myAction").text("Ctrl键按下");
         }
-        if(event.ctrlKey && event.keyCode === 67) {
+        if (event.ctrlKey && event.keyCode === 67) {
             $("#myAction").text('你按下了CTRL+C');
         }
     });
-
 
 
     bindMenuClickEvent();
@@ -530,6 +529,14 @@ function nodeClickEvent(id, event) {
     }
 }
 
+/**
+ * 编辑node间的连线，当后两个参数存在空值时，即为删除该连线，否则为重新与新端点连线
+ *
+ * @param oldNodeId
+ * @param oldParentNodeId
+ * @param newNodeId
+ * @param newParentNodeId
+ */
 function editLink(oldNodeId, oldParentNodeId, newNodeId, newParentNodeId) {
     var oldLink = findLinkByNodeId(oldNodeId, oldParentNodeId);
     if (oldLink != null) {
@@ -538,7 +545,6 @@ function editLink(oldNodeId, oldParentNodeId, newNodeId, newParentNodeId) {
     }
 
     if ((newNodeId != null && newNodeId != "null") && (newParentNodeId != null && newParentNodeId != "null")) {
-        // var link = new JTopo.Link(parentNode, node);
         var newLink = new JTopo.Link(findNodeById(newParentNodeId).node, findNodeById(newNodeId).node);
         scene.add(newLink);
         links.push(newLink);
@@ -589,7 +595,12 @@ function moveNode(id, newParentId) {
     }
 }
 
-// 根据link的两个端点找到link
+/**
+ * 根据连线的两个端点找到link
+ * @param nodeAId link的一个端点id
+ * @param nodeZId link的另外一个端点id
+ * @returns {*}
+ */
 function findLinkByNodeId(nodeAId, nodeZId) {
     for (var i = 0, len = links.length; i < len; i++) {
         var link = links[i];
@@ -600,7 +611,11 @@ function findLinkByNodeId(nodeAId, nodeZId) {
     return null;
 }
 
-// 根据node的id获得node信息
+/**
+ * 根据node的id获得node信息
+ * @param id node的id
+ * @returns {*}
+ */
 function findNodeById(id) {
     for (var m = 0, len1 = forest.length; m < len1; m++) {
         var tree = forest[m];
@@ -613,7 +628,11 @@ function findNodeById(id) {
     return null;
 }
 
-// 找到node所在树的序号
+/**
+ * 找到node所在树的序号
+ * @param id node的id
+ * @returns {number} node所在树的序号
+ */
 function findTreeNumOfNode(id) {
     for (var m = 0, len1 = forest.length; m < len1; m++) {
         var tree = forest[m];
@@ -625,8 +644,29 @@ function findTreeNumOfNode(id) {
     }
 }
 
+/**
+ * 自动排版
+ */
 function compose() {
+    // 思路是先直接重新排版，然后根据树的minX和minY再对树的根节点的位置进行调整，再重新排版
     for (var m = 0, len1 = forest.length; m < len1; m++) {
         JTopo.layout.layoutNode(scene, forest[m][0].node, true);
+    }
+
+    var lastMaxY = 0;    // 上棵树的maxY
+    for (var m = 0, len1 = forest.length; m < len1; m++) {
+        var minX = forest[m][0].node.x;
+        var minY = forest[m][0].node.y;
+        for (var n = 0, len2 = forest[m].length; n < len2; n++) {
+            minX = forest[m][n].node.x < minX ? forest[m][n].node.x : minX;
+            minY = forest[m][n].node.y < minY ? forest[m][n].node.y : minY;
+        }
+        forest[m][0].node.setLocation(forest[m][0].node.x + (80 - minX), forest[m][0].node.y + 50 + (lastMaxY - minY));
+        JTopo.layout.layoutNode(scene, forest[m][0].node, true);
+
+        // 因为排版后y的值有变化，因此需要在排完版后再计算lastMaxY
+        for (var n = 0, len2 = forest[m].length; n < len2; n++) {
+            lastMaxY = forest[m][n].node.y > lastMaxY ? forest[m][n].node.y : lastMaxY;
+        }
     }
 }
