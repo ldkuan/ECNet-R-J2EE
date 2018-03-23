@@ -42,9 +42,11 @@ public class ModelController {
     }
 
     @RequestMapping(value="/deleteHeaders")
-    public void deleteHeaders(@RequestParam("cid") int cid){
+    public void deleteHeaders(@RequestBody List<Integer> hids){
 
-        modelManageService.deleteHeadersByCid(cid);
+        for(int i = 0;i<hids.size();i++){
+            modelManageService.deleteHeaderById(hids.get(i));
+        }
     }
 
     @RequestMapping(value="/saveBodies")
@@ -54,9 +56,11 @@ public class ModelController {
     }
 
     @RequestMapping(value="/deleteBodies")
-    public void deleteBodies(@RequestParam("cid") int cid){
+    public void deleteBodies(@RequestBody List<Integer> bids){
 
-        modelManageService.deleteBodiesByCid(cid);
+        for(int i = 0;i<bids.size();i++){
+            modelManageService.deleteBodyById(bids.get(i));
+        }
     }
 
     @RequestMapping(value="/saveJoints")
@@ -66,9 +70,11 @@ public class ModelController {
     }
 
     @RequestMapping(value="/deleteJoints")
-    public void deleteJoints(@RequestParam("cid") int cid){
+    public void deleteJoints(@RequestBody List<Integer> jids){
 
-        modelManageService.deleteJointsByCid(cid);
+        for(int i = 0;i<jids.size();i++){
+            modelManageService.deleteJointById(jids.get(i));
+        }
     }
 
     @RequestMapping(value="/saveArrows")

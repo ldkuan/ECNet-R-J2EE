@@ -16,13 +16,19 @@ public interface ModelManageService {
 
     public void saveHeaders(List<Evidence_Head> headers);
 
+    public void deleteHeaderById(int id);
+
     public void deleteHeadersByCid(int cid);
 
     public void saveBodies(List<Evidence_Body> bodies);
 
+    public void deleteBodyById(int id);
+
     public void deleteBodiesByCid(int cid);
 
     public void saveJoints(List<MOD_Joint> joints);
+
+    public void deleteJointById(int id);
 
     public void deleteJointsByCid(int cid);
 

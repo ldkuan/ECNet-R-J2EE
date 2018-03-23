@@ -12,6 +12,9 @@ var linkIndex = 0;//当前连线id
 var linkList = {};//存储连线，{id:node}
 var operationList = [];//存储每一步操作，[{'type':'add/delete/copy','nodes':[]},
 // {'type':'move','nodes':[],'position_origin':[x,y]}]
+var header_delete = [];//删除的链头id
+var body_delete = [];//删除的链体id
+var joint_delete = [];//删除的连接点id
 
 var isNodeClicked_right = false;//节点（链头、链体、连接点、连线、箭头）右键点击
 var isNodeClicked_left = false;//节点（链头、链体、连接点、连线、箭头）左键点击
@@ -23,11 +26,11 @@ var header_radius = 20;//链头节点半径
 var body_width = 80;//链体节点长
 var body_height = 30;//链体节点宽
 var joint_width = 30;//连接点边长
-var header_color = 'rgba(127,185,136,0.8)';
+var header_color = 'rgba(127,185,136,0.8)';//链头边框颜色
 var header_color_num = '127,185,136';
-var body_color = 'rgba(97,158,255,0.8)';
+var body_color = 'rgba(97,158,255,0.8)';//链体边框颜色
 var body_color_num = '97,158,255';
-var joint_color = 'rgba(101,43,105,0.8)';
+var joint_color = 'rgba(101,43,105,0.8)';//连接点边框颜色
 var joint_color_num = '101,43,105';
 var continuous_header = false;//是否连续绘制链头
 var continuous_body = false;//是否连续绘制链体
@@ -118,21 +121,13 @@ $(document).ready(function(){
             isNodeClicked_left = false;
 
             if(continuous_header){
-                var node = drawHeader(event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
-
-                //添加操作至operationList
-                operationList.push({'type':'add','nodes':[node]});
+                drawHeader(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
 
             }else if(continuous_body){
-                var node = drawBody(event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+                drawBody(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
 
-                //添加操作至operationList
-                operationList.push({'type':'add','nodes':[node]});
             }else if(continuous_joint){
-                var node = drawJoint(event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
-
-                //添加操作至operationList
-                operationList.push({'type':'add','nodes':[node]});
+                drawJoint(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
             }
         }
 
@@ -165,10 +160,11 @@ $(document).ready(function(){
 
 
     $('#save-btn').click(function () {
-        // saveBodies();
-        // saveHeaders();
-        // saveJoints();
-        // saveArrows();
+        saveBodies();
+        saveHeaders();
+        saveJoints();
+        saveArrows();
+        alert('保存成功！')
     });
     $('#saveImg-btn').click(function () {
         stage.saveImageInfo(undefined, undefined, "证据链模型图");;
@@ -187,22 +183,27 @@ function saveHeaders() {
     var hList = [];
     for(var hid in headerList){
         var node = headerList[hid];
-        var documentID = -1;
-        var bodyID = -1;
-        if(node.outLinks!=null){
-            bodyID = node.outLinks[0].nodeZ.id;
-            documentID = bodyList[bodyID]['documentID'];
+
+        if(node!=null){
+            var documentID = -1;
+            var bodyID = -1;
+
+            if(node.outLinks!=null){
+                bodyID = node.outLinks[0].nodeZ.id;
+                documentID = bodyList[bodyID]['documentID'];
+            }
+
+            var h = {"id":hid,"caseID":cid,"documentid":documentID,"bodyid":bodyID,
+                "name":node.text,"head":node.content,"x":node.x,"y":node.y};
+            hList.push(h);
         }
-        console.log('hid:'+hid);
-        var h = {"id":hid,"caseID":cid,"documentid":documentID,"bodyid":bodyID,
-            "name":node.text,"head":node.content,"x":node.x,"y":node.y};
-        hList.push(h);
     }
 
     $.ajax({
         type: "post",
         url: "/model/deleteHeaders",
-        data:{"cid":cid},
+        data: JSON.stringify(header_delete),
+        contentType: "application/json; charset=utf-8",
         async: false,
         success: function (data) {
 
@@ -237,16 +238,20 @@ function saveBodies() {
     var bList = [];
     for(var bid in bodyList){
         var body = bodyList[bid];
-        var node = body['node'];
-        var b = {"id":bid,"caseID":cid,"documentid":body['documentID'],"name":node.text,"body":node.content,"x":node.x,"y":node.y,
-        "type":body['type'],"committer":body['committer'],"reason":body['reason'],"conclusion":body['conclusion'],"isDefendant":body['isDefendant']};
-        bList.push(b);
+
+        if(body!=null){
+            var node = body['node'];
+            var b = {"id":bid,"caseID":cid,"documentid":body['documentID'],"name":node.text,"body":node.content,"x":node.x,"y":node.y,
+                "type":body['type'],"committer":body['committer'],"reason":body['reason'],"conclusion":body['conclusion'],"isDefendant":body['isDefendant']};
+            bList.push(b);
+        }
     }
 
     $.ajax({
         type: "post",
         url: "/model/deleteBodies",
-        data:{"cid":cid},
+        data: JSON.stringify(body_delete),
+        contentType: "application/json; charset=utf-8",
         async: false,
         success: function (data) {
 
@@ -281,16 +286,19 @@ function saveJoints() {
     var jList = [];
     for(var jid in jointList){
         var joint = jointList[jid];
-        var node = joint['node'];
-        alert(node.text);
-        var j = {"id":jid,"caseID":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,"type":joint['type']};
-        jList.push(j);
+
+        if(joint!=null){
+            var node = joint['node'];
+            var j = {"id":jid,"caseID":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,"type":joint['type']};
+            jList.push(j);
+        }
     }
 
     $.ajax({
         type: "post",
         url: "/model/deleteJoints",
-        data:{"cid":cid},
+        data: JSON.stringify(joint_delete),
+        contentType: "application/json; charset=utf-8",
         async: false,
         success: function (data) {
 
@@ -325,9 +333,12 @@ function saveArrows() {
     var aList = [];
     for(var aid in arrowList){
         var node = arrowList[aid];
-        var a = {"id":aid,"caseID":cid,"nodeFrom_hid":node.nodeA.id,"nodeTo_jid":node.nodeZ.id,
-            "name":node.text,"content":node.content};
-        aList.push(a);
+
+        if(node!=null){
+            var a = {"id":aid,"caseID":cid,"nodeFrom_hid":node.nodeA.id,"nodeTo_jid":node.nodeZ.id,
+                "name":node.text,"content":node.content};
+            aList.push(a);
+        }
     }
 
     $.ajax({
@@ -416,14 +427,14 @@ function undo() {
             var node = operation['nodes'][i];
 
             if(node.node_type=='header'){
-                drawHeader(node.x,node.y,node.id,node.text,node.content);
+                drawHeader(false,node.x,node.y,node.id,node.text,node.content);
 
             }else if(node.node_type=='body'){
-                drawBody(node.x,node.y,node.id,node.text,node.content,bodyList[node.id]['type'],
+                drawBody(false,node.x,node.y,node.id,node.text,node.content,bodyList[node.id]['type'],
                     bodyList[node.id]['committer'],bodyList[node.id]['reason'],bodyList[node.id]['conclusion']);
 
             }else if(node.node_type=='joint'){
-                drawJoint(node.x,node.y,node.id,node.text,node.content,jointList[node.id]['type']);
+                drawJoint(false,node.x,node.y,node.id,node.text,node.content,jointList[node.id]['type']);
 
             }else if(node.node_type=='arrow'){
                 addArrow(node.nodeA,node.nodeZ,node.id,node.text,node.content);
@@ -531,19 +542,13 @@ function dragHandle() {
                     var className = $("#draggableDiv").find('i').attr('class');
 
                     if(className.indexOf('circle')>-1){
-                        var node = drawHeader(event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
-                        //添加操作至operationList
-                        operationList.push({'type':'add','nodes':[node]});
+                        drawHeader(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
 
                     }else if(className.indexOf('square')>-1) {
-                        var node = drawJoint(event.pageX - $("#canvas").offset().left, event.pageY - $("#canvas").offset().top);
-                        //添加操作至operationList
-                        operationList.push({'type': 'add', 'nodes': [node]});
+                        drawJoint(true,event.pageX - $("#canvas").offset().left, event.pageY - $("#canvas").offset().top);
                     }
                 }else{
-                    var node = drawBody(event.pageX - $("#canvas").offset().left, event.pageY - $("#canvas").offset().top);
-                    //添加操作至operationList
-                    operationList.push({'type': 'add', 'nodes': [node]});
+                    drawBody(true,event.pageX - $("#canvas").offset().left, event.pageY - $("#canvas").offset().top);
                 }
             }
         }
@@ -780,30 +785,21 @@ function bindMenuClick() {
     $('#add-header-li').click(function (event) {
         $('#stageMenu').hide();
 
-        var node = drawHeader(event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
-
-        //添加操作至operationList
-        operationList.push({'type':'add','nodes':[node]});
+        drawHeader(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
     });
 
     //新增图元-链体
     $('#add-body-li').click(function (event) {
         $('#stageMenu').hide();
 
-        var node = drawBody(event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
-
-        //添加操作至operationList
-        operationList.push({'type':'add','nodes':[node]});
+        drawBody(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
     });
 
     //新增图元-连接点
     $('#add-joint-li').click(function (event) {
         $('#stageMenu').hide();
 
-        var node = drawJoint(event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
-
-        //添加操作至operationList
-        operationList.push({'type':'add','nodes':[node]});
+        drawJoint(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
     });
 
     //创建连线
@@ -857,16 +853,16 @@ function bindMenuClick() {
             var node_new;
 
             if(node.node_type=='header'){
-                node_new = drawHeader(event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top,node.text,node.content);
+                node_new = drawHeader(false,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top,node.text,node.content);
 
             }else if(node.node_type=='body'){
                 var origin = bodyList[node.id];
-                node_new = drawBody(event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top,
+                node_new = drawBody(false,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top,
                     node.text,node.content,origin['type'],origin['committer'],origin['reason'],origin['conclusion']);
 
             }else if(node.node_type=='joint'){
                 var origin = jointList[node.id];
-                node_new = drawJoint(event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top,node.text,node.content,origin['type']);
+                node_new = drawJoint(false,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top,node.text,node.content,origin['type']);
             }
 
             nodes.push(node_new);
@@ -1167,7 +1163,7 @@ function deleteArrow(arrow) {
 }
 
 //绘制链头，返回链头节点
-function drawHeader(x,y,id,name,content){
+function drawHeader(isNew,x,y,id,name,content){
 
     if(name==null||name.length==0){
         if(content==null||content.length==0||content.length>10)
@@ -1197,6 +1193,10 @@ function drawHeader(x,y,id,name,content){
 
     headerList[circleNode.id] = circleNode;
     scene.add(circleNode);
+    //添加操作至operationList
+    if(isNew==true){
+        operationList.push({'type':'add','nodes':[circleNode]});
+    }
 
     circleNode.click(function () {
         $('#body-panel').attr('hidden', 'hidden');
@@ -1231,6 +1231,7 @@ function drawHeader(x,y,id,name,content){
 
 //删除链头
 function deleteHeader(header) {
+    header_delete.push(header.id);
     headerList[header.id] = null;
     scene.remove(header);
     $('#head-panel').attr('hidden', 'hidden');
@@ -1244,7 +1245,7 @@ function deleteHeader(header) {
 }
 
 //绘制链体，返回链体节点
-function drawBody(x,y,id,name,content,type,committer,reason,conclusion,documentID,isDefendant,trust){
+function drawBody(isNew,x,y,id,name,content,type,committer,reason,conclusion,documentID,isDefendant,trust){
 
     if(name==null||name.length==0){
         if(content==null||content.length==0||content.length>10)
@@ -1280,6 +1281,9 @@ function drawBody(x,y,id,name,content,type,committer,reason,conclusion,documentI
     bodyList[node.id] = {'node':node,'type':type,'committer':committer,'reason':reason,'conclusion':conclusion,
     'documentID':documentID,'isDefendant':isDefendant,'trust':trust};
     scene.add(node);
+    //添加操作至operationList
+    if(isNew==true)
+        operationList.push({'type':'add','nodes':[node]});
 
     node.click(function () {
         $('#head-panel').attr('hidden', 'hidden');
@@ -1322,6 +1326,7 @@ function drawBody(x,y,id,name,content,type,committer,reason,conclusion,documentI
 
 //删除链体
 function deleteBody(body) {
+    body_delete.push(body.id);
     bodyList[body.id] = null;
     scene.remove(body);
     $('#body-panel').attr('hidden', 'hidden');
@@ -1335,7 +1340,7 @@ function deleteBody(body) {
 }
 
 //绘制连接点，返回连接点节点
-function drawJoint(x,y,id,name,content,type){
+function drawJoint(isNew,x,y,id,name,content,type){
 
     if(name==null)
         name = '连接点'+(jointIndex+1);
@@ -1355,6 +1360,9 @@ function drawJoint(x,y,id,name,content,type){
 
     jointList[node.id] = {'node':node,'type':type};
     scene.add(node);
+    //添加操作至operationList
+    if(isNew)
+        operationList.push({'type':'add','nodes':[node]});
 
     node.click(function () {
         $('#head-panel').attr('hidden', 'hidden');
@@ -1387,6 +1395,7 @@ function drawJoint(x,y,id,name,content,type){
 
 //删除连接点
 function deleteJoint(joint) {
+    joint_delete.push(joint.id);
     jointList[joint.id] = null;
     scene.remove(joint);
     $('#joint-panel').attr('hidden', 'hidden');
@@ -1462,7 +1471,7 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
             pre_by = b_y;
         }
 
-        var b = drawBody(b_x,b_y,body['id'],body['name'],body['body'],body['type'],body['committer'],
+        var b = drawBody(false,b_x,b_y,body['id'],body['name'],body['body'],body['type'],body['committer'],
             body['reason'],body['conclusion'],body['documentid'],body['isDefendant'],body['trust']);
 
         var headers = trusts[i]['headers'];
@@ -1491,7 +1500,7 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
                 pre_hy = h_y;
             }
 
-            var h = drawHeader(h_x,h_y,header['id'],header['name'],header['head']);
+            var h = drawHeader(false,h_x,h_y,header['id'],header['name'],header['head']);
             addLink(h,b);
 
             if(j==headers.length-1){
@@ -1529,7 +1538,7 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
             pre_hy = h_y;
         }
 
-        drawHeader(h_x,h_y,header['id'],header['name'],header['head']);
+        drawHeader(false,h_x,h_y,header['id'],header['name'],header['head']);
     }
 
     x+=body_width/2 + headerGap_x + header_radius;
@@ -1557,12 +1566,12 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
             pre_jy = j_y;
         }
 
-        drawJoint(j_x,j_y,joint['id'],joint['name'],joint['content'],joint['type']);
+        drawJoint(false,j_x,j_y,joint['id'],joint['name'],joint['content'],joint['type']);
     }
 
     for(var i = 0;i<arrows.length;i++){
         var arrow = arrows[i];
-        addArrow(headerList[arrow['nodeFrom_hid']],bodyList[arrow['nodeTo_jid']],arrow['id'],arrow['name'],arrow['content']);
+        addArrow(headerList[arrow['nodeFrom_hid']],jointList[arrow['nodeTo_jid']]['node'],arrow['id'],arrow['name'],arrow['content']);
     }
 
 }

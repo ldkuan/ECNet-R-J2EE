@@ -83,11 +83,18 @@ public class ModelManageServiceImpl implements ModelManageService {
 //    }
 
     @Override
-    @Transactional
     public void saveHeaders(List<Evidence_Head> headers) {
         for(int i = 0;i<headers.size();i++){
-            evidenceHeadDao.save(headers.get(i));
+            System.out.println("hid:"+headers.get(i).getId());
+            Evidence_Head head = evidenceHeadDao.save(headers.get(i));
+            System.out.println("hid_new:"+head.getId());
         }
+    }
+
+    @Override
+    @Transactional
+    public void deleteHeaderById(int id) {
+        evidenceHeadDao.deleteById(id);
     }
 
     @Override
@@ -105,6 +112,12 @@ public class ModelManageServiceImpl implements ModelManageService {
 
     @Override
     @Transactional
+    public void deleteBodyById(int id) {
+        evidenceBodyDao.deleteById(id);
+    }
+
+    @Override
+    @Transactional
     public void deleteBodiesByCid(int cid) {
         evidenceBodyDao.deleteAllByCaseID(cid);
     }
@@ -114,6 +127,12 @@ public class ModelManageServiceImpl implements ModelManageService {
         for(int i = 0;i<joints.size();i++){
             jointDao.save(joints.get(i));
         }
+    }
+
+    @Override
+    @Transactional
+    public void deleteJointById(int id) {
+        jointDao.deleteById(id);
     }
 
     @Override
