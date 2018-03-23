@@ -9,9 +9,9 @@ var jointList = {};//存储连接点（事实），{id:{'node':node,'type':'XXX'
 var arrowIndex = 0;//当前箭头id
 var arrowList = {};//存储箭头，{id:node}
 var linkIndex = 0;//当前连线id
-var linkList = {};//存储连线，{id:node}
-var operationList = [];//存储每一步操作，[{'type':'add/delete/copy','nodes':[]},
-// {'type':'move','nodes':[],'position_origin':[x,y]}]
+// var linkList = {};//存储连线，{id:node}
+var operationList = [];//存储每一步操作，[{'type':'add/copy','nodes':[]},
+// {'type':'move','nodes':[],'position_origin':[x,y]},{'type':'delete','nodes':[{'node':node,'content':{'',''}}]}]
 var header_delete = [];//删除的链头id
 var body_delete = [];//删除的链体id
 var joint_delete = [];//删除的连接点id
@@ -20,8 +20,8 @@ var isNodeClicked_right = false;//节点（链头、链体、连接点、连线�
 var isNodeClicked_left = false;//节点（链头、链体、连接点、连线、箭头）左键点击
 var nodeList_selected = [];//已选中的节点（链头、链体、连接点、连线、箭头），[node]
 var isCtrlPressed = false;//ctrl键是否按下
-var nodeFroms = [];//连线or箭头起始节点（允许同时创建多个连线或箭头），存储在nodeList_selected中的index
-var nodeTo;//连线or箭头终止节点
+var nodeFroms = [];//连线or箭头链头节点（允许同时创建多个连线或箭头），存储在nodeList_selected中的index
+var nodeTo;//连线链体节点or箭头连接点节点
 var header_radius = 20;//链头节点半径
 var body_width = 80;//链体节点长
 var body_height = 30;//链体节点宽
@@ -188,8 +188,8 @@ function saveHeaders() {
             var documentID = -1;
             var bodyID = -1;
 
-            if(node.outLinks!=null){
-                bodyID = node.outLinks[0].nodeZ.id;
+            if(node.inLinks!=null){
+                bodyID = node.inLinks[0].nodeA.id;
                 documentID = bodyList[bodyID]['documentID'];
             }
 
@@ -405,13 +405,13 @@ function undo() {
             var node = operation['nodes'][i];
 
             if(node.node_type=='header'){
-                deleteHeader(node);
+                deleteHeader(node.id);
 
             }else if(node.node_type=='body'){
-                deleteBody(node);
+                deleteBody(node.id);
 
             }else if(node.node_type=='joint'){
-                deleteJoint(node);
+                deleteJoint(node.id);
 
             }else if(node.node_type=='arrow'){
                 deleteArrow(node);
@@ -424,17 +424,19 @@ function undo() {
     }else if(operation['type']=='delete'){
 
         for(var i = 0;i<operation['nodes'].length;i++){
-            var node = operation['nodes'][i];
+            var n = operation['nodes'][i];
+            var node = n['node'];
 
             if(node.node_type=='header'){
                 drawHeader(false,node.x,node.y,node.id,node.text,node.content);
 
             }else if(node.node_type=='body'){
-                drawBody(false,node.x,node.y,node.id,node.text,node.content,bodyList[node.id]['type'],
-                    bodyList[node.id]['committer'],bodyList[node.id]['reason'],bodyList[node.id]['conclusion']);
+                drawBody(false,node.x,node.y,node.id,node.text,node.content,n['content']['type'],
+                    n['content']['committer'],n['content']['reason'],n['content']['conclusion'],
+                    n['content']['documentID'],n['content']['isDefendant'],n['content']['trust']);
 
             }else if(node.node_type=='joint'){
-                drawJoint(false,node.x,node.y,node.id,node.text,node.content,jointList[node.id]['type']);
+                drawJoint(false,node.x,node.y,node.id,node.text,node.content,n['content']['type']);
 
             }else if(node.node_type=='arrow'){
                 addArrow(node.nodeA,node.nodeZ,node.id,node.text,node.content);
@@ -808,7 +810,7 @@ function bindMenuClick() {
 
         var nodes = [];
         for(var i = 0;i<nodeFroms.length;i++){
-            var node = addLink(nodeList_selected[nodeFroms[i]],nodeTo);
+            var node = addLink(nodeTo,nodeList_selected[nodeFroms[i]]);
             if(node!=-1){
                 nodes.push(node);
             }
@@ -899,16 +901,21 @@ function bindMenuClick() {
         var nodes = [];
         for(var i = 0;i<nodeList_selected.length;i++){
             var node = nodeList_selected[i];
-            nodes.push(node);
+            var n = {};
+            n['node'] = node;
 
             if(node.node_type=='header'){
-                deleteHeader(node);
+                deleteHeader(node.id);
 
             }else if(node.node_type=='body'){
-                deleteBody(node);
+                var body = bodyList[node.id];
+                n['content'] = {'type':body['type'],'committer':body['committer'],'reason':body['reason'],
+                    'conclusion':body['conclusion'], 'documentID':body['documentID'],'isDefendant':body['isDefendant'],'trust':body['trust']};
+                deleteBody(node.id);
 
             }else if(node.node_type=='joint'){
-                deleteJoint(node);
+                n['content'] = {'type':jointList[node.id]['type']};
+                deleteJoint(node.id);
 
             }else if(node.node_type=='arrow'){
                 deleteArrow(node);
@@ -916,6 +923,8 @@ function bindMenuClick() {
             }else if(node.node_type=='link'){
                 deleteLink(node);
             }
+
+            nodes.push(n);
         }
 
         //添加操作至operationList
@@ -962,8 +971,14 @@ function bindRightPanel() {
 
     $('#body-del-btn').click(function () {
         var bid = $('#body-panel').attr('data-bid');
-        if(bodyList[bid]!=null)
-            deleteBody(bodyList[bid]['node']);
+        if(bodyList[bid]!=null){
+            var body = bodyList[bid];
+            var cont = {'type':body['type'],'committer':body['committer'],'reason':body['reason'],
+                'conclusion':body['conclusion'], 'documentID':body['documentID'],'isDefendant':body['isDefendant'],'trust':body['trust']};
+            //添加操作至operationList
+            operationList.push({'type':'delete','nodes':[{'node':body['node'],'content':cont}]});
+            deleteBody(bid);
+        }
     });
 
     //链头
@@ -996,8 +1011,11 @@ function bindRightPanel() {
 
     $('#head-del-btn').click(function () {
         var hid = $('#head-panel').attr('data-hid');
-        if(headerList[hid]!=null)
-            deleteHeader(headerList[hid]);
+        if(headerList[hid]!=null){
+            //添加操作至operationList
+            operationList.push({'type':'delete','nodes':[{'node':headerList[hid]}]});
+            deleteHeader(hid);
+        }
     });
 
     //箭头
@@ -1015,6 +1033,8 @@ function bindRightPanel() {
 
     $('#arrow-del-btn').click(function () {
         var aid = $('#arrow-panel').attr('data-aid');
+        //添加操作至operationList
+        operationList.push({'type':'delete','nodes':[{'node':arrowList[aid]}]});
         deleteArrow(arrowList[aid]);
     });
 
@@ -1035,24 +1055,27 @@ function bindRightPanel() {
 
     $('#joint-del-btn').click(function () {
         var jid = $('#joint-panel').attr('data-jid');
-        deleteJoint(jointList[jid]['node']);
+        //添加操作至operationList
+        operationList.push({'type':'delete','nodes':[{'node':jointList[jid]['node'],
+                'content':{'type':jointList[jid]['type']}}]});
+        deleteJoint(jid);
     });
 }
 
-//添加连线
+//添加连线(链体，链头，id)
 function addLink(nodeFrom,nodeTo,id){
     // var hasLink = false;
     //
     // //判断是否已存在连线
     // if(nodeFrom.outLinks!=null)
     //     for(var i = 0;i<nodeFrom.outLinks.length;i++){
-    //         if(nodeFrom.outLinks[i].nodeZ==nodeTo){
+    //         if(nodeFrom.outLinks[i].nodeZ.node_type=='body'){
     //             hasLink = true;
     //             break;
     //         }
     //     }
 
-    if(nodeFrom.outLinks==null||nodeFrom.outLinks.length<1){
+    if(nodeFrom.inLinks==null){
         if(id==null)
             id = linkIndex++;
 
@@ -1075,10 +1098,10 @@ function addLink(nodeFrom,nodeTo,id){
             isNodeClicked_left = false;
         });
 
-        linkList[link.id] = link;
+        // linkList[link.id] = link;
         scene.add(link);
 
-        addHeaderofChain(nodeFrom.text,nodeFrom.id,nodeTo.id);
+        addHeaderofChain(nodeFrom.text,nodeTo.id,nodeFrom.id);
 
         return link;
     }
@@ -1088,7 +1111,7 @@ function addLink(nodeFrom,nodeTo,id){
 
 //删除连线
 function deleteLink(link) {
-    linkList[link.id] = null;
+    // linkList[link.id] = null;
     scene.remove(link);
 }
 
@@ -1230,13 +1253,21 @@ function drawHeader(isNew,x,y,id,name,content){
 }
 
 //删除链头
-function deleteHeader(header) {
-    header_delete.push(header.id);
-    headerList[header.id] = null;
+function deleteHeader(headerID) {
+    header_delete.push(headerID);
+    var header = headerList[headerID];
+
+    if(header.outLinks!=null){
+        var outl = header.outLinks;
+        for(var i = 0;i<outl.length;i++){
+            deleteArrow(outl[i]);
+        }
+    }
     scene.remove(header);
+    headerList[headerID] = null;
     $('#head-panel').attr('hidden', 'hidden');
 
-    var filter_content = '.head_chain[data-id='+header.id+']';
+    var filter_content = '.head_chain[data-id='+headerID+']';
     var p_div = $(filter_content);
 
     if(p_div!=null&&p_div.length>0){
@@ -1325,13 +1356,14 @@ function drawBody(isNew,x,y,id,name,content,type,committer,reason,conclusion,doc
 }
 
 //删除链体
-function deleteBody(body) {
-    body_delete.push(body.id);
-    bodyList[body.id] = null;
-    scene.remove(body);
+function deleteBody(bodyID) {
+    body_delete.push(bodyID);
+    scene.remove(bodyList[bodyID]['node']);
+    bodyList[bodyID] = null;
+
     $('#body-panel').attr('hidden', 'hidden');
 
-    var filter_content = '.evidence[data-id='+body.id+']';
+    var filter_content = '.evidence[data-id='+bodyID+']';
     var p_div = $(filter_content);
 
     if(p_div!=null&&p_div.length>0){
@@ -1394,10 +1426,18 @@ function drawJoint(isNew,x,y,id,name,content,type){
 }
 
 //删除连接点
-function deleteJoint(joint) {
-    joint_delete.push(joint.id);
-    jointList[joint.id] = null;
+function deleteJoint(jointID) {
+    joint_delete.push(jointID);
+    var joint = jointList[jointID]['node'];
+
+    if(joint.inLinks!=null){
+        var inl = joint.inLinks;
+        for(var i = 0;i<inl.length;i++){
+            deleteArrow(inl[i]);
+        }
+    }
     scene.remove(joint);
+    jointList[jointID] = null;
     $('#joint-panel').attr('hidden', 'hidden');
 }
 
@@ -1411,7 +1451,7 @@ function highlightEvidence() {
         for(var i = 0;i<nodeList_selected.length;i++){
 
             if(nodeList_selected[i].node_type=='header'){
-                if(nodeList_selected[i].outLinks!= null){
+                if(nodeList_selected[i].inLinks!= null){
                     var hid = nodeList_selected[i].id;
                     var filter_content = '.head_chain[data-id='+hid+']';
                     var e_div = $(filter_content);
@@ -1501,7 +1541,7 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
             }
 
             var h = drawHeader(false,h_x,h_y,header['id'],header['name'],header['head']);
-            addLink(h,b);
+            addLink(b,h);
 
             if(j==headers.length-1){
                 headerIndex = header['id']+1;
@@ -1537,7 +1577,6 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
         }else{
             pre_hy = h_y;
         }
-
         drawHeader(false,h_x,h_y,header['id'],header['name'],header['head']);
     }
 
@@ -1590,15 +1629,15 @@ function typeSetting() {
         var body = bodyList[bid]['node'];
         body.x = x;
 
-        var inLinks = body.inLinks;
-        if(inLinks!=null)
-            body.y = y+((inLinks.length-1)*(2*header_radius + headerGap_y)/2);
+        var outLinks = body.outLinks;
+        if(outLinks!=null)
+            body.y = y+((outLinks.length-1)*(2*header_radius + headerGap_y)/2);
         else
             body.y = y+(body_height + headerGap_y)*t;
 
-        if(inLinks!=null)
-        for(var i = 0;i<inLinks.length;i++){
-            var header = inLinks[i].nodeA;
+        if(outLinks!=null)
+        for(var i = 0;i<outLinks.length;i++){
+            var header = outLinks[i].nodeZ;
             header.x = x + body_width/2 + headerGap_x + header_radius;
             header.y = y;
             y += headerGap_y + (header_radius*2);
