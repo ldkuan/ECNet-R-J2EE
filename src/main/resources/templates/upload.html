@@ -49,17 +49,27 @@
         body{ background:#ffffff}
 
         .head_chain {
-            /* display: inline-block; */
+             display: inline-block;
             border: 1px solid black;
             margin-left: 2%;
             padding: 3px;
+            margin-top: 1%;
+            white-space:nowrap;
         }
         .myRemove { color:rgba(0,0,0,0); transition:0.5s; }
         .myRemove:hover { color:rgba(78,78,78,1); }
         .headRemove { color:rgba(0,0,0,0); transition:0.5s; }
         .headRemove:hover { color:rgba(78,78,78,1); }
 
+        .headList{
+            margin-top: -2%;
+        }
 
+        .addHead{
+
+            padding-left: 1%;
+
+        }
     </style>
 </head>
 
@@ -363,15 +373,14 @@
     }
 
     function createHeadHtml(bodyid,headList,num){
-        var     html="<div class='headList text-left' bodyid='"+bodyid+"'>";
+        var html="<div class='headList text-left' bodyid='"+bodyid+"'>";
         for(var j=0;j<headList.length;j++){
-            html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable onblur='updateHead(this)' orginal='"+headList[j].head+"' style='padding-left: 2%;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove  headRemove' onclick='deleteHead(this)'></span></span>";
+            html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable onblur='updateHead(this)' orginal='"+headList[j].head+"' style='min-width: 25px;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove  headRemove' onclick='deleteHead(this)'></span></span>";
         }
 
-        html+="<span documentid='"+document_id[num]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus headRemove' onchange='addHead(this)'></span>"
+        html+="<span documentid='"+document_id[num]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus headRemove addHead' onclick='addHead(this)'></span>"
         html+="</div>"
         $(".evibody[bodyid='"+bodyid+"']").after(html);
-
 
     }
 
@@ -438,6 +447,51 @@
 
     }
 
+    function loading(num) {
+        if(num==1){
+            $('#list_div').loading({
+                loadingWidth:240,
+                title:'请稍等!',
+                name:'test',
+                discription:'这是一个描述...',
+                direction:'row',
+                type:'origin',
+                originBg:'#71EA71',
+                originDivWidth:30,
+                originDivHeight:30,
+                originWidth:4,
+                originHeight:4,
+                smallLoading:false,
+                titleColor:'#388E7A',
+                loadingBg:'#312923',
+                loadingMaskBg:'rgba(22,22,22,0.2)'
+            });
+        }else{
+            $('#graph_div').loading({
+                loadingWidth:240,
+                title:'请稍等!',
+                name:'test',
+                discription:'这是一个描述...',
+                direction:'row',
+                type:'origin',
+                originBg:'#71EA71',
+                originDivWidth:30,
+                originDivHeight:30,
+                originWidth:4,
+                originHeight:4,
+                smallLoading:false,
+                titleColor:'#388E7A',
+                loadingBg:'#312923',
+                loadingMaskBg:'rgba(22,22,22,0.2)'
+            });
+        }
+
+
+//        setTimeout(function(){
+//            removeLoading('test');
+//        },3000);
+    }
+
 
 </script>
 
@@ -456,6 +510,7 @@
             $("#after2").html("");
             str=$("#mystr2").val();
         }
+        loading(num);
         $.ajax({
             url:"/evidence/document",
             type:'POST',
@@ -519,8 +574,10 @@
                         });
 
                         $("#"+id).remove();
+                        $("#"+id).remove();
 
                     });
+                removeLoading('test');
             }
         });
     }
@@ -529,29 +586,35 @@
 
     function myHead(num) {
         var html="";
+        loading(num);
         $.ajax({
             url:"/evidence/createHead",
             type:'POST',
             data:{"ajxh":cid,"head":"","document_id":document_id[num-1]},
             success:function(data) {
-                console.log(data);
+
                 for(var i=0;i<data.length;i++){
 
                     var bodyid=data[i].id;
 
                     var headList=data[i].headList;
-                    html="<div class='headList text-left' bodyid='"+bodyid+"'>";
-                    for(var j=0;j<headList.length;j++){
-                        html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable orginal='"+headList[j].head+"' onblur='updateHead(this)' style='padding-left: 2%;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove headRemove'  onclick='deleteHead(this)></span></span>";
-                    }
+//                    html="<div class='headList text-left' bodyid='"+bodyid+"'>";
+//                    for(var j=0;j<headList.length;j++){
+//                        console.log(headList[j].id);
+//                        html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable orginal='"+headList[j].head+"' onblur='updateHead(this)' style='min-width: 25px;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove headRemove'  onclick='deleteHead(this)></span></span>";
+//                    }
+//
+//                    html+="<span documentid='"+document_id[num-1]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus headRemove addHead' onclick='addHead(this)'></span>"
+//                    html+="</div>"
+//
+//                    console.log(  $(".headList[bodyid='"+bodyid+"']"));
+                     $(".headList[bodyid='"+bodyid+"']").remove();
 
-                    html+="<span documentid='"+document_id[num-1]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus headRemove' onchange='addHead(this)'></span>"
-                    html+="</div>"
-                    $(".headList[bodyid='"+bodyid+"']").remove();
-
-                    $(".evibody[bodyid='"+bodyid+"']").after(html);
+                    //$(".evibody[bodyid='"+bodyid+"']").after(html);
 
 
+                    createHeadHtml(bodyid,headList,num-1)
+                    removeLoading('test');
                 }
             }
         });
@@ -567,7 +630,7 @@
              success:function(data) {
                  console.log(data);
                  var id=data.id;
-                 var html="<span headid='"+id+"' class='head_chain'><label contenteditable style='padding-left: 2%;' onblue='updateHead(this)'></label><span headid='"+id+"' class='glyphicon glyphicon-remove  headRemove'  onclick='deleteHead(this)></span></span>";
+                 var  html="<span headid='"+id+"' class='head_chain'><label contenteditable onblur='updateHead(this)' orginal='' style='min-width: 25px;'></label><span headid='"+id+"' class='glyphicon glyphicon-remove  headRemove' onclick='deleteHead(this)'></span></span>";
                  $(span).before(html);
 
              }
@@ -657,6 +720,7 @@
                         });
 
                         $("#"+id).remove();
+                        $(".headList[bodyid='"+id+"']").remove();
 
                     });
             }

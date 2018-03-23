@@ -147,7 +147,7 @@ evidenceService.deleteHeadById(id);
     }
 
     @PostMapping(value = "/addHead")
-    public Evidence_Head addHead(@RequestParam("head") String head,@RequestParam("document_id") int document_id,@RequestParam("ajxh") int ajxh,@RequestParam("bodyid") int bodyid){
+    public Evidence_Head addHead(@RequestParam("head") String head,@RequestParam("document_id") int document_id,@RequestParam("ajxh") int ajxh,@RequestParam("body_id") int bodyid){
 
         Evidence_Head evidence_head=new Evidence_Head();
         evidence_head.setHead(head);
