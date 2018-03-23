@@ -171,7 +171,7 @@ $(document).ready(function(){
         // saveArrows();
     });
     $('#saveImg-btn').click(function () {
-        stage.saveImageInfo();
+        stage.saveImageInfo(undefined, undefined, "证据链模型图");;
     });
     $('#revoke-btn').click(function () {
         undo();

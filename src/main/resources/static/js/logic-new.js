@@ -15,6 +15,8 @@ var isNodeRightClick = false; // 用来判断右键点击来源
 var mouseX;
 var mouseY;
 
+var isCurve = false;
+
 //用于记录鼠标拖拽框选的变量
 var selectedRangeNode;
 var isMouseDown = false;
@@ -127,10 +129,11 @@ $(document).ready(function () {
         }
     });
 
-
     bindMenuClickEvent();
 
-    // $("#law-recommend-modal").modal('show')
+    $('#print-btn').click(function () {
+        stage.saveImageInfo(undefined, undefined, "文书说理逻辑图");
+    });
 });
 
 function drawNode(topic, type, detail, parentId) {
@@ -176,8 +179,6 @@ function drawNode(topic, type, detail, parentId) {
             parentId: parentId
         });
         forest.push(tree);
-
-        // JTopo.layout.layoutNode(scene, node, true);
     } else {
         // 将节点插入到具体的tree中
         var targetTreeNum = -1;
@@ -205,19 +206,13 @@ function drawNode(topic, type, detail, parentId) {
                 break;
             }
         }
-
         node.setLocation(mouseX - $("#canvas").offset().left, mouseY - $("#canvas").offset().top);
-
-        // forest[targetTreeNum][0].node.setLocation(100 + (getTreeMaxDepth(forest[targetTreeNum]) - 1) * 120, 50);
-
         drawLink(parentNode, node);
-
-        // JTopo.layout.layoutNode(scene, forest[targetTreeNum][0].node, true);
     }
 }
 
 function drawLink(parentNode, node) {
-    var link = new JTopo.Link(parentNode, node);
+    var link = isCurve ? new JTopo.CurveLink(parentNode, node, "") : new JTopo.Link(parentNode, node);
     scene.add(link);
     links.push(link);
 }
@@ -545,9 +540,10 @@ function editLink(oldNodeId, oldParentNodeId, newNodeId, newParentNodeId) {
     }
 
     if ((newNodeId != null && newNodeId != "null") && (newParentNodeId != null && newParentNodeId != "null")) {
-        var newLink = new JTopo.Link(findNodeById(newParentNodeId).node, findNodeById(newNodeId).node);
-        scene.add(newLink);
-        links.push(newLink);
+        // var newLink = new JTopo.Link(findNodeById(newParentNodeId).node, findNodeById(newNodeId).node);
+        // scene.add(newLink);
+        // links.push(newLink);
+        drawLink(findNodeById(newParentNodeId).node, findNodeById(newNodeId).node);
     }
 }
 
@@ -668,5 +664,22 @@ function compose() {
         for (var n = 0, len2 = forest[m].length; n < len2; n++) {
             lastMaxY = forest[m][n].node.y > lastMaxY ? forest[m][n].node.y : lastMaxY;
         }
+    }
+}
+
+/**
+ * 显示直/曲线图
+ */
+function curveGraph() {
+    isCurve = !isCurve;
+
+    var text = isCurve ? "显示直线图" : "显示曲线图";
+    $("#line-btn").text(text);
+
+    for (var i = 0, len = links.length; i < len; i++) {
+        var link = isCurve ? new JTopo.CurveLink(links[i].nodeA, links[i].nodeZ, "") : new JTopo.Link(links[i].nodeA, links[i].nodeZ);
+        scene.remove(links[i]);
+        links.splice(i, 1, link);
+        scene.add(link);
     }
 }
