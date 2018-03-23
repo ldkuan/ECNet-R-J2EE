@@ -49,16 +49,7 @@ $(document).ready(function () {
 
     bindMenuClickEvent();
 
-    // drawNode("123", 2, 3, null);
-    // drawNode("1234", 2, 3, 1);
-    // drawNode("12345", 2, 3, 2);
-    // drawNode("1234577", 2, 3, 2);
-    // drawNode("1234577", 2, 3, 3);
-    // drawNode("1234577", 2, 3, 5);
-    // drawNode("123457781923123123123", 2, 3, 2);
-    // drawNode("你好你好你好你好啊啊啊啊啊", 2, 3, 2);
-
-    // drawNode("123456", 1, 3, null);
+    // $("#law-recommend-modal").modal('show')
 });
 
 function drawNode(topic, type, detail, parentId) {
@@ -80,7 +71,7 @@ function drawNode(topic, type, detail, parentId) {
     // 根据内容长度决定node宽度
     node.setSize(topicLength, 24);
     // 设置树的方向
-    // node.layout = {type: 'tree', direction: 'left', width: 70, height: 120};
+    node.layout = {type: 'tree', direction: 'left', width: 70, height: 120};
 
     node.addEventListener('mouseup', function (event) {
         nodeClickEvent(node.id, event);
@@ -92,7 +83,6 @@ function drawNode(topic, type, detail, parentId) {
     scene.add(node);
 
     if (parentId == null || parentId == "null") {
-        // node.setLocation(100, 50 + forest.length * 70 + 24);
         node.setLocation(mouseX - $("#canvas").offset().left, mouseY - $("#canvas").offset().top);
 
         var tree = Array.of();
@@ -155,19 +145,19 @@ function bindMenuClickEvent() {
     $('#add-element-li').click(function (event) {
         $('#stageMenu').hide();
         prepareAddModel(getId());
-        $("#node-add-modal").modal('show')
+        $("#node-add-modal").modal('show');
     });
 
     $('#mod-element-li').click(function (event) {
         $('#stageMenu').hide();
         prepareEditModel(getId());
-        $("#node-edit-modal").modal('show')
+        $("#node-edit-modal").modal('show');
     });
 
     $('#del-element-li').click(function (event) {
         $('#stageMenu').hide();
         prepareDelModel(getId());
-        $("#node-del-modal").modal('show')
+        $("#node-del-modal").modal('show');
     });
 
     function getId() {
@@ -271,7 +261,6 @@ function editBtnEvent() {
     node.node.setSize(topicLength, 24);
     node.node.text = topic;
     node.node.borderColor = borderColors[type];
-
 
     $('#node-edit-modal').modal('hide');
     $(".node-info-wrapper .node-panel").hide();
@@ -459,15 +448,16 @@ function nodeClickEvent(id, event) {
     }
 }
 
-function editLink(oldNodeAId, oldNodeZId, newNodeAId, newNodeZId) {
-    var oldLink = findLinkByNodeId(oldNodeAId, oldNodeZId);
+function editLink(oldNodeId, oldParentNodeId, newNodeId, newParentNodeId) {
+    var oldLink = findLinkByNodeId(oldNodeId, oldParentNodeId);
     if (oldLink != null) {
         scene.remove(oldLink);
         links.splice(links.indexOf(oldLink), 1);
     }
 
-    if ((newNodeAId != null && newNodeAId != "null") && (newNodeZId != null && newNodeZId != "null")) {
-        var newLink = new JTopo.Link(findNodeById(newNodeAId).node, findNodeById(newNodeZId).node);
+    if ((newNodeId != null && newNodeId != "null") && (newParentNodeId != null && newParentNodeId != "null")) {
+        // var link = new JTopo.Link(parentNode, node);
+        var newLink = new JTopo.Link(findNodeById(newParentNodeId).node, findNodeById(newNodeId).node);
         scene.add(newLink);
         links.push(newLink);
     }
@@ -550,5 +540,11 @@ function findTreeNumOfNode(id) {
                 return m;
             }
         }
+    }
+}
+
+function compose() {
+    for (var m = 0, len1 = forest.length; m < len1; m++) {
+        JTopo.layout.layoutNode(scene, forest[m][0].node, true);
     }
 }
