@@ -328,6 +328,18 @@
     });
 
 
+
+
+    function bodyHtml(){
+        var bodyHtml="";
+        return bodyHtml;
+    }
+
+    function headHtml(){
+        var headHtml="";
+        return headHtml;
+    }
+
     function loadData(type,data){
         document_id[type]=data.id;
         if(type==0){
@@ -341,11 +353,38 @@
         var bodylist=data.bodylist;
         for(var i=0;i<bodylist.length;i++){
             createHtml(bodylist[i].id,bodylist[i].body,bodylist[i].type,bodylist[i].trust,type);
+            createHeadHtml(bodylist[i].id,bodylist[i].headList,type);
         }
 
 
     }
 
+    function createHeadHtml(bodyid,headList,num){
+        var html="";
+        for(var j=0;j<headList.length;j++){
+            html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable onchange='updateHead(this)' style='padding-left: 2%;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove myRemove headRemove'></span></span>";
+        }
+
+        html+="<span documentid='"+document_id[num-1]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus myRemove' onclick='addHead(this)'></span>"
+
+        $(".evibody[bodyid='"+bodyid+"']").after(html);
+
+        $(".headRemove").click(
+            function(){
+                var id=$(this).attr("headid");
+                console.log("headid"+id);
+                $.ajax({
+                    url:"/evidence/deleteHead",
+                    type:'POST',
+                    data:{"id":id},
+                    success:function(data) {
+                        console.log("delete");
+                    }
+                });
+                $(".head_chain[headid='"+id+"']").remove();
+            });
+
+    }
 
     function createHtml(id,body,type,trust,num){
         var html="";
@@ -514,49 +553,64 @@
                     var headList=data[i].headList;
 
                     for(var j=0;j<headList.length;j++){
-                        html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable style='padding-left: 2%;'>"+headList[j].head+"</label><span class='glyphicon glyphicon-remove myRemove'></span></span>";
+                        html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable onchange='updateHead(this)' style='padding-left: 2%;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove myRemove headRemove'></span></span>";
                     }
 
+                    html+="<span documentid='"+document_id[num-1]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus myRemove' onclick='addHead(this)'></span>"
+
                     $(".evibody[bodyid='"+bodyid+"']").after(html);
+
+                    $(".headRemove").click(
+                        function(){
+                            var id=$(this).attr("headid");
+                            console.log("headid"+id);
+                            $.ajax({
+                                url:"/evidence/deleteHead",
+                                type:'POST',
+                                data:{"id":id},
+                                success:function(data) {
+                                    console.log("delete");
+                                }
+                            });
+                            $(".head_chain[headid='"+id+"']").remove();
+                        });
+
+
+
                 }
-
-
-
-
-
-
             }
         });
-
-
-
-
-
-
     }
 
-    function addHead(but) {
-        // $.ajax({
-        //     url:"/evidence/addHead",
-        //     type:'POST',
-        //     data:{"ajxh":cid,"head":"","document_id":document_id[num-1],"body_id":body_id},
-        //     success:function(data) {
-        //         console.log(data);
-        //         var id=data.id;
-        //         var html="";
-        //
-        //
-        //
-        //     }
-        // });
+    function addHead(span) {
+        var document_id=$(span).attr("documentid");
+        var bodyid=$(span).attr("bodyid");
+         $.ajax({
+             url:"/evidence/addHead",
+             type:'POST',
+             data:{"ajxh":cid,"head":"","document_id":document_id,"body_id":bodyid},
+             success:function(data) {
+                 console.log(data);
+                 var id=data.id;
+                 var html="<span headid='"+id+"' class='head_chain'><label contenteditable style='padding-left: 2%;' onchange='updateHead(this)'></label><span headid='"+id+"' class='glyphicon glyphicon-remove myRemove headRemove'></span></span>";
+                 $(span).before(html);
 
-
-
-
-
+             }
+         });
     }
 
-
+    function updateHead(lablel) {
+        var id=$(lablel).parent().attr("headid");
+        var head=$(lablel).text();
+        $.ajax({
+            url:"/evidence/updateHead",
+            type:'POST',
+            data:{"head":head,"id":id},
+            success:function(data) {
+               console.log("update ok");
+            }
+        });
+    }
 
     function myDelete(num) {
         if(num==1){
