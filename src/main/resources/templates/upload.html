@@ -56,6 +56,8 @@
         }
         .myRemove { color:rgba(0,0,0,0); transition:0.5s; }
         .myRemove:hover { color:rgba(78,78,78,1); }
+        .headRemove { color:rgba(0,0,0,0); transition:0.5s; }
+        .headRemove:hover { color:rgba(78,78,78,1); }
 
 
     </style>
@@ -266,9 +268,12 @@
 </div>
 
 <script>
+
     var username = $.session.get('username');
     $('#userLabel').text(username);
     console.log($.session.get('cid'));
+    var document_id=new Array();
+    var cid=$.session.get('cid');
 
     $('#exist_click').click(function () {
         if(confirm('是否确认退出？'))
@@ -278,8 +283,6 @@
         }
     });
 
-    var document_id=new Array();
-    var cid=$.session.get('cid');
 
     //hide
     $(function(){
@@ -360,29 +363,15 @@
     }
 
     function createHeadHtml(bodyid,headList,num){
-        var html="";
+        var     html="<div class='headList text-left' bodyid='"+bodyid+"'>";
         for(var j=0;j<headList.length;j++){
-            html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable onchange='updateHead(this)' style='padding-left: 2%;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove myRemove headRemove'></span></span>";
+            html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable onblur='updateHead(this)' orginal='"+headList[j].head+"' style='padding-left: 2%;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove  headRemove' onclick='deleteHead(this)'></span></span>";
         }
 
-        html+="<span documentid='"+document_id[num-1]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus myRemove' onclick='addHead(this)'></span>"
-
+        html+="<span documentid='"+document_id[num]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus headRemove' onchange='addHead(this)'></span>"
+        html+="</div>"
         $(".evibody[bodyid='"+bodyid+"']").after(html);
 
-        $(".headRemove").click(
-            function(){
-                var id=$(this).attr("headid");
-                console.log("headid"+id);
-                $.ajax({
-                    url:"/evidence/deleteHead",
-                    type:'POST',
-                    data:{"id":id},
-                    success:function(data) {
-                        console.log("delete");
-                    }
-                });
-                $(".head_chain[headid='"+id+"']").remove();
-            });
 
     }
 
@@ -547,34 +536,20 @@
             success:function(data) {
                 console.log(data);
                 for(var i=0;i<data.length;i++){
-                    html="";
+
                     var bodyid=data[i].id;
 
                     var headList=data[i].headList;
-
+                    html="<div class='headList text-left' bodyid='"+bodyid+"'>";
                     for(var j=0;j<headList.length;j++){
-                        html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable onchange='updateHead(this)' style='padding-left: 2%;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove myRemove headRemove'></span></span>";
+                        html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable orginal='"+headList[j].head+"' onblur='updateHead(this)' style='padding-left: 2%;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove headRemove'  onclick='deleteHead(this)></span></span>";
                     }
 
-                    html+="<span documentid='"+document_id[num-1]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus myRemove' onclick='addHead(this)'></span>"
+                    html+="<span documentid='"+document_id[num-1]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus headRemove' onchange='addHead(this)'></span>"
+                    html+="</div>"
+                    $(".headList[bodyid='"+bodyid+"']").remove();
 
                     $(".evibody[bodyid='"+bodyid+"']").after(html);
-
-                    $(".headRemove").click(
-                        function(){
-                            var id=$(this).attr("headid");
-                            console.log("headid"+id);
-                            $.ajax({
-                                url:"/evidence/deleteHead",
-                                type:'POST',
-                                data:{"id":id},
-                                success:function(data) {
-                                    console.log("delete");
-                                }
-                            });
-                            $(".head_chain[headid='"+id+"']").remove();
-                        });
-
 
 
                 }
@@ -592,24 +567,32 @@
              success:function(data) {
                  console.log(data);
                  var id=data.id;
-                 var html="<span headid='"+id+"' class='head_chain'><label contenteditable style='padding-left: 2%;' onchange='updateHead(this)'></label><span headid='"+id+"' class='glyphicon glyphicon-remove myRemove headRemove'></span></span>";
+                 var html="<span headid='"+id+"' class='head_chain'><label contenteditable style='padding-left: 2%;' onblue='updateHead(this)'></label><span headid='"+id+"' class='glyphicon glyphicon-remove  headRemove'  onclick='deleteHead(this)></span></span>";
                  $(span).before(html);
 
              }
          });
     }
 
+
+
     function updateHead(lablel) {
-        var id=$(lablel).parent().attr("headid");
+        var orginal=$(lablel).attr("orginal");
         var head=$(lablel).text();
+        var id=$(lablel).parent().attr("headid");
+        if(orginal!=head){
+
         $.ajax({
             url:"/evidence/updateHead",
             type:'POST',
             data:{"head":head,"id":id},
             success:function(data) {
                console.log("update ok");
+                $(lablel).attr("orginal",head);
             }
         });
+
+        }
     }
 
     function myDelete(num) {
@@ -742,6 +725,23 @@
             }
         });
     }
+
+
+
+
+        function deleteHead(remove){
+            var id=$(remove).attr("headid");
+            console.log("headid"+id);
+            $.ajax({
+                url:"/evidence/deleteHead",
+                type:'POST',
+                data:{"id":id},
+                success:function(data) {
+                    console.log("delete");
+                }
+            });
+            $(".head_chain[headid='"+id+"']").remove();
+        }
 </script>
 
 
