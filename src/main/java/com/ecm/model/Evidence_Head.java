@@ -11,16 +11,16 @@ public class Evidence_Head {
     @Column(name = "id")
     private int id;
     @Column(name = "ajxh")
-    private int case_id;
+    private int caseID;
     @Column(name = "document_id")
     private int documentid;
     @Column(name = "body_id")
-    private int bodyid;
+    private int bodyid = -1;
     @Column(name = "head")
     private String head;
     private String name;
-    private int x;
-    private int y;
+    private int x = -1;
+    private int y = -1;
 
     public int getId() {
         return id;
@@ -30,12 +30,12 @@ public class Evidence_Head {
         this.id = id;
     }
 
-    public int getCase_id() {
-        return case_id;
+    public int getCaseID() {
+        return caseID;
     }
 
-    public void setCase_id(int case_id) {
-        this.case_id = case_id;
+    public void setCaseID(int caseID) {
+        this.caseID = caseID;
     }
 
     public int getDocumentid() {
@@ -85,4 +85,6 @@ public class Evidence_Head {
     public void setY(int y) {
         this.y = y;
     }
+
+
 }

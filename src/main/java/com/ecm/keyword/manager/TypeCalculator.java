@@ -10,7 +10,7 @@ public class TypeCalculator {
         if(evidence.contains("被告人")){
             return 1;
         }
-        if(evidence.contains("？？")){
+        if(evidence.contains("书证")){
             return 2;
         }
         if(evidence.contains("鉴定")){

@@ -10,7 +10,7 @@ public class Evidence_Document {
         @Column(name = "id")
         private int id;
         @Column(name = "ajxh")
-        private int case_id;
+        private int caseID;
         @Column(name = "committer")
         private String committer;
         @Column(name = "text")
@@ -26,12 +26,12 @@ public class Evidence_Document {
         this.id = id;
     }
 
-    public int getAjxh() {
-        return case_id;
+    public int getCaseID() {
+        return caseID;
     }
 
-    public void setAjxh(int ajxh) {
-        this.case_id = ajxh;
+    public void setCaseID(int caseID) {
+        this.caseID = caseID;
     }
 
     public String getCommitter() {

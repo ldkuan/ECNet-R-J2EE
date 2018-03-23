@@ -2,7 +2,8 @@
 var headerIndex = 0;//当前链头id
 var headerList = {};//存储链头，{id:node}
 var bodyIndex = 0;//当前链体id
-var bodyList = {};//存储链体，{id:{'node':node,'type':'XXX','committer':'XXX','reason':'XXXXXX','conclusion':'XXXXXX'}}
+var bodyList = {};//存储链体，{id:{'node':node,'type':'XXX','committer':'XXX','reason':'XXXXXX',
+// 'conclusion':'XXXXXX','documentID':-1,'isDefendant':1,'trust':1}}
 var jointIndex = 0;//当前连接点（事实）id
 var jointList = {};//存储连接点（事实），{id:{'node':node,'type':'XXX'}}
 var arrowIndex = 0;//当前箭头id
@@ -44,6 +45,7 @@ $(document).ready(function(){
     canvas = document.getElementById('canvas');
     stage = new JTopo.Stage(canvas); // 创建一个舞台对象
     scene = new JTopo.Scene(stage); // 创建一个场景对象
+    stage.mode = "select";
 
     stage.addEventListener("mouseover", function(event){
         console.log("鼠标进入");
@@ -59,7 +61,7 @@ $(document).ready(function(){
 
         tranX_scene = scene.translateX;
         tranY_scene = scene.translateY;
-        console.log(tranX_scene+'@@'+tranY_scene);
+        // console.log(tranX_scene+'@@'+tranY_scene);
     });
 
     stage.addEventListener("mouseup", function(event){
@@ -163,11 +165,10 @@ $(document).ready(function(){
 
 
     $('#save-btn').click(function () {
-        saveHeaders();
-        saveBodies();
-        saveJoints();
-        saveArrows();
-        saveLinks();
+        // saveBodies();
+        // saveHeaders();
+        // saveJoints();
+        // saveArrows();
     });
     $('#saveImg-btn').click(function () {
         stage.saveImageInfo();
@@ -179,8 +180,6 @@ $(document).ready(function(){
         typeSetting();
     });
 
-    initGraph();
-
 });
 
 //存储链头
@@ -188,7 +187,15 @@ function saveHeaders() {
     var hList = [];
     for(var hid in headerList){
         var node = headerList[hid];
-        var h = {"id":hid,"cid":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y};
+        var documentID = -1;
+        var bodyID = -1;
+        if(node.outLinks!=null){
+            bodyID = node.outLinks[0].nodeZ.id;
+            documentID = bodyList[bodyID]['documentID'];
+        }
+        console.log('hid:'+hid);
+        var h = {"id":hid,"caseID":cid,"documentid":documentID,"bodyid":bodyID,
+            "name":node.text,"head":node.content,"x":node.x,"y":node.y};
         hList.push(h);
     }
 
@@ -200,6 +207,7 @@ function saveHeaders() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("1!");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -216,6 +224,7 @@ function saveHeaders() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("1*");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -229,8 +238,8 @@ function saveBodies() {
     for(var bid in bodyList){
         var body = bodyList[bid];
         var node = body['node'];
-        var b = {"id":bid,"cid":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,
-        "type":body['type'],"committer":body['committer'],"reason":body['reason'],"conclusion":body['conclusion']};
+        var b = {"id":bid,"caseID":cid,"documentid":body['documentID'],"name":node.text,"body":node.content,"x":node.x,"y":node.y,
+        "type":body['type'],"committer":body['committer'],"reason":body['reason'],"conclusion":body['conclusion'],"isDefendant":body['isDefendant']};
         bList.push(b);
     }
 
@@ -242,6 +251,7 @@ function saveBodies() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("2!");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -258,6 +268,7 @@ function saveBodies() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("2*");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -271,18 +282,20 @@ function saveJoints() {
     for(var jid in jointList){
         var joint = jointList[jid];
         var node = joint['node'];
-        var j = {"id":jid,"cid":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,"type":joint['type']};
+        alert(node.text);
+        var j = {"id":jid,"caseID":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,"type":joint['type']};
         jList.push(j);
     }
 
     $.ajax({
         type: "post",
-        url: "/model/deleteBodies",
+        url: "/model/deleteJoints",
         data:{"cid":cid},
         async: false,
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("3!");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -299,6 +312,7 @@ function saveJoints() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("3*");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -311,7 +325,7 @@ function saveArrows() {
     var aList = [];
     for(var aid in arrowList){
         var node = arrowList[aid];
-        var a = {"id":aid,"cid":cid,"nodeFrom_hid":node.nodeA.id,"nodeTo_jid":node.nodeZ.id,
+        var a = {"id":aid,"caseID":cid,"nodeFrom_hid":node.nodeA.id,"nodeTo_jid":node.nodeZ.id,
             "name":node.text,"content":node.content};
         aList.push(a);
     }
@@ -324,6 +338,7 @@ function saveArrows() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("4!");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -340,46 +355,7 @@ function saveArrows() {
         success: function (data) {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
-            alert(XMLHttpRequest.status);
-            alert(XMLHttpRequest.readyState);
-            alert(textStatus);
-        }
-    });
-}
-
-//存储连线
-function saveLinks() {
-    var lList = [];
-    for(var lid in linkList){
-        var node = linkList[lid];
-        var l = {"id":lid,"cid":cid,"nodeFrom_hid":node.nodeA.id,"nodeTo_bid":node.nodeZ.id};
-        lList.push(l);
-    }
-
-    $.ajax({
-        type: "post",
-        url: "/model/deleteLinks",
-        data:{"cid":cid},
-        async: false,
-        success: function (data) {
-
-        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
-            alert(XMLHttpRequest.status);
-            alert(XMLHttpRequest.readyState);
-            alert(textStatus);
-        }
-    });
-
-    $.ajax({
-        type: "post",
-        url: "/model/saveLinks",
-        data: JSON.stringify(lList),
-        // dataType:"json",
-        contentType: "application/json; charset=utf-8",
-        async: false,
-        success: function (data) {
-
-        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("4*");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -963,6 +939,10 @@ function bindRightPanel() {
         bodyList[bid]['conclusion'] = $('#body-evidenceConclusion').val();
         var con = $('#body-content').val();
         bodyList[bid]['node'].content = con;
+        var name = $('#body-name').val();
+        if(name==null||name.length==0){
+            bodyList[bid]['node'].text = con;
+        }
 
         var filter_content = '.evidence[data-id='+bid+']';
         var p_div = $(filter_content);
@@ -996,6 +976,11 @@ function bindRightPanel() {
         headerList[hid].text = $('#head-name').val();
         var con = $('#head-content').val();
         headerList[hid].content = con;
+
+        var name = $('#head-name').val();
+        if(name==null||name.length==0){
+            headerList[hid].text = con;
+        }
 
         var filter_content = '.head_chain[data-id='+hid+']';
         var p_div = $(filter_content);
@@ -1060,18 +1045,18 @@ function bindRightPanel() {
 
 //添加连线
 function addLink(nodeFrom,nodeTo,id){
-    var hasLink = false;
+    // var hasLink = false;
+    //
+    // //判断是否已存在连线
+    // if(nodeFrom.outLinks!=null)
+    //     for(var i = 0;i<nodeFrom.outLinks.length;i++){
+    //         if(nodeFrom.outLinks[i].nodeZ==nodeTo){
+    //             hasLink = true;
+    //             break;
+    //         }
+    //     }
 
-    //判断是否已存在连线
-    if(nodeFrom.outLinks!=null)
-        for(var i = 0;i<nodeFrom.outLinks.length;i++){
-            if(nodeFrom.outLinks[i].nodeZ==nodeTo){
-                hasLink = true;
-                break;
-            }
-        }
-
-    if(!hasLink){
+    if(nodeFrom.outLinks==null||nodeFrom.outLinks.length<1){
         if(id==null)
             id = linkIndex++;
 
@@ -1184,10 +1169,15 @@ function deleteArrow(arrow) {
 //绘制链头，返回链头节点
 function drawHeader(x,y,id,name,content){
 
-    if(name==null)
-        name = '新链头'+(headerIndex+1);
-    if(content==null)
+    if(name==null||name.length==0){
+        if(content==null||content.length==0||content.length>10)
+            name = '链头'+(headerIndex+1);
+        else
+            name = content;
+    }
+    if(content==null||content.length==0){
         content = name;
+    }
     if(id==null)
         id = headerIndex++;
 
@@ -1254,12 +1244,25 @@ function deleteHeader(header) {
 }
 
 //绘制链体，返回链体节点
-function drawBody(x,y,id,name,content,type,committer,reason,conclusion){
+function drawBody(x,y,id,name,content,type,committer,reason,conclusion,documentID,isDefendant,trust){
 
-    if(name==null)
-        name = '新链体'+(bodyIndex+1);
+    if(name==null||name.length==0){
+        if(content==null||content.length==0||content.length>10)
+            name = '链体'+(bodyIndex+1);
+        else
+            name = content;
+    }
+    if(content==null||content.length==0){
+        content = name;
+    }
     if(id==null)
         id = bodyIndex++;
+    if(documentID==null)
+        documentID = -1;
+    if(isDefendant==null)
+        isDefendant = 1;
+    if(trust==null)
+        trust = 1;
 
     var node = new JTopo.Node(name);
     node.id = id;
@@ -1270,11 +1273,12 @@ function drawBody(x,y,id,name,content,type,committer,reason,conclusion){
     node.borderWidth = 2;
     node.setSize(body_width,body_height);
     node.setLocation(x-(body_width/2),y-(body_height/2));
-    node.shadow = "true";
+    // node.shadow = "true";
     node.textPosition = 'Bottom_Center'; // 文本位置
     node.node_type = 'body';
 
-    bodyList[node.id] = {'node':node,'type':type,'committer':committer,'reason':reason,'conclusion':conclusion};
+    bodyList[node.id] = {'node':node,'type':type,'committer':committer,'reason':reason,'conclusion':conclusion,
+    'documentID':documentID,'isDefendant':isDefendant,'trust':trust};
     scene.add(node);
 
     node.click(function () {
@@ -1334,7 +1338,7 @@ function deleteBody(body) {
 function drawJoint(x,y,id,name,content,type){
 
     if(name==null)
-        name = '新连接点'+(jointIndex+1);
+        name = '连接点'+(jointIndex+1);
     if(id==null)
         id = jointIndex++;
 
@@ -1420,33 +1424,147 @@ function highlightEvidence() {
 }
 
 //初始化右侧建模图
-function initGraph() {
+function initGraph(trusts,freeHeaders,joints,arrows) {
 
-    var evidences_adoption = [{"证据":"证据1XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":1},
-        {"证据":"证据2XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0},
-        {"证据":"证据3XXXXXXXXXXXXXXX","链头":["链头1","链头2"],"原告":0}];
+    var x = 10 + (body_width/2);
+    var y = 10 + header_radius;
+    var headerGap_x = 100;
+    var headerGap_y = 40;
+    var jointGap = 150;
+    var pre_bx = -1;
+    var pre_by = -1;
+    var pre_hx = -1;
+    var pre_hy = -1;
+    var pre_jx = -1;
+    var pre_jy = -1;
 
-    var x = 35;
-    var y = 35;
-    var k = 0;
+    for(var i = 0;i<trusts.length;i++){
+        var body = trusts[i]['body'];
+        var b_x = body['x'];
+        var b_y = body['y'];
 
-    for(var i = 0;i<data.length;i++){
-        var bid = drawBody(x+100,y,i,'证据'+(i+1),data[i]['证据'],"XX","XXX","XXX","XXXX").id;
-
-        var headers = data[i]['链头'];
-        for(var j = 0;j<headers.length;j++){
-            var hid = drawHeader(x,y,k,headers[j],headers[j]).id;
-            y+=70;
-            addLink(headerList[hid], bodyList[bid]['node'],k++);
+        if(b_x<=0){
+            if(pre_bx>=0){
+                b_x = pre_bx;
+            }else{
+                b_x = x;
+            }
+        }else{
+            pre_bx = b_x;
         }
-        x+=100;
+        if(b_y<=0){
+            if(pre_by>=0){
+                b_y = pre_by + body_height + headerGap_y;
+            }else{
+                b_y = y+(body_height + headerGap_y)*i;
+            }
+        }else{
+            pre_by = b_y;
+        }
 
+        var b = drawBody(b_x,b_y,body['id'],body['name'],body['body'],body['type'],body['committer'],
+            body['reason'],body['conclusion'],body['documentid'],body['isDefendant'],body['trust']);
+
+        var headers = trusts[i]['headers'];
+        for(var j = 0;j<headers.length;j++){
+            var header = headers[j];
+            var h_x = header['x'];
+            var h_y = header['y'];
+
+            if(h_x<=0){
+                if(pre_hx>=0){
+                    h_x = pre_hx;
+                }else{
+                    h_x = x + body_width/2 + headerGap_x + header_radius;
+                }
+            }else{
+                pre_hx = h_x;
+            }
+            if(h_y<=0){
+                if(pre_hy>=0){
+                    h_y = pre_hy + headerGap_y + (header_radius*2);
+                }else{
+                    h_y = y;
+                    y += headerGap_y + (header_radius*2);
+                }
+            }else{
+                pre_hy = h_y;
+            }
+
+            var h = drawHeader(h_x,h_y,header['id'],header['name'],header['head']);
+            addLink(h,b);
+
+            if(j==headers.length-1){
+                headerIndex = header['id']+1;
+            }
+        }
+
+        if(i==trusts.length-1){
+            bodyIndex = body['id']+1;
+        }
     }
-    bodyIndex = data.length;
-    headerIndex = k+1;
-    linkIndex = k+1;
 
-    // JTopo.layout.layoutNode(scene, bodyList['证据0'], true);
+    for(var i = 0;i<freeHeaders.length;i++){
+        var header = freeHeaders[i];
+        var h_x = header['x'];
+        var h_y = header['y'];
+
+        if(h_x<=0){
+            if(pre_hx>=0){
+                h_x = pre_hx;
+            }else{
+                h_x = x + body_width/2 + headerGap_x + header_radius;
+            }
+        }else{
+            pre_hx = h_x;
+        }
+        if(h_y<=0){
+            if(pre_hy>=0){
+                h_y = pre_hy + headerGap_y + (header_radius*2);
+            }else{
+                h_y = y;
+                y += headerGap_y + (header_radius*2);
+            }
+        }else{
+            pre_hy = h_y;
+        }
+
+        drawHeader(h_x,h_y,header['id'],header['name'],header['head']);
+    }
+
+    x+=body_width/2 + headerGap_x + header_radius;
+    for(var i = 0;i<joints.length;i++){
+        var joint = joints[i];
+        var j_x = joint['x'];
+        var j_y = joint['y'];
+
+        if(j_x<=0){
+            if(pre_jx>=0){
+                j_x = pre_jx;
+            }else{
+                j_x = x + header_radius + jointGap + joint_width/2;
+            }
+        }else{
+            pre_jx = j_x;
+        }
+        if(j_y<=0){
+            if(pre_jy>=0){
+                j_y = pre_jy + joint_width + headerGap_y;
+            }else{
+                j_y = y+(joint_width + headerGap_y)*i;
+            }
+        }else{
+            pre_jy = j_y;
+        }
+
+        drawJoint(j_x,j_y,joint['id'],joint['name'],joint['content'],joint['type']);
+    }
+
+    for(var i = 0;i<arrows.length;i++){
+        var arrow = arrows[i];
+        addArrow(headerList[arrow['nodeFrom_hid']],bodyList[arrow['nodeTo_jid']],arrow['id'],arrow['name'],arrow['content']);
+    }
+
 }
 
 //排版
@@ -1456,22 +1574,30 @@ function typeSetting() {
     var headerGap_x = 100;
     var headerGap_y = 40;
     var jointGap = 150;
+    var t = 0;
 
     for(var bid in bodyList){
+
         var body = bodyList[bid]['node'];
         body.x = x;
 
         var inLinks = body.inLinks;
-        body.y = y+((inLinks.length-1)*(2*header_radius + headerGap_y)/2);
+        if(inLinks!=null)
+            body.y = y+((inLinks.length-1)*(2*header_radius + headerGap_y)/2);
+        else
+            body.y = y+(body_height + headerGap_y)*t;
 
+        if(inLinks!=null)
         for(var i = 0;i<inLinks.length;i++){
             var header = inLinks[i].nodeA;
             header.x = x + body_width/2 + headerGap_x + header_radius;
             header.y = y;
             y += headerGap_y + (header_radius*2);
         }
+        t++;
     }
 
+    t = 0;
     x+=body_width/2 + headerGap_x + header_radius;
     for(var jid in jointList){
         var joint = jointList[jid]['node'];
@@ -1480,15 +1606,20 @@ function typeSetting() {
         var y_min = 10000000;
         var inLinks = joint.inLinks;
 
-        for(var i = 0;i<inLinks.length;i++){
-            var header = inLinks[i].nodeA;
-            if(header.y>y_max){
-                y_max = header.y;
+        if(inLinks!=null){
+            for(var i = 0;i<inLinks.length;i++){
+                var header = inLinks[i].nodeA;
+                if(header.y>y_max){
+                    y_max = header.y;
+                }
+                if(header.y<y_min){
+                    y_min = header.y;
+                }
             }
-            if(header.y<y_min){
-                y_min = header.y;
-            }
+            joint.y = (y_min + y_max)/2;
+        }else{
+            joint.y = y+(joint_width + headerGap_y)*t;
         }
-        joint.y = (y_min + y_max)/2;
+        t++;
     }
 }
