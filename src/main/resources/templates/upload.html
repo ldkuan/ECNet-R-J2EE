@@ -49,15 +49,27 @@
         body{ background:#ffffff}
 
         .head_chain {
-            /* display: inline-block; */
+             display: inline-block;
             border: 1px solid black;
             margin-left: 2%;
             padding: 3px;
+            margin-top: 1%;
+            white-space:nowrap;
         }
         .myRemove { color:rgba(0,0,0,0); transition:0.5s; }
         .myRemove:hover { color:rgba(78,78,78,1); }
+        .headRemove { color:rgba(0,0,0,0); transition:0.5s; }
+        .headRemove:hover { color:rgba(78,78,78,1); }
 
+        .headList{
+            margin-top: -2%;
+        }
 
+        .addHead{
+
+            padding-left: 1%;
+
+        }
     </style>
 </head>
 
@@ -266,9 +278,12 @@
 </div>
 
 <script>
+
     var username = $.session.get('username');
     $('#userLabel').text(username);
     console.log($.session.get('cid'));
+    var document_id=new Array();
+    var cid=$.session.get('cid');
 
     $('#exist_click').click(function () {
         if(confirm('是否确认退出？'))
@@ -278,8 +293,6 @@
         }
     });
 
-    var document_id=new Array();
-    var cid=$.session.get('cid');
 
     //hide
     $(function(){
@@ -328,6 +341,18 @@
     });
 
 
+
+
+    function bodyHtml(){
+        var bodyHtml="";
+        return bodyHtml;
+    }
+
+    function headHtml(){
+        var headHtml="";
+        return headHtml;
+    }
+
     function loadData(type,data){
         document_id[type]=data.id;
         if(type==0){
@@ -341,11 +366,23 @@
         var bodylist=data.bodylist;
         for(var i=0;i<bodylist.length;i++){
             createHtml(bodylist[i].id,bodylist[i].body,bodylist[i].type,bodylist[i].trust,type);
+            createHeadHtml(bodylist[i].id,bodylist[i].headList,type);
         }
 
 
     }
 
+    function createHeadHtml(bodyid,headList,num){
+        var html="<div class='headList text-left' bodyid='"+bodyid+"'>";
+        for(var j=0;j<headList.length;j++){
+            html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable onblur='updateHead(this)' orginal='"+headList[j].head+"' style='min-width: 25px;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove  headRemove' onclick='deleteHead(this)'></span></span>";
+        }
+
+        html+="<span documentid='"+document_id[num]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus headRemove addHead' onclick='addHead(this)'></span>"
+        html+="</div>"
+        $(".evibody[bodyid='"+bodyid+"']").after(html);
+
+    }
 
     function createHtml(id,body,type,trust,num){
         var html="";
@@ -361,7 +398,7 @@
 
 
         html="<div id='"+id+"' bodyid='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
-            " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
+            " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"' onclick='bodyRemove(this)'></a>\n" +
             "\n</div>"
         html+=select;
 
@@ -390,24 +427,69 @@
 
         }
 
-        $(".myRemove").click(
-            function(){
-                var id=$(this).attr("bodyid");
-                console.log("bodyid"+id);
-                $.ajax({
-                    url:"/evidence/deleteBody",
-                    type:'POST',
-                    data:{"id":id},
-                    success:function(data) {
-                        console.log("delete");
-                    }
-                });
 
-                $("#"+id).remove();
 
+
+    }
+
+
+    function   bodyRemove(body){
+        var id=$(body).attr("bodyid");
+        console.log("bodyid"+id);
+        $.ajax({
+            url:"/evidence/deleteBody",
+            type:'POST',
+            data:{"id":id},
+            success:function(data) {
+                console.log("delete");
+            }
+        });
+
+        $(".headList[bodyid='"+bodyid+"']").remove();
+        $(".evibody[bodyid='"+bodyid+"']").remove();
+
+    }
+    function loading(num) {
+        if(num==1){
+            $('#list_div').loading({
+                loadingWidth:240,
+                title:'请稍等!',
+                name:'test',
+                discription:'这是一个描述...',
+                direction:'row',
+                type:'origin',
+                originBg:'#71EA71',
+                originDivWidth:30,
+                originDivHeight:30,
+                originWidth:4,
+                originHeight:4,
+                smallLoading:false,
+                titleColor:'#388E7A',
+                loadingBg:'#312923',
+                loadingMaskBg:'rgba(22,22,22,0.2)'
             });
-
-
+        }else{
+            $('#graph_div').loading({
+                loadingWidth:240,
+                title:'请稍等!',
+                name:'test',
+                discription:'这是一个描述...',
+                direction:'row',
+                type:'origin',
+                originBg:'#71EA71',
+                originDivWidth:30,
+                originDivHeight:30,
+                originWidth:4,
+                originHeight:4,
+                smallLoading:false,
+                titleColor:'#388E7A',
+                loadingBg:'#312923',
+                loadingMaskBg:'rgba(22,22,22,0.2)'
+            });
+        }
+        setTimeout(function(){
+            removeLoading('test');
+        },50000);
     }
 
 
@@ -428,6 +510,7 @@
             $("#after2").html("");
             str=$("#mystr2").val();
         }
+        loading(num);
         $.ajax({
             url:"/evidence/document",
             type:'POST',
@@ -454,7 +537,7 @@
 
 
                     trustHtml="<div id='"+id+"' bodyid='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
-                        " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
+                        " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'  onclick='bodyRemove(this)'></a>\n" +
                         "\n</div>"
                     trustHtml+=select;
 
@@ -477,22 +560,8 @@
 
 
 
-                $(".myRemove").click(
-                    function(){
-                        var id=$(this).attr("bodyid");
-                        console.log("bodyid"+id);
-                        $.ajax({
-                            url:"/evidence/deleteBody",
-                            type:'POST',
-                            data:{"id":id},
-                            success:function(data) {
-                                console.log("delete");
-                            }
-                        });
 
-                        $("#"+id).remove();
-
-                    });
+                removeLoading('test');
             }
         });
     }
@@ -501,62 +570,77 @@
 
     function myHead(num) {
         var html="";
+        loading(num);
         $.ajax({
             url:"/evidence/createHead",
             type:'POST',
             data:{"ajxh":cid,"head":"","document_id":document_id[num-1]},
             success:function(data) {
-                console.log(data);
+
                 for(var i=0;i<data.length;i++){
-                    html="";
+
                     var bodyid=data[i].id;
 
                     var headList=data[i].headList;
+//                    html="<div class='headList text-left' bodyid='"+bodyid+"'>";
+//                    for(var j=0;j<headList.length;j++){
+//                        console.log(headList[j].id);
+//                        html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable orginal='"+headList[j].head+"' onblur='updateHead(this)' style='min-width: 25px;'>"+headList[j].head+"</label><span headid='"+headList[j].id+"' class='glyphicon glyphicon-remove headRemove'  onclick='deleteHead(this)></span></span>";
+//                    }
+//
+//                    html+="<span documentid='"+document_id[num-1]+"' bodyid='"+bodyid+"' class='glyphicon glyphicon-plus headRemove addHead' onclick='addHead(this)'></span>"
+//                    html+="</div>"
+//
+//                    console.log(  $(".headList[bodyid='"+bodyid+"']"));
+                     $(".headList[bodyid='"+bodyid+"']").remove();
 
-                    for(var j=0;j<headList.length;j++){
-                        html+="<span headid='"+headList[j].id+"' class='head_chain'><label contenteditable style='padding-left: 2%;'>"+headList[j].head+"</label><span class='glyphicon glyphicon-remove myRemove'></span></span>";
-                    }
+                    //$(".evibody[bodyid='"+bodyid+"']").after(html);
 
-                    $(".evibody[bodyid='"+bodyid+"']").after(html);
+
+                    createHeadHtml(bodyid,headList,num-1)
+                    removeLoading('test');
                 }
+            }
+        });
+    }
+
+    function addHead(span) {
+        var document_id=$(span).attr("documentid");
+        var bodyid=$(span).attr("bodyid");
+         $.ajax({
+             url:"/evidence/addHead",
+             type:'POST',
+             data:{"ajxh":cid,"head":"","document_id":document_id,"body_id":bodyid},
+             success:function(data) {
+                 console.log(data);
+                 var id=data.id;
+                 var  html="<span headid='"+id+"' class='head_chain'><label contenteditable onblur='updateHead(this)' orginal='' style='min-width: 25px;'></label><span headid='"+id+"' class='glyphicon glyphicon-remove  headRemove' onclick='deleteHead(this)'></span></span>";
+                 $(span).before(html);
+
+             }
+         });
+    }
 
 
 
+    function updateHead(lablel) {
+        var orginal=$(lablel).attr("orginal");
+        var head=$(lablel).text();
+        var id=$(lablel).parent().attr("headid");
+        if(orginal!=head){
 
-
-
+        $.ajax({
+            url:"/evidence/updateHead",
+            type:'POST',
+            data:{"head":head,"id":id},
+            success:function(data) {
+               console.log("update ok");
+                $(lablel).attr("orginal",head);
             }
         });
 
-
-
-
-
-
+        }
     }
-
-    function addHead(but) {
-        // $.ajax({
-        //     url:"/evidence/addHead",
-        //     type:'POST',
-        //     data:{"ajxh":cid,"head":"","document_id":document_id[num-1],"body_id":body_id},
-        //     success:function(data) {
-        //         console.log(data);
-        //         var id=data.id;
-        //         var html="";
-        //
-        //
-        //
-        //     }
-        // });
-
-
-
-
-
-    }
-
-
 
     function myDelete(num) {
         if(num==1){
@@ -592,7 +676,7 @@
 
 
                 html="<div id='"+id+"' bodyid='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+""+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
-                    " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
+                    " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'  onclick='bodyRemove(this)'></a>\n" +
                     "\n</div>"
                 html+=select;
 
@@ -606,22 +690,7 @@
 
                 options.attr("selected",true);
 
-                $(".myRemove").click(
-                    function(){
-                        var id=$(this).attr("bodyid");
-                        console.log("bodyid"+id);
-                        $.ajax({
-                            url:"/evidence/deleteBody",
-                            type:'POST',
-                            data:{"id":id},
-                            success:function(data) {
-                                console.log("delete");
-                            }
-                        });
 
-                        $("#"+id).remove();
-
-                    });
             }
         });
 
@@ -688,6 +757,23 @@
             }
         });
     }
+
+
+
+
+        function deleteHead(remove){
+            var id=$(remove).attr("headid");
+            console.log("headid"+id);
+            $.ajax({
+                url:"/evidence/deleteHead",
+                type:'POST',
+                data:{"id":id},
+                success:function(data) {
+                    console.log("delete");
+                }
+            });
+            $(".head_chain[headid='"+id+"']").remove();
+        }
 </script>
 
 

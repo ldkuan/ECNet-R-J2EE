@@ -72,6 +72,7 @@ public class EvidenceController {
     public int deleteBody(@RequestParam("id") int id){
         System.out.println(id);
         evidenceService.deleteBodyById(id);
+        evidenceService.deleteHeadAllByBody(id);
         return 0;
     }
 
@@ -117,11 +118,13 @@ public class EvidenceController {
             List<Evidence_Body> evidence_bodies=evidenceService.findBodyByDocu(evidence_document.getId());
             JSONArray bodylist=new JSONArray();
             for(Evidence_Body evidence_body:evidence_bodies){
+                evidence_body.setHeadList(evidenceService.findHeadByBody(evidence_body.getId()));
                 JSONObject temp = new JSONObject();
                 temp.put("id",evidence_body.getId());
                 temp.put("body",evidence_body.getBody());
                 temp.put("type",evidence_body.getType());
                 temp.put("trust",evidence_body.getTrust());
+                temp.put("headList",evidence_body.getHeadList());
                 bodylist.add(temp);
             }
             jsonObject.put("bodylist",bodylist);
@@ -137,4 +140,26 @@ public class EvidenceController {
         List<Evidence_Body> headList=evidenceService.createHead(document_id);
         return headList;
     }
+
+    @PostMapping(value = "/deleteHead")
+    public void deleteHead(@RequestParam("id") int id){
+evidenceService.deleteHeadById(id);
+    }
+
+    @PostMapping(value = "/addHead")
+    public Evidence_Head addHead(@RequestParam("head") String head,@RequestParam("document_id") int document_id,@RequestParam("ajxh") int ajxh,@RequestParam("body_id") int bodyid){
+
+        Evidence_Head evidence_head=new Evidence_Head();
+        evidence_head.setHead(head);
+        evidence_head.setDocumentid(document_id);
+        evidence_head.setCaseID(ajxh);
+        evidence_head.setBodyid(bodyid);
+        evidence_head=evidenceService.save(evidence_head);
+        return evidence_head;
+    }
+    @PostMapping(value = "/updateHead")
+    public void updateHeadById(@RequestParam("id") int id,@RequestParam("head") String head){
+        evidenceService.updateHeadById(head,id);
+    }
+
     }

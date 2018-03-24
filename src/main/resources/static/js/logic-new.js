@@ -21,12 +21,8 @@ var mouseClickX;//鼠标上一次点击的位置X坐标（不论左键还是右�
 var mouseClickY;//鼠标上一次点击的位置Y坐标（不论左键还是右键点击）
 var copyAreaLeft;//框选区域的最左边X坐标
 var copyAreaTop;//框选区域的最上边Y坐标
-//var startPosX;
-//var startPosY;
-//var endPosX;
-//var endPosY;
-//var selectedRangeNode;
-//var isAnyNodeSelected = false;
+
+var isCurve = false;
 
 $(document).ready(function () {
     canvas = document.getElementById('canvas');
@@ -63,80 +59,9 @@ $(document).ready(function () {
         } else if (event.button == 0) {
             $("#stageMenu").hide();
 
-            //endPosX = event.pageX - $("#canvas").offset().left;
-            //endPosY = event.pageY - $("#canvas").offset().top;
             $("#endPosX").text(mouseClickX);
             $("#endPosY").text(mouseClickY);
             $("#myAction").text("鼠标左键松开");
-
-            /*
-            var nodeList = scene.getDisplayedNodes();
-            var length = nodeList.length;
-            console.log(length);
-            for (var i = 0; i < length; i++) {
-                isAnyNodeSelected |= nodeList[i].selected;
-            }
-
-            //如果当前没有任何节点被选中，那么说明在移动鼠标来选定框选区
-            if(isAnyNodeSelected == false) {
-                //删除前一个选框
-                if (selectedRangeNode != undefined) {
-                    scene.remove(selectedRangeNode);
-                }
-
-                //注：只考虑肉眼能看见的选中框，非常小的区域画出来会是一个小点，不予考虑
-                if (Math.abs(startPosX - endPosX) > 0.05 && Math.abs(startPosY - endPosY) > 0.05) {
-
-                    //在场景上添加一个近似透明、不覆盖其他节点的节点，作为选中框
-                    selectedRangeNode = new JTopo.Node("");
-                    selectedRangeNode.setBound(startPosX, startPosY, Math.abs(endPosX - startPosX), Math.abs(endPosY - startPosY));
-                    selectedRangeNode.borderColor = '155,155,155';
-                    selectedRangeNode.fillColor = '255, 255, 255';
-                    selectedRangeNode.borderWidth = 1;
-                    selectedRangeNode.borderRadius = 1;
-                    selectedRangeNode.alpha = 0.3;
-                    selectedRangeNode.zIndex = 11;  // 是否覆盖其他，这里设置为可选的最小值，不覆盖其他
-                    scene.add(selectedRangeNode);
-
-                    var areaLeftPos = endPosX > startPosX ? startPosX : endPosX;
-                    var areaRightPos = endPosX > startPosX ? endPosX : startPosX;
-                    var areaTopPos = endPosY > startPosY ? startPosY : endPosY;
-                    var areaBottomPos = endPosY > startPosY ? endPosY : startPosY;
-                    console.log("Area left:"+areaLeftPos+",right:"+areaRightPos+",top:"+areaTopPos+",bottom:"+areaBottomPos);
-                    for (var i = 0; i < length; i++) {
-                        var tempNode = nodeList[i];
-                        var thisLeftPos = tempNode.x;
-                        var thisRightPos = tempNode.x+tempNode.width;
-                        var thisTopPos = tempNode.y;
-                        var thisBottomPos = tempNode.y+tempNode.height;
-                        console.log("Node left:"+thisLeftPos+",right:"+thisRightPos+",top:"+thisTopPos+",bottom:"+thisBottomPos);
-                        if ( ( (thisLeftPos >= areaLeftPos) || (thisRightPos <= areaRightPos) ) && (thisLeftPos < areaRightPos) &&
-                             ( (thisTopPos >= areaTopPos) || (thisBottomPos <= areaBottomPos) ) && (thisTopPos < areaBottomPos) &&
-                             ( tempNode != selectedRangeNode) ) {
-                            //只要和被选中区域有交叉，这个节点就算是在选中区域内，改为被选中状态
-                            tempNode.selected = true;
-                            isAnyNodeSelected = true;
-                            copyNodeArr.push(tempNode);
-                        }
-                    }
-                }
-            }
-
-            //有节点被选中，那么说明已有框选区，在移动框选区中的内容
-            else{
-                //移动之后，将被选中的节点回复原状
-                for(var i=0; i<copyNodeArr.length; i++) {
-                    copyNodeArr[i].selected = false;
-                }
-                isAnyNodeSelected = false;
-                copyNodeArr = [];
-
-                //删除选框
-                if (selectedRangeNode != undefined) {
-                    scene.remove(selectedRangeNode);
-                }
-            }
-            */
         }
     });
 
@@ -147,8 +72,6 @@ $(document).ready(function () {
         mouseClickY = event.pageY - $("#canvas").offset().top;
 
         if (event.button == 0) {
-            //startPosX = event.pageX - $("#canvas").offset().left;
-            //startPosY = event.pageY - $("#canvas").offset().top;
             $("#startPosX").text(mouseClickX);
             $("#startPosY").text(mouseClickY);
             $("#myAction").text("鼠标左键按下");
@@ -159,6 +82,7 @@ $(document).ready(function () {
         //console.log("key "+event.keyCode+" pressed");
 
         if(event.ctrlKey && event.keyCode === 67) {
+
             $("#myAction").text('你按下了CTRL+C');
 
             //将框选区域的左边界定为场景对象的右边界，框选区域的上边界定为场景对象的下边界
@@ -188,11 +112,7 @@ $(document).ready(function () {
             console.log("现在selectedArr里面有"+copyNodeArr.length+"个节点将被粘贴");
             for(var i = 0; i < copyNodeArr.length; i++){
                 //注：这里类似于对象赋值，不能用等于号直接让新节点等于老节点
-                //var thisCopyNode = new JTopo.Node(copyNodeArr[i].text);
-                //console.log(copyNodeArr[i].x + ", "+copyAreaLeft+", "+mouseClickX);
                 console.log("粘贴位置："+(copyNodeArr[i].x-copyAreaLeft+mouseClickX)+","+(copyNodeArr[i].y-copyAreaTop+mouseClickY));
-                //thisCopyNode.setLocation((copyNodeArr[i].x-copyAreaLeft+mouseClickX), (copyNodeArr[i].y-copyAreaTop+mouseClickY));
-                //scene.add(thisCopyNode);
                 drawNodeWithPosition(copyNodeArr[i].text, copyNodeArr[i].type, copyNodeArr[i].detail, copyNodeArr[i].parentId,
                     (copyNodeArr[i].x-copyAreaLeft+mouseClickX), (copyNodeArr[i].y-copyAreaTop+mouseClickY));
             }
@@ -214,19 +134,11 @@ $(document).ready(function () {
 
     });
 
-
     bindMenuClickEvent();
 
-    // drawNode("123", 2, 3, null);
-    // drawNode("1234", 2, 3, 1);
-    // drawNode("12345", 2, 3, 2);
-    // drawNode("1234577", 2, 3, 2);
-    // drawNode("1234577", 2, 3, 3);
-    // drawNode("1234577", 2, 3, 5);
-    // drawNode("123457781923123123123", 2, 3, 2);
-    // drawNode("你好你好你好你好啊啊啊啊啊", 2, 3, 2);
-
-    // drawNode("123456", 1, 3, null);
+    $('#print-btn').click(function () {
+        stage.saveImageInfo(undefined, undefined, "文书说理逻辑图");
+    });
 });
 
 function drawNode(topic, type, detail, parentId) {
@@ -248,7 +160,7 @@ function drawNode(topic, type, detail, parentId) {
     // 根据内容长度决定node宽度
     node.setSize(topicLength, 24);
     // 设置树的方向
-    // node.layout = {type: 'tree', direction: 'left', width: 70, height: 120};
+    node.layout = {type: 'tree', direction: 'left', width: 70, height: 120};
 
     node.addEventListener('mouseup', function (event) {
         nodeClickEvent(node.id, event);
@@ -260,7 +172,6 @@ function drawNode(topic, type, detail, parentId) {
     scene.add(node);
 
     if (parentId == null || parentId == "null") {
-        // node.setLocation(100, 50 + forest.length * 70 + 24);
         node.setLocation(mouseX - $("#canvas").offset().left, mouseY - $("#canvas").offset().top);
 
         var tree = Array.of();
@@ -273,8 +184,6 @@ function drawNode(topic, type, detail, parentId) {
             parentId: parentId
         });
         forest.push(tree);
-
-        // JTopo.layout.layoutNode(scene, node, true);
     } else {
         // 将节点插入到具体的tree中
         var targetTreeNum = -1;
@@ -302,14 +211,8 @@ function drawNode(topic, type, detail, parentId) {
                 break;
             }
         }
-
         node.setLocation(mouseX - $("#canvas").offset().left, mouseY - $("#canvas").offset().top);
-
-        // forest[targetTreeNum][0].node.setLocation(100 + (getTreeMaxDepth(forest[targetTreeNum]) - 1) * 120, 50);
-
         drawLink(parentNode, node);
-
-        // JTopo.layout.layoutNode(scene, forest[targetTreeNum][0].node, true);
     }
 }
 
@@ -400,7 +303,7 @@ function drawNodeWithPosition(topic, type, detail, parentId, posX, posY) {
 
 
 function drawLink(parentNode, node) {
-    var link = new JTopo.Link(parentNode, node);
+    var link = isCurve ? new JTopo.CurveLink(parentNode, node, "") : new JTopo.Link(parentNode, node);
     scene.add(link);
     links.push(link);
 }
@@ -409,19 +312,19 @@ function bindMenuClickEvent() {
     $('#add-element-li').click(function (event) {
         $('#stageMenu').hide();
         prepareAddModel(getId());
-        $("#node-add-modal").modal('show')
+        $("#node-add-modal").modal('show');
     });
 
     $('#mod-element-li').click(function (event) {
         $('#stageMenu').hide();
         prepareEditModel(getId());
-        $("#node-edit-modal").modal('show')
+        $("#node-edit-modal").modal('show');
     });
 
     $('#del-element-li').click(function (event) {
         $('#stageMenu').hide();
         prepareDelModel(getId());
-        $("#node-del-modal").modal('show')
+        $("#node-del-modal").modal('show');
     });
 
     function getId() {
@@ -525,7 +428,6 @@ function editBtnEvent() {
     node.node.setSize(topicLength, 24);
     node.node.text = topic;
     node.node.borderColor = borderColors[type];
-
 
     $('#node-edit-modal').modal('hide');
     $(".node-info-wrapper .node-panel").hide();
@@ -713,17 +615,26 @@ function nodeClickEvent(id, event) {
     }
 }
 
-function editLink(oldNodeAId, oldNodeZId, newNodeAId, newNodeZId) {
-    var oldLink = findLinkByNodeId(oldNodeAId, oldNodeZId);
+/**
+ * 编辑node间的连线，当后两个参数存在空值时，即为删除该连线，否则为重新与新端点连线
+ *
+ * @param oldNodeId
+ * @param oldParentNodeId
+ * @param newNodeId
+ * @param newParentNodeId
+ */
+function editLink(oldNodeId, oldParentNodeId, newNodeId, newParentNodeId) {
+    var oldLink = findLinkByNodeId(oldNodeId, oldParentNodeId);
     if (oldLink != null) {
         scene.remove(oldLink);
         links.splice(links.indexOf(oldLink), 1);
     }
 
-    if ((newNodeAId != null && newNodeAId != "null") && (newNodeZId != null && newNodeZId != "null")) {
-        var newLink = new JTopo.Link(findNodeById(newNodeAId).node, findNodeById(newNodeZId).node);
-        scene.add(newLink);
-        links.push(newLink);
+    if ((newNodeId != null && newNodeId != "null") && (newParentNodeId != null && newParentNodeId != "null")) {
+        // var newLink = new JTopo.Link(findNodeById(newParentNodeId).node, findNodeById(newNodeId).node);
+        // scene.add(newLink);
+        // links.push(newLink);
+        drawLink(findNodeById(newParentNodeId).node, findNodeById(newNodeId).node);
     }
 }
 
@@ -771,7 +682,12 @@ function moveNode(id, newParentId) {
     }
 }
 
-// 根据link的两个端点找到link
+/**
+ * 根据连线的两个端点找到link
+ * @param nodeAId link的一个端点id
+ * @param nodeZId link的另外一个端点id
+ * @returns {*}
+ */
 function findLinkByNodeId(nodeAId, nodeZId) {
     for (var i = 0, len = links.length; i < len; i++) {
         var link = links[i];
@@ -782,7 +698,11 @@ function findLinkByNodeId(nodeAId, nodeZId) {
     return null;
 }
 
-// 根据node的id获得node信息
+/**
+ * 根据node的id获得node信息
+ * @param id node的id
+ * @returns {*}
+ */
 function findNodeById(id) {
     for (var m = 0, len1 = forest.length; m < len1; m++) {
         var tree = forest[m];
@@ -795,7 +715,11 @@ function findNodeById(id) {
     return null;
 }
 
-// 找到node所在树的序号
+/**
+ * 找到node所在树的序号
+ * @param id node的id
+ * @returns {number} node所在树的序号
+ */
 function findTreeNumOfNode(id) {
     for (var m = 0, len1 = forest.length; m < len1; m++) {
         var tree = forest[m];
@@ -804,5 +728,49 @@ function findTreeNumOfNode(id) {
                 return m;
             }
         }
+    }
+}
+
+/**
+ * 自动排版
+ */
+function compose() {
+    // 思路是先直接重新排版，然后根据树的minX和minY再对树的根节点的位置进行调整，再重新排版
+    for (var m = 0, len1 = forest.length; m < len1; m++) {
+        JTopo.layout.layoutNode(scene, forest[m][0].node, true);
+    }
+
+    var lastMaxY = 0;    // 上棵树的maxY
+    for (var m = 0, len1 = forest.length; m < len1; m++) {
+        var minX = forest[m][0].node.x;
+        var minY = forest[m][0].node.y;
+        for (var n = 0, len2 = forest[m].length; n < len2; n++) {
+            minX = forest[m][n].node.x < minX ? forest[m][n].node.x : minX;
+            minY = forest[m][n].node.y < minY ? forest[m][n].node.y : minY;
+        }
+        forest[m][0].node.setLocation(forest[m][0].node.x + (80 - minX), forest[m][0].node.y + 50 + (lastMaxY - minY));
+        JTopo.layout.layoutNode(scene, forest[m][0].node, true);
+
+        // 因为排版后y的值有变化，因此需要在排完版后再计算lastMaxY
+        for (var n = 0, len2 = forest[m].length; n < len2; n++) {
+            lastMaxY = forest[m][n].node.y > lastMaxY ? forest[m][n].node.y : lastMaxY;
+        }
+    }
+}
+
+/**
+ * 显示直/曲线图
+ */
+function curveGraph() {
+    isCurve = !isCurve;
+
+    var text = isCurve ? "显示直线图" : "显示曲线图";
+    $("#line-btn").text(text);
+
+    for (var i = 0, len = links.length; i < len; i++) {
+        var link = isCurve ? new JTopo.CurveLink(links[i].nodeA, links[i].nodeZ, "") : new JTopo.Link(links[i].nodeA, links[i].nodeZ);
+        scene.remove(links[i]);
+        links.splice(i, 1, link);
+        scene.add(link);
     }
 }

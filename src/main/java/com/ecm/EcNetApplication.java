@@ -7,6 +7,11 @@ import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletCont
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 @SpringBootApplication
 //@MapperScan("com.ecm.dao")
 public class EcNetApplication extends SpringBootServletInitializer implements EmbeddedServletContainerCustomizer {
@@ -16,6 +21,10 @@ public class EcNetApplication extends SpringBootServletInitializer implements Em
 		container.setPort(8099);
 	}
 	public static void main(String[] args) {
+
+
+
 		SpringApplication.run(EcNetApplication.class, args);
 	}
+
 }

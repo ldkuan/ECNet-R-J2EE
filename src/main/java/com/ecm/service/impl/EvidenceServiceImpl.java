@@ -60,6 +60,12 @@ public class EvidenceServiceImpl implements EvidenceService {
     public Evidence_Body save(Evidence_Body evidence_body) {
         return evidenceBodyDao.save(evidence_body);
     }
+
+    @Override
+    public Evidence_Head save(Evidence_Head evidence_head) {
+        return evidenceHeadDao.save(evidence_head);
+    }
+
     @Transactional
     @Override
     public void deleteBodyById(int id) {
@@ -147,5 +153,24 @@ public class EvidenceServiceImpl implements EvidenceService {
         }
 
 
+    }
+    @Transactional
+    @Override
+    public void updateHeadById(String head, int id) {
+        evidenceHeadDao.updateHeadById(head, id);
+    }
+    @Transactional
+    @Override
+    public void deleteHeadById(int id) {
+        evidenceHeadDao.deleteById(id);
+    }
+    @Transactional
+    @Override
+    public void deleteHeadAllByBody(int body_id) {evidenceHeadDao.deleteAllByBodyid(body_id);
+    }
+
+    @Override
+    public List<Evidence_Head> findHeadByBody(int bodyid) {
+        return evidenceHeadDao.findAllByBodyid(bodyid);
     }
 }

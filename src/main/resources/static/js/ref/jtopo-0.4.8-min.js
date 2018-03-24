@@ -40,7 +40,7 @@ window.addEventListener/*&&(
 
         this.add=function(a){for(var b=0;b<this.childs.length;b++)if(this.childs[b]===a)return;a.addTo(this),this.childs.push(a)},this.remove=function(a){if(null==a)throw new Error("Stage.remove出错: 参数为null!");for(var b=0;b<this.childs.length;b++)if(this.childs[b]===a)return a.stage=null,this.childs=this.childs.del(b),this;return this},this.clear=function(){this.childs=[]},this.addEventListener=function(a,b){var c=this,d=function(a){b.call(c,a)};return this.messageBus.subscribe(a,d),this},this.removeEventListener=function(a){this.messageBus.unsubscribe(a)},this.removeAllEventListener=function(){this.messageBus=new a.util.MessageBus},this.dispatchEvent=function(a,b){return this.messageBus.publish(a,b),this};var q="click,dbclick,mousedown,mouseup,mouseover,mouseout,mousemove,mousedrag,mousewheel,touchstart,touchmove,touchend,keydown,keyup".split(","),r=this;q.forEach(function(a){r[a]=function(b){null!=b?this.addEventListener(a,b):this.dispatchEvent(a)}}),
     // this.saveImageInfo=function(a,b){var c=this.eagleEye.getImage(a,b),d=window.open("about:blank");return d.document.write("<img src='"+c+"' alt='from canvas'/>"),this},
-    this.saveImageInfo = function (a, b) {
+    this.saveImageInfo = function (a, b, d) {
         var c = this.eagleEye.getImage(a, b);
         function dataURLtoBlob(dataurl) {
             var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
@@ -53,7 +53,7 @@ window.addEventListener/*&&(
         var blob_ = dataURLtoBlob(c); // 用到Blob是因为图片文件过大时，在一部风浏览器上会下载失败，而Blob就不会
         var url;
         url = {
-            name: "证据链模型图", // 图片名称不需要加.png后缀名
+            name: d, // 图片名称不需要加.png后缀名
             src: blob_
         };
 
