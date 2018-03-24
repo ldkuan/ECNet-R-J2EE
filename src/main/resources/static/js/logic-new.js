@@ -15,18 +15,25 @@ var isNodeRightClick = false; // 用来判断右键点击来源
 var mouseX;
 var mouseY;
 
-//用于记录鼠标拖拽框选的变量
-var selectedRangeNode;
-var isMouseDown = false;
-var startPosX;
-var startPosY;
-var endPosX;
-var endPosY;
+//用于记录鼠标拖拽框选、复制粘贴的变量
+var copyNodeArr = Array.of();//保存要被复制的节点数组
+var mouseClickX;//鼠标上一次点击的位置X坐标（不论左键还是右键点击）
+var mouseClickY;//鼠标上一次点击的位置Y坐标（不论左键还是右键点击）
+var copyAreaLeft;//框选区域的最左边X坐标
+var copyAreaTop;//框选区域的最上边Y坐标
+//var startPosX;
+//var startPosY;
+//var endPosX;
+//var endPosY;
+//var selectedRangeNode;
+//var isAnyNodeSelected = false;
 
 $(document).ready(function () {
     canvas = document.getElementById('canvas');
     stage = new JTopo.Stage(canvas); // 创建一个舞台对象
     scene = new JTopo.Scene(stage); // 创建一个场景对象
+
+    stage.mode = "select"; //将舞台对象的模式设置为“可选择”，这样支持框选
 
     stage.addEventListener("mousemove", function (event) {
         $("#posX").text(event.pageX - $("#canvas").offset().left);
@@ -35,6 +42,9 @@ $(document).ready(function () {
 
     stage.addEventListener("mouseup", function (event) {
         console.log("mouse up");
+
+        mouseClickX = event.pageX - $("#canvas").offset().left;
+        mouseClickY = event.pageY - $("#canvas").offset().top;
 
         if (!isNodeRightClick && event.button == 2) {
             $("#element-id").hide();
@@ -52,81 +62,157 @@ $(document).ready(function () {
             }).show();
         } else if (event.button == 0) {
             $("#stageMenu").hide();
-            isMouseDown = true;
-            endPosX = event.pageX - $("#canvas").offset().left;
-            endPosY = event.pageY - $("#canvas").offset().top;
-            $("#endPosX").text(endPosX);
-            $("#endPosY").text(endPosY);
+
+            //endPosX = event.pageX - $("#canvas").offset().left;
+            //endPosY = event.pageY - $("#canvas").offset().top;
+            $("#endPosX").text(mouseClickX);
+            $("#endPosY").text(mouseClickY);
             $("#myAction").text("鼠标左键松开");
 
-            //注：只考虑肉眼能看见的选中框，非常小的区域画出来会是一个小点，不予考虑
-            if (Math.abs(startPosX - endPosX) > 0.05 && Math.abs(startPosY - endPosY) > 0.05) {
-                //删除之前画的选中框
+            /*
+            var nodeList = scene.getDisplayedNodes();
+            var length = nodeList.length;
+            console.log(length);
+            for (var i = 0; i < length; i++) {
+                isAnyNodeSelected |= nodeList[i].selected;
+            }
+
+            //如果当前没有任何节点被选中，那么说明在移动鼠标来选定框选区
+            if(isAnyNodeSelected == false) {
+                //删除前一个选框
                 if (selectedRangeNode != undefined) {
                     scene.remove(selectedRangeNode);
                 }
 
-                //在场景上添加一个近似透明、不覆盖其他节点的节点，作为选中框
-                selectedRangeNode = new JTopo.Node("");
-                selectedRangeNode.setBound(startPosX, startPosY, Math.abs(endPosX - startPosX), Math.abs(endPosY - startPosY));
-                selectedRangeNode.borderColor = '222,222,222';
-                selectedRangeNode.fillColor = '255, 255, 255';
-                selectedRangeNode.borderWidth = 1;
-                selectedRangeNode.borderRadius = 1;
-                selectedRangeNode.alpha = 0.2;
-                selectedRangeNode.zIndex = 11;  // 是否覆盖其他，这里设置为可选的最小值，不覆盖其他
-                scene.add(selectedRangeNode);
+                //注：只考虑肉眼能看见的选中框，非常小的区域画出来会是一个小点，不予考虑
+                if (Math.abs(startPosX - endPosX) > 0.05 && Math.abs(startPosY - endPosY) > 0.05) {
 
-                var areaLeftPos = endPosX > startPosX ? startPosX : endPosX;
-                var areaRightPos = endPosX > startPosX ? endPosX : startPosX;
-                var areaTopPos = endPosY > startPosY ? startPosY : endPosY;
-                var areaBottomPos = endPosY > startPosY ? endPosY : startPosY;
-                console.log("left:"+areaLeftPos+",right:"+areaRightPos+",top:"+areaTopPos+",bottom:"+areaBottomPos);
-                var nodeList = scene.getDisplayedNodes();
-                var length = nodeList.length;
-                for (var i = 0; i < length; i++) {
-                    var tempNode = nodeList[i];
-                    var thisLeftPos = tempNode.x;
-                    var thisRightPos = tempNode.x+tempNode.width;
-                    var thisTopPos = tempNode.y;
-                    var thisBottomPos = tempNode.y+tempNode.height;
-                    console.log("left:"+thisLeftPos+",right:"+thisRightPos+",top:"+thisTopPos+",bottom:"+thisBottomPos);
-                    if ( ( (thisLeftPos >= areaLeftPos) || (thisRightPos <= areaRightPos) ) &&
-                         ( (thisTopPos >= areaTopPos) || (thisBottomPos <= areaBottomPos) ) &&
-                         ( tempNode != selectedRangeNode) ) {
-                        //只要和被选中区域有交叉，这个节点就算是在选中区域内，改为被选中状态
-                        tempNode.selected = true;
-                        tempNode.borderColor = "(0,0,0)";
+                    //在场景上添加一个近似透明、不覆盖其他节点的节点，作为选中框
+                    selectedRangeNode = new JTopo.Node("");
+                    selectedRangeNode.setBound(startPosX, startPosY, Math.abs(endPosX - startPosX), Math.abs(endPosY - startPosY));
+                    selectedRangeNode.borderColor = '155,155,155';
+                    selectedRangeNode.fillColor = '255, 255, 255';
+                    selectedRangeNode.borderWidth = 1;
+                    selectedRangeNode.borderRadius = 1;
+                    selectedRangeNode.alpha = 0.3;
+                    selectedRangeNode.zIndex = 11;  // 是否覆盖其他，这里设置为可选的最小值，不覆盖其他
+                    scene.add(selectedRangeNode);
+
+                    var areaLeftPos = endPosX > startPosX ? startPosX : endPosX;
+                    var areaRightPos = endPosX > startPosX ? endPosX : startPosX;
+                    var areaTopPos = endPosY > startPosY ? startPosY : endPosY;
+                    var areaBottomPos = endPosY > startPosY ? endPosY : startPosY;
+                    console.log("Area left:"+areaLeftPos+",right:"+areaRightPos+",top:"+areaTopPos+",bottom:"+areaBottomPos);
+                    for (var i = 0; i < length; i++) {
+                        var tempNode = nodeList[i];
+                        var thisLeftPos = tempNode.x;
+                        var thisRightPos = tempNode.x+tempNode.width;
+                        var thisTopPos = tempNode.y;
+                        var thisBottomPos = tempNode.y+tempNode.height;
+                        console.log("Node left:"+thisLeftPos+",right:"+thisRightPos+",top:"+thisTopPos+",bottom:"+thisBottomPos);
+                        if ( ( (thisLeftPos >= areaLeftPos) || (thisRightPos <= areaRightPos) ) && (thisLeftPos < areaRightPos) &&
+                             ( (thisTopPos >= areaTopPos) || (thisBottomPos <= areaBottomPos) ) && (thisTopPos < areaBottomPos) &&
+                             ( tempNode != selectedRangeNode) ) {
+                            //只要和被选中区域有交叉，这个节点就算是在选中区域内，改为被选中状态
+                            tempNode.selected = true;
+                            isAnyNodeSelected = true;
+                            copyNodeArr.push(tempNode);
+                        }
                     }
                 }
             }
+
+            //有节点被选中，那么说明已有框选区，在移动框选区中的内容
+            else{
+                //移动之后，将被选中的节点回复原状
+                for(var i=0; i<copyNodeArr.length; i++) {
+                    copyNodeArr[i].selected = false;
+                }
+                isAnyNodeSelected = false;
+                copyNodeArr = [];
+
+                //删除选框
+                if (selectedRangeNode != undefined) {
+                    scene.remove(selectedRangeNode);
+                }
+            }
+            */
         }
     });
 
-    stage.addEventListener("mousedown", function (event) {
+    window.addEventListener("mousedown", function (event) {
         console.log("mouse down");
 
+        mouseClickX = event.pageX - $("#canvas").offset().left;
+        mouseClickY = event.pageY - $("#canvas").offset().top;
+
         if (event.button == 0) {
-            isMouseDown = true;
-            startPosX = event.pageX - $("#canvas").offset().left;
-            startPosY = event.pageY - $("#canvas").offset().top;
-            $("#startPosX").text(startPosX);
-            $("#startPosY").text(startPosY);
+            //startPosX = event.pageX - $("#canvas").offset().left;
+            //startPosY = event.pageY - $("#canvas").offset().top;
+            $("#startPosX").text(mouseClickX);
+            $("#startPosY").text(mouseClickY);
             $("#myAction").text("鼠标左键按下");
         }
     });
 
-    stage.addEventListener("onkeydown", function(event) {
-        var e = event || window.event || arguments.callee.caller.arguments[0];
-        if (e && e.keyCode == 17) {
-            console.log("press control");
-            $("#myAction").text("Ctrl键按下");
-        }
+    window.addEventListener("keydown", function(event) {
+        //console.log("key "+event.keyCode+" pressed");
+
         if(event.ctrlKey && event.keyCode === 67) {
             $("#myAction").text('你按下了CTRL+C');
+
+            //将框选区域的左边界定为场景对象的右边界，框选区域的上边界定为场景对象的下边界
+            copyAreaLeft = stage.width;
+            copyAreaTop = stage.height;
+            //console.log(copyAreaLeft+", "+copyAreaTop);
+
+            //循环查找当前场景中的所有显示节点，若被选中，则加入待复制的节点数组中
+            var nodeList = scene.getDisplayedNodes();
+            var nodeListLen = nodeList.length;
+            for (var i = 0; i < nodeListLen; i++) {
+                if(nodeList[i].selected) {
+                    copyNodeArr.push(nodeList[i]);
+                    copyAreaLeft = nodeList[i].x < copyAreaLeft ? nodeList[i].x : copyAreaLeft;//将框选区域的左边界定为所有选中节点的最小左边界值
+                    copyAreaTop = nodeList[i].y < copyAreaTop ? nodeList[i].y : copyAreaTop;//将框选区域的上边界定为所有选中节点的最小上边界值
+                }
+            }
+            console.log("现在selectedArr里面有"+copyNodeArr.length+"个节点将被复制");
         }
+        if(event.ctrlKey && event.keyCode === 86) {
+            $("#myAction").text('你按下了CTRL+V');
+
+            //获取当前的鼠标位置，以当前鼠标位置作为起始位置进行粘贴
+            //console.log("上一次鼠标点击位置:"+mouseClickX+","+mouseClickY);
+
+            //逐一粘贴每个节点
+            console.log("现在selectedArr里面有"+copyNodeArr.length+"个节点将被粘贴");
+            for(var i = 0; i < copyNodeArr.length; i++){
+                //注：这里类似于对象赋值，不能用等于号直接让新节点等于老节点
+                //var thisCopyNode = new JTopo.Node(copyNodeArr[i].text);
+                //console.log(copyNodeArr[i].x + ", "+copyAreaLeft+", "+mouseClickX);
+                console.log("粘贴位置："+(copyNodeArr[i].x-copyAreaLeft+mouseClickX)+","+(copyNodeArr[i].y-copyAreaTop+mouseClickY));
+                //thisCopyNode.setLocation((copyNodeArr[i].x-copyAreaLeft+mouseClickX), (copyNodeArr[i].y-copyAreaTop+mouseClickY));
+                //scene.add(thisCopyNode);
+                drawNodeWithPosition(copyNodeArr[i].text, copyNodeArr[i].type, copyNodeArr[i].detail, copyNodeArr[i].parentId,
+                    (copyNodeArr[i].x-copyAreaLeft+mouseClickX), (copyNodeArr[i].y-copyAreaTop+mouseClickY));
+            }
+            //清空被选中的节点列表
+            copyNodeArr = [];
+        }
+
     });
 
+    window.addEventListener("keyup", function(event) {
+        //console.log("key "+event.keyCode+" released");
+
+        if(event.ctrlKey && event.keyCode === 67) { //复制已经选中的节点或者连线
+            $("#myAction").text('你松开了CTRL+C');
+        }
+        else if(event.ctrlKey && event.keyCode === 86) {//粘贴上次复制的节点或者连线
+            $("#myAction").text('你松开了CTRL+V');
+        }
+
+    });
 
 
     bindMenuClickEvent();
@@ -226,6 +312,92 @@ function drawNode(topic, type, detail, parentId) {
         // JTopo.layout.layoutNode(scene, forest[targetTreeNum][0].node, true);
     }
 }
+
+//增加的功能，在指定的位置上画指定内容和类型的节点
+function drawNodeWithPosition(topic, type, detail, parentId, posX, posY) {
+    // 以自增的方式生成id
+    idCounter++;
+
+    // 将中文字符以2个长度的英文字母替换
+    var topicLength = 32 + topic.replace(/[\u0391-\uFFE5]/g, "aa").length * 8;
+
+    var node = new JTopo.Node(topic);
+    node.id = idCounter;
+    node.borderColor = borderColors[type];
+
+    node.fillColor = '255, 255, 255';
+    node.borderWidth = 2;
+    node.textPosition = 'Middle_Center';
+    node.borderRadius = 3;
+
+    // 根据内容长度决定node宽度
+    node.setSize(topicLength, 24);
+    // 设置树的方向
+    // node.layout = {type: 'tree', direction: 'left', width: 70, height: 120};
+
+    node.addEventListener('mouseup', function (event) {
+        nodeClickEvent(node.id, event);
+    });
+    node.addEventListener('mouseout', function (event) {
+        isNodeRightClick = false;
+    });
+
+    scene.add(node);
+
+    if (parentId == null || parentId == "null") {
+        // node.setLocation(100, 50 + forest.length * 70 + 24);
+        node.setLocation(posX, posY);
+
+        var tree = Array.of();
+        tree.push({
+            node: node,
+            id: idCounter,
+            topic: topic,
+            type: type,
+            detail: detail,
+            parentId: parentId
+        });
+        forest.push(tree);
+
+        // JTopo.layout.layoutNode(scene, node, true);
+    } else {
+        // 将节点插入到具体的tree中
+        var targetTreeNum = -1;
+        var parentNode = null;
+        for (var m = 0, len1 = forest.length; m < len1; m++) {
+            var tree = forest[m];
+            for (var n = 0, len2 = tree.length; n < len2; n++) {
+                if (parentId == tree[n].id) {
+                    tree.push({
+                        node: node,
+                        id: idCounter,
+                        topic: topic,
+                        type: type,
+                        detail: detail,
+                        parentId: parentId
+                    });
+
+                    targetTreeNum = m;
+                    parentNode = tree[n].node;
+                    break;
+                }
+            }
+
+            if (targetTreeNum != -1) {
+                break;
+            }
+        }
+
+        node.setLocation(mouseX - $("#canvas").offset().left, mouseY - $("#canvas").offset().top);
+
+        // forest[targetTreeNum][0].node.setLocation(100 + (getTreeMaxDepth(forest[targetTreeNum]) - 1) * 120, 50);
+
+        drawLink(parentNode, node);
+
+        // JTopo.layout.layoutNode(scene, forest[targetTreeNum][0].node, true);
+    }
+}
+
 
 function drawLink(parentNode, node) {
     var link = new JTopo.Link(parentNode, node);
