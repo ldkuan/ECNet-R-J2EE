@@ -17,10 +17,6 @@ var isNodeRightClick = false;
 // 当前图是直线图or曲线图
 var isCurve = false;
 
-var isCtrlPressed = false;
-// 多选选中的node集合
-var selectedNodes = Array.of();
-
 var mouseX;
 var mouseY;
 
@@ -30,8 +26,6 @@ var mouseClickX;//鼠标上一次点击的位置X坐标（不论左键还是右�
 var mouseClickY;//鼠标上一次点击的位置Y坐标（不论左键还是右键点击）
 var copyAreaLeft;//框选区域的最左边X坐标
 var copyAreaTop;//框选区域的最上边Y坐标
-
-var isCurve = false;
 
 $(document).ready(function () {
     canvas = document.getElementById('canvas');
@@ -44,6 +38,10 @@ $(document).ready(function () {
         $("#posX").text(event.pageX - $("#canvas").offset().left);
         $("#posY").text(event.pageY - $("#canvas").offset().top);
     });
+
+    // stage.addEventListener("mousedrag", function (event) {
+    //     saveScene();
+    // });
 
     stage.addEventListener("mouseup", function (event) {
         console.log("mouse up");
@@ -119,8 +117,6 @@ $(document).ready(function () {
     });
 
     window.addEventListener("mousedown", function (event) {
-        console.log("mouse down");
-
         mouseClickX = event.pageX - $("#canvas").offset().left;
         mouseClickY = event.pageY - $("#canvas").offset().top;
 
@@ -131,10 +127,9 @@ $(document).ready(function () {
         }
     });
 
-    window.addEventListener("keydown", function(event) {
-        //console.log("key "+event.keyCode+" pressed");
-
-        if(event.ctrlKey && event.keyCode === 67) {
+    window.addEventListener("keydown", function (event) {
+        if (event.ctrlKey && event.keyCode === 67) {
+            // saveScene();
 
             $("#myAction").text('你按下了CTRL+C');
 
@@ -147,55 +142,42 @@ $(document).ready(function () {
             var nodeList = scene.getDisplayedNodes();
             var nodeListLen = nodeList.length;
             for (var i = 0; i < nodeListLen; i++) {
-                if(nodeList[i].selected) {
+                if (nodeList[i].selected) {
                     copyNodeArr.push(nodeList[i]);
                     copyAreaLeft = nodeList[i].x < copyAreaLeft ? nodeList[i].x : copyAreaLeft;//将框选区域的左边界定为所有选中节点的最小左边界值
                     copyAreaTop = nodeList[i].y < copyAreaTop ? nodeList[i].y : copyAreaTop;//将框选区域的上边界定为所有选中节点的最小上边界值
                 }
             }
-            console.log("现在selectedArr里面有"+copyNodeArr.length+"个节点将被复制");
+            console.log("现在selectedArr里面有" + copyNodeArr.length + "个节点将被复制");
         }
-        if(event.ctrlKey && event.keyCode === 86) {
+        if (event.ctrlKey && event.keyCode === 86) {
+            // saveScene();
+
             $("#myAction").text('你按下了CTRL+V');
 
             //获取当前的鼠标位置，以当前鼠标位置作为起始位置进行粘贴
             //console.log("上一次鼠标点击位置:"+mouseClickX+","+mouseClickY);
 
             //逐一粘贴每个节点
-            console.log("现在selectedArr里面有"+copyNodeArr.length+"个节点将被粘贴");
-            for(var i = 0; i < copyNodeArr.length; i++){
+            console.log("现在selectedArr里面有" + copyNodeArr.length + "个节点将被粘贴");
+            for (var i = 0; i < copyNodeArr.length; i++) {
                 //注：这里类似于对象赋值，不能用等于号直接让新节点等于老节点
-                console.log("粘贴位置："+(copyNodeArr[i].x-copyAreaLeft+mouseClickX)+","+(copyNodeArr[i].y-copyAreaTop+mouseClickY));
-                drawNodeWithPosition(copyNodeArr[i].text, copyNodeArr[i].type, copyNodeArr[i].detail, copyNodeArr[i].parentId,
-                    (copyNodeArr[i].x-copyAreaLeft+mouseClickX), (copyNodeArr[i].y-copyAreaTop+mouseClickY));
+                console.log("粘贴位置：" + (copyNodeArr[i].x - copyAreaLeft + mouseClickX) + "," + (copyNodeArr[i].y - copyAreaTop + mouseClickY));
+                drawNode((copyNodeArr[i].x - copyAreaLeft + mouseClickX), (copyNodeArr[i].y - copyAreaTop + mouseClickY), null, copyNodeArr[i].text, copyNodeArr[i].type, copyNodeArr[i].detail, copyNodeArr[i].parentId);
             }
             //清空被选中的节点列表
             copyNodeArr = [];
         }
-
     });
 
-    window.addEventListener("keyup", function(event) {
-        //console.log("key "+event.keyCode+" released");
-
-        if(event.ctrlKey && event.keyCode === 67) { //复制已经选中的节点或者连线
+    window.addEventListener("keyup", function (event) {
+        if (event.ctrlKey && event.keyCode === 67) { //复制已经选中的节点或者连线
             $("#myAction").text('你松开了CTRL+C');
         }
-        else if(event.ctrlKey && event.keyCode === 86) {//粘贴上次复制的节点或者连线
+        else if (event.ctrlKey && event.keyCode === 86) {//粘贴上次复制的节点或者连线
             $("#myAction").text('你松开了CTRL+V');
         }
 
-    });
-
-    this.addEventListener("keydown", function (event) {
-        if (event.keyCode == 17) {
-            isCtrlPressed = true;
-        }
-    });
-    this.addEventListener("keyup", function (event) {
-        if (event.keyCode == 17) {
-            isCtrlPressed = false;
-        }
     });
 
     bindMenuClickEvent();
@@ -274,92 +256,6 @@ function drawNode(x, y, id, topic, type, detail, parentId) {
         drawLink(parentNode, node);
     }
 }
-
-//增加的功能，在指定的位置上画指定内容和类型的节点
-function drawNodeWithPosition(topic, type, detail, parentId, posX, posY) {
-    // 以自增的方式生成id
-    idCounter++;
-
-    // 将中文字符以2个长度的英文字母替换
-    var topicLength = 32 + topic.replace(/[\u0391-\uFFE5]/g, "aa").length * 8;
-
-    var node = new JTopo.Node(topic);
-    node.id = idCounter;
-    node.borderColor = borderColors[type];
-
-    node.fillColor = '255, 255, 255';
-    node.borderWidth = 2;
-    node.textPosition = 'Middle_Center';
-    node.borderRadius = 3;
-
-    // 根据内容长度决定node宽度
-    node.setSize(topicLength, 24);
-    // 设置树的方向
-    // node.layout = {type: 'tree', direction: 'left', width: 70, height: 120};
-
-    node.addEventListener('mouseup', function (event) {
-        nodeClickEvent(node.id, event);
-    });
-    node.addEventListener('mouseout', function (event) {
-        isNodeRightClick = false;
-    });
-
-    scene.add(node);
-
-    if (parentId == null || parentId == "null") {
-        // node.setLocation(100, 50 + forest.length * 70 + 24);
-        node.setLocation(posX, posY);
-
-        var tree = Array.of();
-        tree.push({
-            node: node,
-            id: idCounter,
-            topic: topic,
-            type: type,
-            detail: detail,
-            parentId: parentId
-        });
-        forest.push(tree);
-
-        // JTopo.layout.layoutNode(scene, node, true);
-    } else {
-        // 将节点插入到具体的tree中
-        var targetTreeNum = -1;
-        var parentNode = null;
-        for (var m = 0, len1 = forest.length; m < len1; m++) {
-            var tree = forest[m];
-            for (var n = 0, len2 = tree.length; n < len2; n++) {
-                if (parentId == tree[n].id) {
-                    tree.push({
-                        node: node,
-                        id: idCounter,
-                        topic: topic,
-                        type: type,
-                        detail: detail,
-                        parentId: parentId
-                    });
-
-                    targetTreeNum = m;
-                    parentNode = tree[n].node;
-                    break;
-                }
-            }
-
-            if (targetTreeNum != -1) {
-                break;
-            }
-        }
-
-        node.setLocation(mouseX - $("#canvas").offset().left, mouseY - $("#canvas").offset().top);
-
-        // forest[targetTreeNum][0].node.setLocation(100 + (getTreeMaxDepth(forest[targetTreeNum]) - 1) * 120, 50);
-
-        drawLink(parentNode, node);
-
-        // JTopo.layout.layoutNode(scene, forest[targetTreeNum][0].node, true);
-    }
-}
-
 
 function drawLink(parentNode, node) {
     var link = isCurve ? new JTopo.CurveLink(parentNode, node, "") : new JTopo.Link(parentNode, node);
@@ -657,10 +553,6 @@ function nodeClickEvent(id, event) {
             left: event.pageX
         }).show();
     } else if (event.button == 0) {
-        if (isCtrlPressed && selectedNodes.indexOf(node) < 0) {
-            selectedNodes.push(node);
-        }
-
         // 左键点击节点显示node的信息panel
         $(".node-info-wrapper .node-panel .alert").hide();
         var $infoPanel = $(".node-info-wrapper .node-panel");
