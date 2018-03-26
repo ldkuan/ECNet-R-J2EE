@@ -525,14 +525,15 @@ function prepareSelect($select, id, self) {
         var node = findNodeById(id);
         $select.append("<option value='" + id + "'>" + id + " " + node.topic + "</option>");
     } else {
-        // 将除self以外的所有节点信息增加到"指向"中
-        var html = "";
-        html += "<option value='null'>无</option>"
+        var children = getAllChildren(self); // self的所有子节点
+
+        // 将除self以外的所有非子节点信息增加到"指向"中
+        var html = "<option value='null'>无</option>";
         for (var m = 0, len1 = forest.length; m < len1; m++) {
             var tree = forest[m];
             for (var n = 0, len2 = tree.length; n < len2; n++) {
                 var id = parseInt(tree[n].id);
-                if (id != self) {
+                if (id != self && children.indexOf(id) == -1) {
                     html += "<option value='" + id + "'>" + id + " " + tree[n].topic + "</option>";
                 }
             }
@@ -742,6 +743,33 @@ function findTreeNumOfNode(id) {
     }
 }
 
+function getAllChildren(parentId) {
+    if (parentId == null) return [];
+
+    var children = getDirectChildren(parentId);
+    for (var i = 0; i < children.length; i++) {
+        children.concat(getAllChildren(children[i]));
+    }
+    return children;
+}
+
+function getDirectChildren(parentId) {
+    var result = Array.of();
+
+    var tree = forest[findTreeNumOfNode(parentId)];
+    for (var i = 0; i < tree.length; i++) {
+        if (tree[i].parentId == parentId) {
+            result.push(tree[i].id);
+        }
+    }
+
+    return result;
+}
+
+/**
+ * 获得scene中所有选中的节点
+ * @returns {*}
+ */
 function getSelectedNodes() {
     var selectedNodes = Array.of();
     var nodes = scene.getDisplayedNodes();
