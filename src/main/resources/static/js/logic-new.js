@@ -7,15 +7,22 @@ var borderTypes = ["证据", "事实", "法条", "结论"];
 
 // 储存森林，forest中每个是tree，tree中每个是node节点
 var forest = Array.of();
+var historyForests = Array.of();
 // 存储所有link
 var links = Array.of();
+var historyLinks = Array.of();
 
-var isNodeRightClick = false; // 用来判断右键点击来源
+// 用来判断右键点击来源
+var isNodeRightClick = false;
+// 当前图是直线图or曲线图
+var isCurve = false;
+
+var isCtrlPressed = false;
+// 多选选中的node集合
+var selectedNodes = Array.of();
 
 var mouseX;
 var mouseY;
-
-var isCurve = false;
 
 //用于记录鼠标拖拽框选的变量
 var selectedRangeNode;
@@ -36,14 +43,14 @@ $(document).ready(function () {
     });
 
     stage.addEventListener("mouseup", function (event) {
-        console.log("mouse up");
-
         if (!isNodeRightClick && event.button == 2) {
             $("#element-id").hide();
             $("#element-name").hide();
             $("#hr").hide();
             $("#del-element-li").hide();
             $("#mod-element-li").hide();
+            $("#hr2").hide();
+            $("#advice-element-li").hide();
 
             mouseX = event.pageX;
             mouseY = event.pageY;
@@ -106,9 +113,9 @@ $(document).ready(function () {
     });
 
     stage.addEventListener("mousedown", function (event) {
-        console.log("mouse down");
-
         if (event.button == 0) {
+            saveScene();
+
             isMouseDown = true;
             startPosX = event.pageX - $("#canvas").offset().left;
             startPosY = event.pageY - $("#canvas").offset().top;
@@ -129,6 +136,17 @@ $(document).ready(function () {
         }
     });
 
+    this.addEventListener("keydown", function (event) {
+        if (event.keyCode == 17) {
+            isCtrlPressed = true;
+        }
+    });
+    this.addEventListener("keyup", function (event) {
+        if (event.keyCode == 17) {
+            isCtrlPressed = false;
+        }
+    });
+
     bindMenuClickEvent();
 
     $('#print-btn').click(function () {
@@ -136,15 +154,12 @@ $(document).ready(function () {
     });
 });
 
-function drawNode(topic, type, detail, parentId) {
-    // 以自增的方式生成id
-    idCounter++;
-
+function drawNode(x, y, id, topic, type, detail, parentId) {
     // 将中文字符以2个长度的英文字母替换
     var topicLength = 32 + topic.replace(/[\u0391-\uFFE5]/g, "aa").length * 8;
 
     var node = new JTopo.Node(topic);
-    node.id = idCounter;
+    node.id = id ? id : ++idCounter;
     node.borderColor = borderColors[type];
 
     node.fillColor = '255, 255, 255';
@@ -163,16 +178,15 @@ function drawNode(topic, type, detail, parentId) {
     node.addEventListener('mouseout', function (event) {
         isNodeRightClick = false;
     });
+    node.setLocation(x, y);
 
     scene.add(node);
 
     if (parentId == null || parentId == "null") {
-        node.setLocation(mouseX - $("#canvas").offset().left, mouseY - $("#canvas").offset().top);
-
         var tree = Array.of();
         tree.push({
             node: node,
-            id: idCounter,
+            id: node.id,
             topic: topic,
             type: type,
             detail: detail,
@@ -206,7 +220,6 @@ function drawNode(topic, type, detail, parentId) {
                 break;
             }
         }
-        node.setLocation(mouseX - $("#canvas").offset().left, mouseY - $("#canvas").offset().top);
         drawLink(parentNode, node);
     }
 }
@@ -220,20 +233,25 @@ function drawLink(parentNode, node) {
 function bindMenuClickEvent() {
     $('#add-element-li').click(function (event) {
         $('#stageMenu').hide();
-        prepareAddModel(getId());
+        prepareAddModal(getId());
         $("#node-add-modal").modal('show');
     });
 
     $('#mod-element-li').click(function (event) {
         $('#stageMenu').hide();
-        prepareEditModel(getId());
+        prepareEditModal(getId());
         $("#node-edit-modal").modal('show');
     });
 
     $('#del-element-li').click(function (event) {
         $('#stageMenu').hide();
-        prepareDelModel(getId());
+        prepareDelModal(getId());
         $("#node-del-modal").modal('show');
+    });
+
+    $('#advice-element-li').click(function (event) {
+        $('#stageMenu').hide();
+        $("#law-recommend-modal").modal('show');
     });
 
     function getId() {
@@ -246,7 +264,7 @@ function bindMenuClickEvent() {
     }
 }
 
-function prepareAddModel(id) {
+function prepareAddModal(id) {
     $("#node-add-modal .alert").hide();
 
     $("#node-add-modal #node-add-topic-input").val("");
@@ -258,6 +276,8 @@ function prepareAddModel(id) {
 }
 
 function addBtnEvent() {
+    saveScene();
+
     const $alert = $('#node-add-modal .alert');
     $alert.empty();
     $alert.hide();
@@ -272,7 +292,7 @@ function addBtnEvent() {
     // if (checkCode === LogicValidate.OK) {
     //     const id = me.graphModel.insertNode(topic, type, detail, leadTo);
     //     me.logOperation(new AddOperation(id, me));
-    drawNode(topic, type, detail, leadTo);
+    drawNode(mouseX - $("#canvas").offset().left, mouseY - $("#canvas").offset().top, null, topic, type, detail, leadTo);
     $('#node-add-modal').modal('hide');
     // me.redraw();
     // return;
@@ -284,7 +304,7 @@ function addBtnEvent() {
 //     }
 }
 
-function prepareEditModel(id) {
+function prepareEditModal(id) {
     $("#node-edit-modal .alert").hide();
     var node = findNodeById(id);
     $("#node-edit-modal #node-edit-type-select").removeAttr("disabled");
@@ -301,6 +321,8 @@ function prepareEditModel(id) {
 }
 
 function editBtnEvent() {
+    saveScene();
+
     const $alert = $('#node-edit-modal .alert');
     $alert.empty();
     $alert.hide();
@@ -350,7 +372,7 @@ function editBtnEvent() {
     // }
 }
 
-function prepareDelModel(id) {
+function prepareDelModal(id) {
     var node = findNodeById(id);
     var parentTopic = node && node.parentId != "null" ? findNodeById(node.parentId).topic : "";
     $("#node-del-modal .del-id-td").text(node.id);
@@ -362,6 +384,8 @@ function prepareDelModel(id) {
 
 // 删除当前节点。如果当前节点非根节点，子节点向上移动；若为根节点，则删除该树
 function delNodeBtnEvent() {
+    saveScene();
+
     var id = $('#node-del-modal table .del-id-td').text();
 
     var node = findNodeById(id);
@@ -399,6 +423,8 @@ function delNodeBtnEvent() {
 
 // 删除当前节点及其子节点
 function delNodeAndItsChildrenBtnEvent() {
+    saveScene();
+
     var delNodes = Array.of();
     var node = findNodeById($('#node-del-modal table .del-id-td').text());
     delNodes.push(node);
@@ -432,6 +458,10 @@ function delNodeAndItsChildren(delNodes, id) {
             delNodeAndItsChildren(delNodes, nodeA.id);
         }
     }
+}
+
+function prepareAdviceModal() {
+    $("#law-recommend-modal").show();
 }
 
 // 生成"指向"下拉框内容
@@ -472,6 +502,14 @@ function nodeClickEvent(id, event) {
         $("#hr").show();
         $("#del-element-li").show();
         $("#mod-element-li").show();
+        if (node.type == 1) {
+            // 事实节点
+            $("#hr2").show();
+            $("#advice-element-li").show();
+        } else {
+            $("#hr2").hide();
+            $("#advice-element-li").hide();
+        }
 
         $("#element-id").html("<a>id：" + id + "</a>");
         $("#element-name").html("<a>名称：" + node.topic + "</a>");
@@ -482,6 +520,10 @@ function nodeClickEvent(id, event) {
             left: event.pageX
         }).show();
     } else if (event.button == 0) {
+        if (isCtrlPressed && selectedNodes.indexOf(node) < 0) {
+            selectedNodes.push(node);
+        }
+
         // 左键点击节点显示node的信息panel
         $(".node-info-wrapper .node-panel .alert").hide();
         var $infoPanel = $(".node-info-wrapper .node-panel");
@@ -540,9 +582,6 @@ function editLink(oldNodeId, oldParentNodeId, newNodeId, newParentNodeId) {
     }
 
     if ((newNodeId != null && newNodeId != "null") && (newParentNodeId != null && newParentNodeId != "null")) {
-        // var newLink = new JTopo.Link(findNodeById(newParentNodeId).node, findNodeById(newNodeId).node);
-        // scene.add(newLink);
-        // links.push(newLink);
         drawLink(findNodeById(newParentNodeId).node, findNodeById(newNodeId).node);
     }
 }
@@ -556,7 +595,11 @@ function moveNode(id, newParentId) {
         for (var i = nodeLoc, len = oldTree.length; i < len; i++) {
             tree.push(oldTree[i]);
         }
-        oldTree.splice(nodeLoc);
+        if (nodeLoc != 0) {
+            oldTree.splice(nodeLoc);
+        } else {
+            forest.splice(findTreeNumOfNode(id), 1);
+        }
         forest.push(tree);
     } else {
         for (var m = 0, len = forest.length; m < len; m++) {
@@ -644,6 +687,8 @@ function findTreeNumOfNode(id) {
  * 自动排版
  */
 function compose() {
+    saveScene();
+
     // 思路是先直接重新排版，然后根据树的minX和minY再对树的根节点的位置进行调整，再重新排版
     for (var m = 0, len1 = forest.length; m < len1; m++) {
         JTopo.layout.layoutNode(scene, forest[m][0].node, true);
@@ -681,5 +726,71 @@ function curveGraph() {
         scene.remove(links[i]);
         links.splice(i, 1, link);
         scene.add(link);
+    }
+}
+
+/**
+ * 保存画布
+ */
+function saveScene() {
+    var historyForest = Array.of();
+    for (var m = 0, len1 = forest.length; m < len1; m++) {
+        var tree = forest[m];
+        var backupTree = Array.of();
+        for (var n = 0, len2 = tree.length; n < len2; n++) {
+            backupTree.push({
+                x: tree[n].node.x,
+                y: tree[n].node.y,
+                id: tree[n].id,
+                topic: tree[n].topic,
+                type: tree[n].type,
+                detail: tree[n].detail,
+                parentId: tree[n].parentId
+            });
+        }
+        historyForest.push(backupTree);
+    }
+    historyForests.push(historyForest);
+
+    var historyLink = Array.of();
+    for (var i = 0, len = links.length; i < len; i++) {
+        historyLink.push({
+            parentNodeId: links[i].nodeA.id,
+            nodeId: links[i].nodeZ.id
+        });
+    }
+    historyLinks.push(historyLink);
+
+    $("#revoke-btn").removeClass("disabled");
+}
+
+/**
+ * 撤销
+ */
+function repeal() {
+    scene.clear();
+    forest.splice(0, forest.length);
+    links.splice(0, links.length);
+
+    var lastForest = historyForests.pop();
+    for (var m = 0, len1 = lastForest.length; m < len1; m++) {
+        var tree = lastForest[m];
+        for (var n = 0, len2 = tree.length; n < len2; n++) {
+            drawNode(tree[n].x, tree[n].y, tree[n].id, tree[n].topic, tree[n].type, tree[n].detail, null);
+        }
+    }
+
+    var lastLinks = historyLinks.pop();
+    for (var i = 0, len = lastLinks.length; i < len; i++) {
+        var nodeId = lastLinks[i].nodeId, parentNodeId = lastLinks[i].parentNodeId;
+
+        moveNode(nodeId, parentNodeId);
+        findNodeById(nodeId).parentId = parentNodeId;
+
+        drawLink(findNodeById(parentNodeId).node, findNodeById(nodeId).node);
+    }
+
+    if (historyForests.length == 0) {
+        $("#revoke-btn").addClass("disabled");
     }
 }

@@ -41,7 +41,7 @@
                 <a id="compose-btn" class="btn btn-danger btn-sm" onclick="compose()">自动排版</a>
                 <a id="line-btn" class="btn btn-primary btn-sm" onclick="curveGraph()">显示曲线图</a>
                 <a id="print-btn" class="btn btn-default btn-sm">打印此图</a>
-                <a id="revoke-btn" class="btn btn-warning btn-sm disabled">撤销</a>
+                <a id="revoke-btn" class="btn btn-warning btn-sm disabled" onclick="repeal()">撤销</a>
                 <a id="save-btn" class="btn btn-success btn-sm">保存</a>
             </span>
         </section>
@@ -337,7 +337,6 @@
     </div>
 </div>
 
-
 <!--右键菜单-->
 <ul id="stageMenu" class="dropdown-menu menu_graph" style="font-size: 10px;">
 
@@ -349,6 +348,9 @@
     <li id="add-element-li"><a>新增节点</a></li>
     <li id="del-element-li"><a>删除节点</a></li>
     <li id="mod-element-li"><a>编辑节点</a></li>
+
+    <hr id="hr2" style="margin-top: 7px;margin-bottom: 7px;"/>
+    <li id="advice-element-li"><a>推荐法条</a></li>
 </ul>
 
 </body>
