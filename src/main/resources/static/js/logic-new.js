@@ -7,15 +7,18 @@ var borderTypes = ["证据", "事实", "法条", "结论"];
 
 // 储存森林，forest中每个是tree，tree中每个是node节点
 var forest = Array.of();
+// 保存历史节点
 var historyForests = Array.of();
 // 存储所有link
 var links = Array.of();
+// 保存历史连线
 var historyLinks = Array.of();
-
 // 用来判断右键点击来源
 var isNodeRightClick = false;
 // 当前图是直线图or曲线图
 var isCurve = false;
+// 用来判断是否进行了拖拽行为
+var isDragged = false;
 
 var mouseX;
 var mouseY;
@@ -43,9 +46,11 @@ $(document).ready(function () {
         saveScene();
     });
 
-    stage.addEventListener("mouseup", function (event) {
-        console.log("mouse up");
+    stage.addEventListener("mousedrag", function (event) {
+        isDragged = true;
+    });
 
+    stage.addEventListener("mouseup", function (event) {
         mouseClickX = event.pageX - $("#canvas").offset().left;
         mouseClickY = event.pageY - $("#canvas").offset().top;
 
@@ -54,6 +59,7 @@ $(document).ready(function () {
             $("#element-name").hide();
             $("#hr").hide();
             $("#del-element-li").hide();
+            $("#mul-del-element-li").hide();
             $("#mod-element-li").hide();
             $("#hr2").hide();
             $("#advice-element-li").hide();
@@ -114,6 +120,11 @@ $(document).ready(function () {
                 }
             }
         }
+
+        if (!isDragged) {
+            deleteScene();
+        }
+        isDragged = false;
     });
 
     window.addEventListener("mousedown", function (event) {
@@ -418,7 +429,12 @@ function delNodeBtnEvent() {
     saveScene();
 
     var id = $('#node-del-modal table .del-id-td').text();
+    delNode(id);
 
+    $('#node-del-modal').modal('hide');
+}
+
+function delNode(id) {
     var node = findNodeById(id);
     var treeNum = findTreeNumOfNode(id);
     var tree = forest[treeNum];
@@ -449,7 +465,6 @@ function delNodeBtnEvent() {
         scene.remove(node.node);
         tree.splice(tree.indexOf(node), 1);
     }
-    $('#node-del-modal').modal('hide');
 }
 
 // 删除当前节点及其子节点
@@ -491,8 +506,15 @@ function delNodeAndItsChildren(delNodes, id) {
     }
 }
 
-function prepareAdviceModal() {
-    $("#law-recommend-modal").show();
+function multipleDelNodesEvent() {
+    saveScene();
+
+    var selectedNodes = getSelectedNodes();
+    for (var i = 0; i < selectedNodes.length; i++) {
+        delNode(selectedNodes[i].id);
+    }
+
+    $('#stageMenu').hide();
 }
 
 // 生成"指向"下拉框内容
@@ -528,22 +550,29 @@ function nodeClickEvent(id, event) {
         mouseX = event.pageX;
         mouseY = event.pageY;
 
-        $("#element-id").show();
-        $("#element-name").show();
-        $("#hr").show();
-        $("#del-element-li").show();
-        $("#mod-element-li").show();
-        if (node.type == 1) {
-            // 事实节点
-            $("#hr2").show();
-            $("#advice-element-li").show();
+        var selectedNodes = getSelectedNodes();
+        if (selectedNodes.length > 1) {
+            // 多选nodes
+            $("#add-element-li").hide();
+            $("#mul-del-element-li").show();
         } else {
-            $("#hr2").hide();
-            $("#advice-element-li").hide();
+            // 单选node
+            $("#element-id").show();
+            $("#element-name").show();
+            $("#hr").show();
+            $("#del-element-li").show();
+            $("#mod-element-li").show();
+            if (node.type == 1) {
+                // 事实节点
+                $("#hr2").show();
+                $("#advice-element-li").show();
+            } else {
+                $("#hr2").hide();
+                $("#advice-element-li").hide();
+            }
+            $("#element-id").html("<a>id：" + id + "</a>");
+            $("#element-name").html("<a>名称：" + node.topic + "</a>");
         }
-
-        $("#element-id").html("<a>id：" + id + "</a>");
-        $("#element-name").html("<a>名称：" + node.topic + "</a>");
 
         // 当前位置弹出菜单（div）
         $("#stageMenu").css({
@@ -713,6 +742,17 @@ function findTreeNumOfNode(id) {
     }
 }
 
+function getSelectedNodes() {
+    var selectedNodes = Array.of();
+    var nodes = scene.getDisplayedNodes();
+    for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].selected) {
+            selectedNodes.push(nodes[i]);
+        }
+    }
+    return selectedNodes;
+}
+
 /**
  * 自动排版
  */
@@ -792,6 +832,11 @@ function saveScene() {
     historyLinks.push(historyLink);
 
     $("#revoke-btn").removeClass("disabled");
+}
+
+function deleteScene() {
+    historyForests.pop();
+    historyLinks.pop();
 }
 
 /**
