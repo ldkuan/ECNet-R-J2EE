@@ -398,7 +398,7 @@
 
 
         html="<div id='"+id+"' bodyid='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
-            " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
+            " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"' onclick='bodyRemove(this)'></a>\n" +
             "\n</div>"
         html+=select;
 
@@ -427,26 +427,28 @@
 
         }
 
-        $(".myRemove").click(
-            function(){
-                var id=$(this).attr("bodyid");
-                console.log("bodyid"+id);
-                $.ajax({
-                    url:"/evidence/deleteBody",
-                    type:'POST',
-                    data:{"id":id},
-                    success:function(data) {
-                        console.log("delete");
-                    }
-                });
 
-                $("#"+id).remove();
-
-            });
 
 
     }
 
+
+    function   bodyRemove(body){
+        var id=$(body).attr("bodyid");
+        console.log("bodyid"+id);
+        $.ajax({
+            url:"/evidence/deleteBody",
+            type:'POST',
+            data:{"id":id},
+            success:function(data) {
+                console.log("delete");
+            }
+        });
+
+        $(".headList[bodyid='"+bodyid+"']").remove();
+        $(".evibody[bodyid='"+bodyid+"']").remove();
+
+    }
     function loading(num) {
         if(num==1){
             $('#list_div').loading({
@@ -485,11 +487,9 @@
                 loadingMaskBg:'rgba(22,22,22,0.2)'
             });
         }
-
-
-//        setTimeout(function(){
-//            removeLoading('test');
-//        },3000);
+        setTimeout(function(){
+            removeLoading('test');
+        },50000);
     }
 
 
@@ -537,7 +537,7 @@
 
 
                     trustHtml="<div id='"+id+"' bodyid='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+body+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
-                        " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
+                        " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'  onclick='bodyRemove(this)'></a>\n" +
                         "\n</div>"
                     trustHtml+=select;
 
@@ -560,23 +560,7 @@
 
 
 
-                $(".myRemove").click(
-                    function(){
-                        var id=$(this).attr("bodyid");
-                        console.log("bodyid"+id);
-                        $.ajax({
-                            url:"/evidence/deleteBody",
-                            type:'POST',
-                            data:{"id":id},
-                            success:function(data) {
-                                console.log("delete");
-                            }
-                        });
 
-                        $("#"+id).remove();
-                        $("#"+id).remove();
-
-                    });
                 removeLoading('test');
             }
         });
@@ -692,7 +676,7 @@
 
 
                 html="<div id='"+id+"' bodyid='"+id+"' class='evibody form-group row'><br><div class='col-md-8'><input type='text' class='form-control myinfo1' value='"+""+"' bodyid='"+id+"' onchange='myUpdateBody(this)'><a class=\"glyphicon myRemove\n" +
-                    " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'></a>\n" +
+                    " glyphicon-remove btn form-control-feedback\"style=\"pointer-events:auto;padding-left: 1%\" bodyid='"+id+"'  onclick='bodyRemove(this)'></a>\n" +
                     "\n</div>"
                 html+=select;
 
@@ -706,23 +690,7 @@
 
                 options.attr("selected",true);
 
-                $(".myRemove").click(
-                    function(){
-                        var id=$(this).attr("bodyid");
-                        console.log("bodyid"+id);
-                        $.ajax({
-                            url:"/evidence/deleteBody",
-                            type:'POST',
-                            data:{"id":id},
-                            success:function(data) {
-                                console.log("delete");
-                            }
-                        });
 
-                        $("#"+id).remove();
-                        $(".headList[bodyid='"+id+"']").remove();
-
-                    });
             }
         });
 

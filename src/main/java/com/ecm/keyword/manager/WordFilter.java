@@ -12,9 +12,9 @@ import java.util.List;
 public class WordFilter {
 
     ArrayList<String> stopWords;
-    final String stopWordUrl="C:\\Users\\nju\\Downloads\\stopWords.txt";
+    //final String stopWordUrl="C:\\Users\\nju\\Downloads\\stopWords.txt";
     //final String stopWordUrl="\Users\sweets\Documents\stopWords.txt";
-    //final String stopWordUrl="D:\\ecm\\stopWords.txt";
+    final String stopWordUrl="D:\\ecm\\stopWords.txt";
     public WordFilter(){
         stopWords = getStopWords();
     }
