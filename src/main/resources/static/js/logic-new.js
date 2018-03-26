@@ -39,9 +39,9 @@ $(document).ready(function () {
         $("#posY").text(event.pageY - $("#canvas").offset().top);
     });
 
-    // stage.addEventListener("mousedrag", function (event) {
-    //     saveScene();
-    // });
+    stage.addEventListener("mousedown", function (event) {
+        saveScene();
+    });
 
     stage.addEventListener("mouseup", function (event) {
         console.log("mouse up");
@@ -129,8 +129,6 @@ $(document).ready(function () {
 
     window.addEventListener("keydown", function (event) {
         if (event.ctrlKey && event.keyCode === 67) {
-            // saveScene();
-
             $("#myAction").text('你按下了CTRL+C');
 
             //将框选区域的左边界定为场景对象的右边界，框选区域的上边界定为场景对象的下边界
@@ -151,7 +149,7 @@ $(document).ready(function () {
             console.log("现在selectedArr里面有" + copyNodeArr.length + "个节点将被复制");
         }
         if (event.ctrlKey && event.keyCode === 86) {
-            // saveScene();
+            saveScene();
 
             $("#myAction").text('你按下了CTRL+V');
 
@@ -163,7 +161,7 @@ $(document).ready(function () {
             for (var i = 0; i < copyNodeArr.length; i++) {
                 //注：这里类似于对象赋值，不能用等于号直接让新节点等于老节点
                 console.log("粘贴位置：" + (copyNodeArr[i].x - copyAreaLeft + mouseClickX) + "," + (copyNodeArr[i].y - copyAreaTop + mouseClickY));
-                drawNode((copyNodeArr[i].x - copyAreaLeft + mouseClickX), (copyNodeArr[i].y - copyAreaTop + mouseClickY), null, copyNodeArr[i].text, copyNodeArr[i].type, copyNodeArr[i].detail, copyNodeArr[i].parentId);
+                drawNode((copyNodeArr[i].x - copyAreaLeft + mouseClickX), (copyNodeArr[i].y - copyAreaTop + mouseClickY), null, copyNodeArr[i].text, borderColors.indexOf(copyNodeArr[i].borderColor), copyNodeArr[i].detail, copyNodeArr[i].parentId);
             }
             //清空被选中的节点列表
             copyNodeArr = [];
