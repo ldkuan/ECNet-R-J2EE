@@ -16,3 +16,5 @@ src/main/resources/data/
 *.iws
 *.iml
 *.ipr
+
+*/.DS_Store
