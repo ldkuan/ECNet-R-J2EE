@@ -1,11 +1,14 @@
 target/
 src/main/resources/data/
+src/main/resources/HanLP.properties
+src/main/java/com/ecm/keyword/manager/WordFilter.java
 !.mvn/wrapper/maven-wrapper.jar
 
 
 ### STS ###
 .apt_generated
 .classpath
+
 .factorypath
 .project
 .settings

@@ -2,9 +2,7 @@ package com.ecm.keyword.manager;
 
 import net.sf.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -50,18 +48,20 @@ public class HeadCreator {
         if (conn.getResponseCode() == 200) {
             System.out.println("连接成功");
             // 请求返回的数据
-            InputStream in = conn.getInputStream();
-            String a = null;
-            try {
-                byte[] data1 = new byte[in.available()];
-                in.read(data1);
-                // 转成字符串
+           try {
 
-                a = new String(data1);
 
-                System.out.println(a);
-                jsonObject=JSONObject.fromObject(a);
-                System.out.println(jsonObject.toString());
+                String result="";
+                BufferedReader test = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream()));
+                String line;
+                while ((line = test.readLine()) != null) {
+                    result += line;
+                }
+               System.out.println(jsonObject.toString());
+
+                jsonObject=JSONObject.fromObject(result);
+
 
             } catch (Exception e1) {
                 // TODO Auto-generated catch block

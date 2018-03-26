@@ -1,6 +1,7 @@
 package com.ecm.controller;
 
 import com.ecm.keyword.manager.TypeCalculator;
+import com.ecm.keyword.model.SplitType;
 import com.ecm.model.Evidence_Body;
 import com.ecm.model.Evidence_Document;
 
@@ -42,7 +43,7 @@ public class EvidenceController {
 
       evidenceService.deleteBodyAll(evidence_document.getId());
      // String test="1、test1。2、test2。3、test3";
-      String[] tests=text.split("[0-9]+、");
+      String[] tests=text.split(SplitType.getType(text).getRegex());
       for(String str:tests){
             if(!str.isEmpty()){
                 Evidence_Body evidence_body=new Evidence_Body();
