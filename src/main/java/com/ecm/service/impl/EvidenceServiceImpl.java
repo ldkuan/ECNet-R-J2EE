@@ -3,6 +3,7 @@ package com.ecm.service.impl;
 import com.ecm.dao.EvidenceBodyDao;
 import com.ecm.dao.EvidenceDocuDao;
 import com.ecm.dao.EvidenceHeadDao;
+import com.ecm.dao.MOD_ArrowDao;
 import com.ecm.keyword.manager.HeadCreator;
 import com.ecm.keyword.manager.KeyWordCalculator;
 import com.ecm.model.Evidence_Body;
@@ -30,6 +31,8 @@ public class EvidenceServiceImpl implements EvidenceService {
     public EvidenceBodyDao evidenceBodyDao;
     @Autowired
     public EvidenceHeadDao evidenceHeadDao;
+    @Autowired
+    public MOD_ArrowDao arrowDao;
 
     @Override
     public Evidence_Document saveOrUpdate(Evidence_Document evidence_document) {
@@ -163,10 +166,18 @@ public class EvidenceServiceImpl implements EvidenceService {
     @Override
     public void deleteHeadById(int id) {
         evidenceHeadDao.deleteById(id);
+        arrowDao.deleteAllByNodeFrom_hid(id);
     }
     @Transactional
     @Override
-    public void deleteHeadAllByBody(int body_id) {evidenceHeadDao.deleteAllByBodyid(body_id);
+    public void deleteHeadAllByBody(int body_id) {
+        List<Evidence_Head> heads = evidenceHeadDao.findAllByBodyid(body_id);
+        for(int i = 0;i<heads.size();i++){
+            Evidence_Head h = heads.get(i);
+            evidenceHeadDao.deleteById(h.getId());
+            arrowDao.deleteAllByNodeFrom_hid(h.getId());
+        }
+//        evidenceHeadDao.deleteAllByBodyid(body_id);
     }
 
     @Override

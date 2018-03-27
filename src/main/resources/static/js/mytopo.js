@@ -19,7 +19,7 @@ var joint_delete = [];//删除的连接点id
 var isNodeClicked_right = false;//节点（链头、链体、连接点、连线、箭头）右键点击
 var isNodeClicked_left = false;//节点（链头、链体、连接点、连线、箭头）左键点击
 // var nodeList_selected = [];//已选中的节点（链头、链体、连接点、连线、箭头），[node]
-var isCtrlPressed = false;//ctrl键是否按下
+// var isCtrlPressed = false;//ctrl键是否按下
 var nodeFroms = [];//连线or箭头链头节点（允许同时创建多个连线或箭头），存储在nodeList_selected中的index
 var nodeTo;//连线链体节点or箭头连接点节点
 var header_radius = 20;//链头节点半径
@@ -1348,17 +1348,18 @@ function deleteArrow(arrow) {
 //绘制链头，返回链头节点
 function drawHeader(isNew,x,y,id,name,content){
 
+    if(id==null)
+        id = headerIndex++;
+
     if(name==null||name.length==0){
         if(content==null||content.length==0||content.length>10)
-            name = '链头'+(headerIndex+1);
+            name = '链头'+(id+1);
         else
             name = content;
     }
     if(content==null||content.length==0){
         content = name;
     }
-    if(id==null)
-        id = headerIndex++;
 
     var circleNode = new JTopo.CircleNode(name);
     circleNode.id = id;
@@ -1438,17 +1439,19 @@ function deleteHeader(headerID) {
 //绘制链体，返回链体节点
 function drawBody(isNew,x,y,id,name,content,type,committer,reason,conclusion,documentID,isDefendant,trust){
 
+    if(id==null)
+        id = bodyIndex++;
+
     if(name==null||name.length==0){
         if(content==null||content.length==0||content.length>10)
-            name = '链体'+(bodyIndex+1);
+            name = '链体'+(id+1);
         else
             name = content;
     }
     if(content==null||content.length==0){
         content = name;
     }
-    if(id==null)
-        id = bodyIndex++;
+
     if(documentID==null)
         documentID = -1;
     if(isDefendant==null)
@@ -1534,10 +1537,18 @@ function deleteBody(bodyID) {
 //绘制连接点，返回连接点节点
 function drawJoint(isNew,x,y,id,name,content,type){
 
-    if(name==null)
-        name = '连接点'+(jointIndex+1);
     if(id==null)
         id = jointIndex++;
+
+    if(name==null||name.length==0){
+        if(content==null||content.length==0||content.length>10)
+            name = '连接点'+(id+1);
+        else
+            name = content;
+    }
+    if(content==null||content.length==0){
+        content = name;
+    }
 
     var node = new JTopo.Node(name);
     node.id = id;
