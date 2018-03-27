@@ -10,8 +10,8 @@ var arrowIndex = 0;//当前箭头id
 var arrowList = {};//存储箭头，{id:node}
 var linkIndex = 0;//当前连线id
 // var linkList = {};//存储连线，{id:node}
-var operationList = [];//存储每一步操作，[{'type':'add/copy','nodes':[]},
-// {'type':'move','nodes':[],'position_origin':[x,y]},{'type':'delete','nodes':[{'node':node,'content':{'',''}}]}]
+var operationList = [];//存储每一步操作，[{'type':'add/copy','nodes':[]},{'type':'move','nodes':[],'position_origin':[x,y]},
+// {'type':'delete','nodes':[{'node':node,'content':{'',''}}]},{'type':'typesetting','nodes':[{'node':node,'x':x,'y':y}]}]
 var header_delete = [];//删除的链头id
 var body_delete = [];//删除的链体id
 var joint_delete = [];//删除的连接点id
@@ -58,6 +58,14 @@ $(document).ready(function(){
 
     stage.addEventListener("mousedrag", function(event){
         console.log("拖拽");
+
+        continuous_header = false;
+        continuous_body = false;
+        continuous_joint = false;
+
+        $('#add-header-btn-toggle').css({'background-color':'white'});
+        $('#add-body-btn-toggle').css({'background-color':'white'});
+        $('#add-joint-btn-toggle').css({'background-color':'white'});
 
     });
 
@@ -115,13 +123,16 @@ $(document).ready(function(){
             isNodeClicked_left = false;
 
             if(continuous_header){
-                drawHeader(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+                var nodePosition = getNodePosition(event);
+                drawHeader(true,nodePosition.x,nodePosition.y);
 
             }else if(continuous_body){
-                drawBody(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+                var nodePosition = getNodePosition(event);
+                drawBody(true,nodePosition.x,nodePosition.y);
 
             }else if(continuous_joint){
-                drawJoint(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+                var nodePosition = getNodePosition(event);
+                drawJoint(true,nodePosition.x,nodePosition.y);
             }
         }
 
@@ -152,8 +163,24 @@ $(document).ready(function(){
 
         if($(this).is(':checked')==true){
             stage.mode = "select";
+
+            continuous_header = false;
+            continuous_body = false;
+            continuous_joint = false;
+
+            $('#add-header-btn-toggle').css({'background-color':'white'});
+            $('#add-body-btn-toggle').css({'background-color':'white'});
+            $('#add-joint-btn-toggle').css({'background-color':'white'});
+
+            $('#add-header-btn-toggle').attr('disabled',"true");
+            $('#add-body-btn-toggle').attr('disabled',"true");
+            $('#add-joint-btn-toggle').attr('disabled',"true");
         }else{
             stage.mode = "normal";
+
+            $('#add-header-btn-toggle').removeAttr("disabled");
+            $('#add-body-btn-toggle').removeAttr("disabled");
+            $('#add-joint-btn-toggle').removeAttr("disabled");
         }
     });
 
@@ -470,6 +497,13 @@ function undo() {
                 node_temp.x+=x_offset;
                 node_temp.y+=y_offset;
             }
+        }
+    }else if(operation['type']=='typesetting'){
+        for(var i = 0;i<operation['nodes'].length;i++){
+            var c = operation['nodes'][i];
+            var node = c['node'];
+            node.x = c['x'];
+            node.y = c['y'];
         }
     }
 }
@@ -1789,6 +1823,7 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
 
 //排版
 function typeSetting() {
+    var nodes = [];
     var x = 10 + (body_width/2);
     var y = 10 + header_radius;
     var headerGap_x = 100;
@@ -1799,6 +1834,8 @@ function typeSetting() {
     for(var bid in bodyList){
 
         var body = bodyList[bid]['node'];
+        var ox = body.x;
+        var oy = body.y;
         body.x = x;
 
         var outLinks = body.outLinks;
@@ -1807,12 +1844,18 @@ function typeSetting() {
         else
             body.y = y+(body_height + headerGap_y)*t;
 
+        nodes.push({'node':body,'x':ox,'y':oy});
+
         if(outLinks!=null)
         for(var i = 0;i<outLinks.length;i++){
             var header = outLinks[i].nodeZ;
+            var hox = header.x;
+            var hoy = header.y;
             header.x = x + body_width/2 + headerGap_x + header_radius;
             header.y = y;
             y += headerGap_y + (header_radius*2);
+
+            nodes.push({'node':header,'x':hox,'y':hoy});
         }
         t++;
     }
@@ -1821,6 +1864,8 @@ function typeSetting() {
     x+=body_width/2 + headerGap_x + header_radius;
     for(var jid in jointList){
         var joint = jointList[jid]['node'];
+        var ox = joint.x;
+        var oy = joint.y;
         joint.x = x + header_radius + jointGap + joint_width/2;
         var y_max = 0;
         var y_min = 10000000;
@@ -1841,5 +1886,9 @@ function typeSetting() {
             joint.y = y+(joint_width + headerGap_y)*t;
         }
         t++;
+
+        nodes.push({'node':joint,'x':ox,'y':oy});
     }
+
+    operationList.push({'type':'typesetting','nodes':nodes});
 }
