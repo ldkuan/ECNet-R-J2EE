@@ -42,13 +42,14 @@ var tranX_scene,tranY_scene = 0;//拖拽场景的初始位置
 // var x_now,y_now = 0;
 var sourceNode;//拖拽节点（当选中多个节点进行拖拽时，鼠标拖拽的节点即参照节点）
 var mouseX,mouseY;//鼠标位置
+var hasDragged = false;//是否已拖拽图标（为了处理点击效果）
 
 $(document).ready(function(){
 
     canvas = document.getElementById('canvas');
     stage = new JTopo.Stage(canvas); // 创建一个舞台对象
     scene = new JTopo.Scene(stage); // 创建一个场景对象
-    stage.mode = "select";
+    stage.mode = "normal";
     oContext = canvas.getContext("2d");
 
     stage.addEventListener("mouseover", function(event){
@@ -87,8 +88,8 @@ $(document).ready(function(){
                 $('.evidence_plaintiff').find('.head_chain').css('background-color', '#5ed7e5');
 
                 $("#stageMenu").css({
-                    top: getMousePosition(event).y,
-                    left: getMousePosition(event).x
+                    top: getMousePosition_rdiv(event).y,
+                    left: getMousePosition_rdiv(event).x
                 }).show();
             }
         }
@@ -128,7 +129,7 @@ $(document).ready(function(){
     });
 
     stage.addEventListener("mousemove", function(event){
-        var mousePos = getMousePos(canvas, event);
+        var mousePos = getMousePosition_Canvas(event);
         mouseX = mousePos.x;
         mouseY = mousePos.y;
     },false);
@@ -140,11 +141,20 @@ $(document).ready(function(){
                 nodeList_copied = scene.selectedElements.concat();
             }
             if(event.keyCode == 86){
-                paste(mouseX,mouseY);
+                paste(mouseX-scene.translateX,mouseY-scene.translateY);
             }
         }
     });
     this.addEventListener("keyup", function(event){
+    });
+
+    $("#boxSelection").change(function() {
+
+        if($(this).is(':checked')==true){
+            stage.mode = "select";
+        }else{
+            stage.mode = "normal";
+        }
     });
 
     dragHeader();
@@ -384,10 +394,12 @@ function addMoveOperations() {
             operationList.push({'type':'move','nodes':null,'position_origin':[tranX_scene,tranY_scene]});
 
     }else{
-        x_now = sourceNode.x;
-        y_now = sourceNode.y;
-        if(x_now!=x_origin||y_now!=y_origin)
-            operationList.push({'type':'move','nodes':nodeList_selected,'position_origin':[x_origin,y_origin],'source':sourceNode});
+        if(sourceNode!=null){
+            x_now = sourceNode.x;
+            y_now = sourceNode.y;
+            if(x_now!=x_origin||y_now!=y_origin)
+                operationList.push({'type':'move','nodes':nodeList_selected,'position_origin':[x_origin,y_origin],'source':sourceNode});
+        }
     }
 }
 
@@ -513,17 +525,23 @@ function quickDraw() {
 function dragHandle() {
 
     $("#draggableDiv").mouseup(function (event) {
-        $(this).css({ "height": "0" });
+        // console.log('drag mouse up');
+        if(!hasDragged){
+            $("#draggableDiv").html("");
+            $(this).css({ "height": "0" });
+        }
     });
 
     $("#draggableDiv").draggable({
         // containment: "parent",
         drag: function (event) {
+            hasDragged = true;
             // console.log('drag');
         },
         stop: function () {
             //拖拽结束，将拖拽容器内容清空
-            console.log('drag stop');
+            // console.log('drag stop');
+            hasDragged = false;
             $("#draggableDiv").html("");
             $("#draggableDiv").css({
                 "height": "0",
@@ -538,18 +556,18 @@ function dragHandle() {
         drop: function (event) {
 
             if(event.pageX-$("#canvas").offset().left>=0&&event.pageY-$("#canvas").offset().top>=0){
-
+                var nodePosition = getNodePosition(event);
                 if($("#draggableDiv").find('i').attr('class')!=null){
                     var className = $("#draggableDiv").find('i').attr('class');
 
                     if(className.indexOf('circle')>-1){
-                        drawHeader(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+                        drawHeader(true,nodePosition.x,nodePosition.y);
 
                     }else if(className.indexOf('square')>-1) {
-                        drawJoint(true,event.pageX - $("#canvas").offset().left, event.pageY - $("#canvas").offset().top);
+                        drawJoint(true,nodePosition.x, nodePosition.y);
                     }
                 }else{
-                    drawBody(true,event.pageX - $("#canvas").offset().left, event.pageY - $("#canvas").offset().top);
+                    drawBody(true,nodePosition.x, nodePosition.y);
                 }
             }
         }
@@ -566,8 +584,8 @@ function dragHeader() {
                 "display": "block",
                 "width": (header_radius*2)+"px",
                 "height": (header_radius*2)+"px",
-                "top": event.pageY-$(this).offset().top-header_radius,
-                "left": event.pageX-$(this).offset().left,
+                "top": event.pageY-$(this).parent().parent().offset().top-header_radius,
+                "left": event.pageX-$(this).parent().parent().offset().left-header_radius,
                 "font-size": (header_radius*1.8)+"px",
                 "color": header_color,
                 "border":'0px'});
@@ -616,7 +634,7 @@ function dragJoint() {
                 "height": joint_width+"px",
                 "top": event.pageY-$(this).parent().parent().offset().top-(joint_width/2),
                 "left": event.pageX-$(this).parent().parent().offset().left-(joint_width/2),
-                "font-size": joint_width+"px",
+                "font-size": joint_width*1.2+"px",
                 "color": joint_color,
                 "border":'0px'});
 
@@ -630,7 +648,7 @@ function dragJoint() {
 }
 
 //获取鼠标指针坐标
-function getMousePos (oContext, evt) {
+function getMousePosition_Canvas (evt) {
     var rect = canvas.getBoundingClientRect();
     return {
         x: evt.clientX - rect.left,
@@ -639,7 +657,7 @@ function getMousePos (oContext, evt) {
 }
 
 //获取鼠标相对右侧div位置
-function getMousePosition(event) {
+function getMousePosition_rdiv(event) {
     var p = $('#canvas').parent().parent();
     // console.log('px:'+p.offset().left+';py:'+p.offset().top);
     // console.log('x:'+event.pageX+';y:'+event.pageY);
@@ -647,6 +665,14 @@ function getMousePosition(event) {
     return {
         x: event.pageX - p.offset().left,
         y: event.pageY - p.offset().top
+    };
+}
+
+//获取新增节点的位置
+function getNodePosition(event) {
+    return {
+        x: event.pageX-$("#canvas").offset().left-scene.translateX,
+        y: event.pageY-$("#canvas").offset().top-scene.translateY
     };
 }
 
@@ -692,8 +718,8 @@ function handleMultipleSelected(event) {
 
     if(header_num>=1&&body_num==1&&link_num==0&&arrow_num==0&&joint_num==0){//多个链头一个链体可以创建连线
         $("#nodeMenu2").css({
-            top: getMousePosition(event).y,
-            left: getMousePosition(event).x
+            top: getMousePosition_rdiv(event).y,
+            left: getMousePosition_rdiv(event).x
         }).show();
 
         nodeFroms = header_index;
@@ -702,8 +728,8 @@ function handleMultipleSelected(event) {
 
     }else if(header_num>=1&&body_num==0&&link_num==0&&arrow_num==0&&joint_num==1){//多个链头一个连接点可以创建箭头
         $("#nodeMenu3").css({
-            top: getMousePosition(event).y,
-            left: getMousePosition(event).x
+            top: getMousePosition_rdiv(event).y,
+            left: getMousePosition_rdiv(event).x
         }).show();
 
         nodeFroms = header_index;
@@ -712,8 +738,8 @@ function handleMultipleSelected(event) {
 
     }else{
         $("#nodeMenu").css({
-            top: getMousePosition(event).y,
-            left: getMousePosition(event).x
+            top: getMousePosition_rdiv(event).y,
+            left: getMousePosition_rdiv(event).x
         }).show();
         return 0;
     }
@@ -739,20 +765,20 @@ function handleNodeMenu(event,type,node){
 
             if(type=='arrow'){
                 $("#arrowMenu").css({
-                    top: getMousePosition(event).y,
-                    left: getMousePosition(event).x
+                    top: getMousePosition_rdiv(event).y,
+                    left: getMousePosition_rdiv(event).x
                 }).show();
 
             }else if(type=='link'){
                 $("#linkMenu").css({
-                    top: getMousePosition(event).y,
-                    left: getMousePosition(event).x
+                    top: getMousePosition_rdiv(event).y,
+                    left: getMousePosition_rdiv(event).x
                 }).show();
 
             }else{
                 $("#nodeMenu").css({
-                    top: getMousePosition(event).y,
-                    left: getMousePosition(event).x
+                    top: getMousePosition_rdiv(event).y,
+                    left: getMousePosition_rdiv(event).x
                 }).show();
             }
         }
@@ -767,22 +793,22 @@ function bindMenuClick() {
     //新增图元-链头
     $('#add-header-li').click(function (event) {
         $('#stageMenu').hide();
-
-        drawHeader(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+        var nodePosition = getNodePosition(event);
+        drawHeader(true,nodePosition.x,nodePosition.y);
     });
 
     //新增图元-链体
     $('#add-body-li').click(function (event) {
         $('#stageMenu').hide();
-
-        drawBody(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+        var nodePosition = getNodePosition(event);
+        drawBody(true,nodePosition.x,nodePosition.y);
     });
 
     //新增图元-连接点
     $('#add-joint-li').click(function (event) {
         $('#stageMenu').hide();
-
-        drawJoint(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+        var nodePosition = getNodePosition(event);
+        drawJoint(true,nodePosition.x,nodePosition.y);
     });
 
     //创建连线
@@ -829,8 +855,8 @@ function bindMenuClick() {
     //粘贴图元
     $('#paste-element-li').click(function (event) {
         $(this).parent().hide();
-
-        paste(getMousePosition(event).x,getMousePosition(event).y);
+        var nodePosition = getNodePosition(event);
+        paste(nodePosition.x,nodePosition.y);
     });
 
     //删除连线
@@ -1471,7 +1497,7 @@ function drawBody(isNew,x,y,id,name,content,type,committer,reason,conclusion,doc
         handleNodeMenu(event,'body',this);
     });
     node.addEventListener('mousedown', function(event){
-        console.log(this.x+";"+this.y);
+        // console.log(this.x+";"+this.y);
         x_origin = this.x;
         y_origin = this.y;
         sourceNode = this;
@@ -1546,7 +1572,7 @@ function drawJoint(isNew,x,y,id,name,content,type){
         handleNodeMenu(event,'joint',this);
     });
     node.addEventListener('mousedown', function(event){
-        console.log(this.x+"**"+this.y);
+        // console.log(this.x+"**"+this.y);
         x_origin = this.x;
         y_origin = this.y;
         sourceNode = this;
