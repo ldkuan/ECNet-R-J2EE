@@ -10,8 +10,8 @@ var arrowIndex = 0;//当前箭头id
 var arrowList = {};//存储箭头，{id:node}
 var linkIndex = 0;//当前连线id
 // var linkList = {};//存储连线，{id:node}
-var operationList = [];//存储每一步操作，[{'type':'add/copy','nodes':[]},
-// {'type':'move','nodes':[],'position_origin':[x,y]},{'type':'delete','nodes':[{'node':node,'content':{'',''}}]}]
+var operationList = [];//存储每一步操作，[{'type':'add/copy','nodes':[]},{'type':'move','nodes':[],'position_origin':[x,y]},
+// {'type':'delete','nodes':[{'node':node,'content':{'',''}}]},{'type':'typesetting','nodes':[{'node':node,'x':x,'y':y}]}]
 var header_delete = [];//删除的链头id
 var body_delete = [];//删除的链体id
 var joint_delete = [];//删除的连接点id
@@ -19,7 +19,7 @@ var joint_delete = [];//删除的连接点id
 var isNodeClicked_right = false;//节点（链头、链体、连接点、连线、箭头）右键点击
 var isNodeClicked_left = false;//节点（链头、链体、连接点、连线、箭头）左键点击
 // var nodeList_selected = [];//已选中的节点（链头、链体、连接点、连线、箭头），[node]
-var isCtrlPressed = false;//ctrl键是否按下
+// var isCtrlPressed = false;//ctrl键是否按下
 var nodeFroms = [];//连线or箭头链头节点（允许同时创建多个连线或箭头），存储在nodeList_selected中的index
 var nodeTo;//连线链体节点or箭头连接点节点
 var header_radius = 20;//链头节点半径
@@ -42,13 +42,14 @@ var tranX_scene,tranY_scene = 0;//拖拽场景的初始位置
 // var x_now,y_now = 0;
 var sourceNode;//拖拽节点（当选中多个节点进行拖拽时，鼠标拖拽的节点即参照节点）
 var mouseX,mouseY;//鼠标位置
+var hasDragged = false;//是否已拖拽图标（为了处理点击效果）
 
 $(document).ready(function(){
 
     canvas = document.getElementById('canvas');
     stage = new JTopo.Stage(canvas); // 创建一个舞台对象
     scene = new JTopo.Scene(stage); // 创建一个场景对象
-    stage.mode = "select";
+    stage.mode = "normal";
     oContext = canvas.getContext("2d");
 
     stage.addEventListener("mouseover", function(event){
@@ -57,6 +58,14 @@ $(document).ready(function(){
 
     stage.addEventListener("mousedrag", function(event){
         console.log("拖拽");
+
+        continuous_header = false;
+        continuous_body = false;
+        continuous_joint = false;
+
+        $('#add-header-btn-toggle').css({'background-color':'white'});
+        $('#add-body-btn-toggle').css({'background-color':'white'});
+        $('#add-joint-btn-toggle').css({'background-color':'white'});
 
     });
 
@@ -87,8 +96,8 @@ $(document).ready(function(){
                 $('.evidence_plaintiff').find('.head_chain').css('background-color', '#5ed7e5');
 
                 $("#stageMenu").css({
-                    top: getMousePosition(event).y,
-                    left: getMousePosition(event).x
+                    top: getMousePosition_rdiv(event).y,
+                    left: getMousePosition_rdiv(event).x
                 }).show();
             }
         }
@@ -114,13 +123,16 @@ $(document).ready(function(){
             isNodeClicked_left = false;
 
             if(continuous_header){
-                drawHeader(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+                var nodePosition = getNodePosition(event);
+                drawHeader(true,nodePosition.x,nodePosition.y);
 
             }else if(continuous_body){
-                drawBody(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+                var nodePosition = getNodePosition(event);
+                drawBody(true,nodePosition.x,nodePosition.y);
 
             }else if(continuous_joint){
-                drawJoint(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+                var nodePosition = getNodePosition(event);
+                drawJoint(true,nodePosition.x,nodePosition.y);
             }
         }
 
@@ -128,7 +140,7 @@ $(document).ready(function(){
     });
 
     stage.addEventListener("mousemove", function(event){
-        var mousePos = getMousePos(canvas, event);
+        var mousePos = getMousePosition_Canvas(event);
         mouseX = mousePos.x;
         mouseY = mousePos.y;
     },false);
@@ -140,11 +152,36 @@ $(document).ready(function(){
                 nodeList_copied = scene.selectedElements.concat();
             }
             if(event.keyCode == 86){
-                paste(mouseX,mouseY);
+                paste(mouseX-scene.translateX,mouseY-scene.translateY);
             }
         }
     });
     this.addEventListener("keyup", function(event){
+    });
+
+    $("#boxSelection").change(function() {
+
+        if($(this).is(':checked')==true){
+            stage.mode = "select";
+
+            continuous_header = false;
+            continuous_body = false;
+            continuous_joint = false;
+
+            $('#add-header-btn-toggle').css({'background-color':'white'});
+            $('#add-body-btn-toggle').css({'background-color':'white'});
+            $('#add-joint-btn-toggle').css({'background-color':'white'});
+
+            $('#add-header-btn-toggle').attr('disabled',"true");
+            $('#add-body-btn-toggle').attr('disabled',"true");
+            $('#add-joint-btn-toggle').attr('disabled',"true");
+        }else{
+            stage.mode = "normal";
+
+            $('#add-header-btn-toggle').removeAttr("disabled");
+            $('#add-body-btn-toggle').removeAttr("disabled");
+            $('#add-joint-btn-toggle').removeAttr("disabled");
+        }
     });
 
     dragHeader();
@@ -384,10 +421,12 @@ function addMoveOperations() {
             operationList.push({'type':'move','nodes':null,'position_origin':[tranX_scene,tranY_scene]});
 
     }else{
-        x_now = sourceNode.x;
-        y_now = sourceNode.y;
-        if(x_now!=x_origin||y_now!=y_origin)
-            operationList.push({'type':'move','nodes':nodeList_selected,'position_origin':[x_origin,y_origin],'source':sourceNode});
+        if(sourceNode!=null){
+            x_now = sourceNode.x;
+            y_now = sourceNode.y;
+            if(x_now!=x_origin||y_now!=y_origin)
+                operationList.push({'type':'move','nodes':nodeList_selected,'position_origin':[x_origin,y_origin],'source':sourceNode});
+        }
     }
 }
 
@@ -459,6 +498,13 @@ function undo() {
                 node_temp.y+=y_offset;
             }
         }
+    }else if(operation['type']=='typesetting'){
+        for(var i = 0;i<operation['nodes'].length;i++){
+            var c = operation['nodes'][i];
+            var node = c['node'];
+            node.x = c['x'];
+            node.y = c['y'];
+        }
     }
 }
 
@@ -513,17 +559,23 @@ function quickDraw() {
 function dragHandle() {
 
     $("#draggableDiv").mouseup(function (event) {
-        $(this).css({ "height": "0" });
+        // console.log('drag mouse up');
+        if(!hasDragged){
+            $("#draggableDiv").html("");
+            $(this).css({ "height": "0" });
+        }
     });
 
     $("#draggableDiv").draggable({
         // containment: "parent",
         drag: function (event) {
+            hasDragged = true;
             // console.log('drag');
         },
         stop: function () {
             //拖拽结束，将拖拽容器内容清空
-            console.log('drag stop');
+            // console.log('drag stop');
+            hasDragged = false;
             $("#draggableDiv").html("");
             $("#draggableDiv").css({
                 "height": "0",
@@ -538,18 +590,18 @@ function dragHandle() {
         drop: function (event) {
 
             if(event.pageX-$("#canvas").offset().left>=0&&event.pageY-$("#canvas").offset().top>=0){
-
+                var nodePosition = getNodePosition(event);
                 if($("#draggableDiv").find('i').attr('class')!=null){
                     var className = $("#draggableDiv").find('i').attr('class');
 
                     if(className.indexOf('circle')>-1){
-                        drawHeader(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+                        drawHeader(true,nodePosition.x,nodePosition.y);
 
                     }else if(className.indexOf('square')>-1) {
-                        drawJoint(true,event.pageX - $("#canvas").offset().left, event.pageY - $("#canvas").offset().top);
+                        drawJoint(true,nodePosition.x, nodePosition.y);
                     }
                 }else{
-                    drawBody(true,event.pageX - $("#canvas").offset().left, event.pageY - $("#canvas").offset().top);
+                    drawBody(true,nodePosition.x, nodePosition.y);
                 }
             }
         }
@@ -566,8 +618,8 @@ function dragHeader() {
                 "display": "block",
                 "width": (header_radius*2)+"px",
                 "height": (header_radius*2)+"px",
-                "top": event.pageY-$(this).offset().top-header_radius,
-                "left": event.pageX-$(this).offset().left,
+                "top": event.pageY-$(this).parent().parent().offset().top-header_radius,
+                "left": event.pageX-$(this).parent().parent().offset().left-header_radius,
                 "font-size": (header_radius*1.8)+"px",
                 "color": header_color,
                 "border":'0px'});
@@ -616,7 +668,7 @@ function dragJoint() {
                 "height": joint_width+"px",
                 "top": event.pageY-$(this).parent().parent().offset().top-(joint_width/2),
                 "left": event.pageX-$(this).parent().parent().offset().left-(joint_width/2),
-                "font-size": joint_width+"px",
+                "font-size": joint_width*1.2+"px",
                 "color": joint_color,
                 "border":'0px'});
 
@@ -630,7 +682,7 @@ function dragJoint() {
 }
 
 //获取鼠标指针坐标
-function getMousePos (oContext, evt) {
+function getMousePosition_Canvas (evt) {
     var rect = canvas.getBoundingClientRect();
     return {
         x: evt.clientX - rect.left,
@@ -639,7 +691,7 @@ function getMousePos (oContext, evt) {
 }
 
 //获取鼠标相对右侧div位置
-function getMousePosition(event) {
+function getMousePosition_rdiv(event) {
     var p = $('#canvas').parent().parent();
     // console.log('px:'+p.offset().left+';py:'+p.offset().top);
     // console.log('x:'+event.pageX+';y:'+event.pageY);
@@ -647,6 +699,14 @@ function getMousePosition(event) {
     return {
         x: event.pageX - p.offset().left,
         y: event.pageY - p.offset().top
+    };
+}
+
+//获取新增节点的位置
+function getNodePosition(event) {
+    return {
+        x: event.pageX-$("#canvas").offset().left-scene.translateX,
+        y: event.pageY-$("#canvas").offset().top-scene.translateY
     };
 }
 
@@ -692,8 +752,8 @@ function handleMultipleSelected(event) {
 
     if(header_num>=1&&body_num==1&&link_num==0&&arrow_num==0&&joint_num==0){//多个链头一个链体可以创建连线
         $("#nodeMenu2").css({
-            top: getMousePosition(event).y,
-            left: getMousePosition(event).x
+            top: getMousePosition_rdiv(event).y,
+            left: getMousePosition_rdiv(event).x
         }).show();
 
         nodeFroms = header_index;
@@ -702,8 +762,8 @@ function handleMultipleSelected(event) {
 
     }else if(header_num>=1&&body_num==0&&link_num==0&&arrow_num==0&&joint_num==1){//多个链头一个连接点可以创建箭头
         $("#nodeMenu3").css({
-            top: getMousePosition(event).y,
-            left: getMousePosition(event).x
+            top: getMousePosition_rdiv(event).y,
+            left: getMousePosition_rdiv(event).x
         }).show();
 
         nodeFroms = header_index;
@@ -712,8 +772,8 @@ function handleMultipleSelected(event) {
 
     }else{
         $("#nodeMenu").css({
-            top: getMousePosition(event).y,
-            left: getMousePosition(event).x
+            top: getMousePosition_rdiv(event).y,
+            left: getMousePosition_rdiv(event).x
         }).show();
         return 0;
     }
@@ -739,20 +799,20 @@ function handleNodeMenu(event,type,node){
 
             if(type=='arrow'){
                 $("#arrowMenu").css({
-                    top: getMousePosition(event).y,
-                    left: getMousePosition(event).x
+                    top: getMousePosition_rdiv(event).y,
+                    left: getMousePosition_rdiv(event).x
                 }).show();
 
             }else if(type=='link'){
                 $("#linkMenu").css({
-                    top: getMousePosition(event).y,
-                    left: getMousePosition(event).x
+                    top: getMousePosition_rdiv(event).y,
+                    left: getMousePosition_rdiv(event).x
                 }).show();
 
             }else{
                 $("#nodeMenu").css({
-                    top: getMousePosition(event).y,
-                    left: getMousePosition(event).x
+                    top: getMousePosition_rdiv(event).y,
+                    left: getMousePosition_rdiv(event).x
                 }).show();
             }
         }
@@ -767,22 +827,22 @@ function bindMenuClick() {
     //新增图元-链头
     $('#add-header-li').click(function (event) {
         $('#stageMenu').hide();
-
-        drawHeader(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+        var nodePosition = getNodePosition(event);
+        drawHeader(true,nodePosition.x,nodePosition.y);
     });
 
     //新增图元-链体
     $('#add-body-li').click(function (event) {
         $('#stageMenu').hide();
-
-        drawBody(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+        var nodePosition = getNodePosition(event);
+        drawBody(true,nodePosition.x,nodePosition.y);
     });
 
     //新增图元-连接点
     $('#add-joint-li').click(function (event) {
         $('#stageMenu').hide();
-
-        drawJoint(true,event.pageX-$("#canvas").offset().left,event.pageY-$("#canvas").offset().top);
+        var nodePosition = getNodePosition(event);
+        drawJoint(true,nodePosition.x,nodePosition.y);
     });
 
     //创建连线
@@ -829,8 +889,8 @@ function bindMenuClick() {
     //粘贴图元
     $('#paste-element-li').click(function (event) {
         $(this).parent().hide();
-
-        paste(getMousePosition(event).x,getMousePosition(event).y);
+        var nodePosition = getNodePosition(event);
+        paste(nodePosition.x,nodePosition.y);
     });
 
     //删除连线
@@ -1322,17 +1382,18 @@ function deleteArrow(arrow) {
 //绘制链头，返回链头节点
 function drawHeader(isNew,x,y,id,name,content){
 
+    if(id==null)
+        id = headerIndex++;
+
     if(name==null||name.length==0){
         if(content==null||content.length==0||content.length>10)
-            name = '链头'+(headerIndex+1);
+            name = '链头'+(id+1);
         else
             name = content;
     }
     if(content==null||content.length==0){
         content = name;
     }
-    if(id==null)
-        id = headerIndex++;
 
     var circleNode = new JTopo.CircleNode(name);
     circleNode.id = id;
@@ -1412,17 +1473,19 @@ function deleteHeader(headerID) {
 //绘制链体，返回链体节点
 function drawBody(isNew,x,y,id,name,content,type,committer,reason,conclusion,documentID,isDefendant,trust){
 
+    if(id==null)
+        id = bodyIndex++;
+
     if(name==null||name.length==0){
         if(content==null||content.length==0||content.length>10)
-            name = '链体'+(bodyIndex+1);
+            name = '链体'+(id+1);
         else
             name = content;
     }
     if(content==null||content.length==0){
         content = name;
     }
-    if(id==null)
-        id = bodyIndex++;
+
     if(documentID==null)
         documentID = -1;
     if(isDefendant==null)
@@ -1471,7 +1534,7 @@ function drawBody(isNew,x,y,id,name,content,type,committer,reason,conclusion,doc
         handleNodeMenu(event,'body',this);
     });
     node.addEventListener('mousedown', function(event){
-        console.log(this.x+";"+this.y);
+        // console.log(this.x+";"+this.y);
         x_origin = this.x;
         y_origin = this.y;
         sourceNode = this;
@@ -1508,10 +1571,18 @@ function deleteBody(bodyID) {
 //绘制连接点，返回连接点节点
 function drawJoint(isNew,x,y,id,name,content,type){
 
-    if(name==null)
-        name = '连接点'+(jointIndex+1);
     if(id==null)
         id = jointIndex++;
+
+    if(name==null||name.length==0){
+        if(content==null||content.length==0||content.length>10)
+            name = '连接点'+(id+1);
+        else
+            name = content;
+    }
+    if(content==null||content.length==0){
+        content = name;
+    }
 
     var node = new JTopo.Node(name);
     node.id = id;
@@ -1546,7 +1617,7 @@ function drawJoint(isNew,x,y,id,name,content,type){
         handleNodeMenu(event,'joint',this);
     });
     node.addEventListener('mousedown', function(event){
-        console.log(this.x+"**"+this.y);
+        // console.log(this.x+"**"+this.y);
         x_origin = this.x;
         y_origin = this.y;
         sourceNode = this;
@@ -1752,6 +1823,7 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
 
 //排版
 function typeSetting() {
+    var nodes = [];
     var x = 10 + (body_width/2);
     var y = 10 + header_radius;
     var headerGap_x = 100;
@@ -1762,6 +1834,8 @@ function typeSetting() {
     for(var bid in bodyList){
 
         var body = bodyList[bid]['node'];
+        var ox = body.x;
+        var oy = body.y;
         body.x = x;
 
         var outLinks = body.outLinks;
@@ -1770,12 +1844,18 @@ function typeSetting() {
         else
             body.y = y+(body_height + headerGap_y)*t;
 
+        nodes.push({'node':body,'x':ox,'y':oy});
+
         if(outLinks!=null)
         for(var i = 0;i<outLinks.length;i++){
             var header = outLinks[i].nodeZ;
+            var hox = header.x;
+            var hoy = header.y;
             header.x = x + body_width/2 + headerGap_x + header_radius;
             header.y = y;
             y += headerGap_y + (header_radius*2);
+
+            nodes.push({'node':header,'x':hox,'y':hoy});
         }
         t++;
     }
@@ -1784,6 +1864,8 @@ function typeSetting() {
     x+=body_width/2 + headerGap_x + header_radius;
     for(var jid in jointList){
         var joint = jointList[jid]['node'];
+        var ox = joint.x;
+        var oy = joint.y;
         joint.x = x + header_radius + jointGap + joint_width/2;
         var y_max = 0;
         var y_min = 10000000;
@@ -1804,5 +1886,9 @@ function typeSetting() {
             joint.y = y+(joint_width + headerGap_y)*t;
         }
         t++;
+
+        nodes.push({'node':joint,'x':ox,'y':oy});
     }
+
+    operationList.push({'type':'typesetting','nodes':nodes});
 }
