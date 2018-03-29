@@ -77,6 +77,20 @@ public class ModelController {
         }
     }
 
+    @RequestMapping(value="/saveFacts")
+    public void saveFacts(@RequestBody List<MOD_Fact> facts){
+
+        modelManageService.saveFacts(facts);
+    }
+
+    @RequestMapping(value="/deleteFacts")
+    public void deleteFacts(@RequestBody List<Integer> fids){
+
+        for(int i = 0;i<fids.size();i++){
+            modelManageService.deleteFactById(fids.get(i));
+        }
+    }
+
     @RequestMapping(value="/saveArrows")
     public void saveArrows(@RequestBody List<MOD_Arrow> arrows){
 

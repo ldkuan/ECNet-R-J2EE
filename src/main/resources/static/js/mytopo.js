@@ -216,6 +216,7 @@ $(document).ready(function(){
         saveHeaders();
         saveJoints();
         saveArrows();
+        saveFacts();
         alert('保存成功！')
     });
     $('#saveImg-btn').click(function () {
@@ -240,7 +241,7 @@ function saveHeaders() {
             var documentID = -1;
             var bodyID = -1;
 
-            if(node.inLinks!=null){
+            if(node.inLinks!=null&&node.inLinks.length>0){
                 bodyID = node.inLinks[0].nodeA.id;
                 documentID = bodyList[bodyID]['documentID'];
             }
@@ -341,7 +342,11 @@ function saveJoints() {
 
         if(joint!=null){
             var node = joint['node'];
-            var j = {"id":jid,"caseID":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,"type":joint['type']};
+            var factID = -1;
+            if(node.outLinks!=null&&node.outLinks.length>0){
+                factID = node.outLinks[0].nodeZ.id;
+            }
+            var j = {"id":jid,"caseID":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,'factID':factID,"type":joint['type']};
             jList.push(j);
         }
     }
@@ -419,6 +424,53 @@ function saveArrows() {
 
         }, error: function (XMLHttpRequest, textStatus, errorThrown) {
             alert("4*");
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+}
+
+//存储事实
+function saveFacts() {
+    var fList = [];
+    for(var fid in factList){
+        var fact = factList[fid];
+
+        if(fact!=null){
+            var node = fact['node'];
+            var f = {"id":fid,"caseID":cid,"name":node.text,"content":node.content,"x":node.x,"y":node.y,"type":fact['type']};
+            fList.push(f);
+        }
+    }
+
+    $.ajax({
+        type: "post",
+        url: "/model/deleteFacts",
+        data: JSON.stringify(fact_delete),
+        contentType: "application/json; charset=utf-8",
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("51!");
+            alert(XMLHttpRequest.status);
+            alert(XMLHttpRequest.readyState);
+            alert(textStatus);
+        }
+    });
+
+    $.ajax({
+        type: "post",
+        url: "/model/saveFacts",
+        data: JSON.stringify(fList),
+        // dataType:"json",
+        contentType: "application/json; charset=utf-8",
+        async: false,
+        success: function (data) {
+
+        }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("5*");
             alert(XMLHttpRequest.status);
             alert(XMLHttpRequest.readyState);
             alert(textStatus);
@@ -1979,7 +2031,7 @@ function highlightEvidence() {
 }
 
 //初始化右侧建模图
-function initGraph(trusts,freeHeaders,joints,arrows) {
+function initGraph(trusts,freeHeaders,joints,arrows,facts) {
 
     var x = 10 + (body_width/2);
     var y = 10 + header_radius;
@@ -1992,6 +2044,8 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
     var pre_hy = -1;
     var pre_jx = -1;
     var pre_jy = -1;
+    var pre_fx = -1;
+    var pre_fy = -1;
 
     for(var i = 0;i<trusts.length;i++){
         var body = trusts[i]['body'];
@@ -2004,18 +2058,18 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
             }else{
                 b_x = x;
             }
-        }else{
-            pre_bx = b_x;
         }
+        pre_bx = b_x;
+
         if(b_y<=0){
             if(pre_by>=0){
                 b_y = pre_by + body_height + headerGap_y;
             }else{
-                b_y = y+(body_height + headerGap_y)*i;
+                b_y = y;
+                y+=body_height + headerGap_y;
             }
-        }else{
-            pre_by = b_y;
         }
+        pre_by = b_y;
 
         var b = drawBody(false,b_x,b_y,body['id'],body['name'],body['body'],body['type'],body['committer'],
             body['reason'],body['conclusion'],body['documentid'],body['isDefendant'],body['trust']);
@@ -2032,9 +2086,9 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
                 }else{
                     h_x = x + body_width/2 + headerGap_x + header_radius;
                 }
-            }else{
-                pre_hx = h_x;
             }
+            pre_hx = h_x;
+
             if(h_y<=0){
                 if(pre_hy>=0){
                     h_y = pre_hy + headerGap_y + (header_radius*2);
@@ -2042,19 +2096,18 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
                     h_y = y;
                     y += headerGap_y + (header_radius*2);
                 }
-            }else{
-                pre_hy = h_y;
             }
+            pre_hy = h_y;
 
             var h = drawHeader(false,h_x,h_y,header['id'],header['name'],header['head']);
             addLink(b,h);
 
-            if(j==headers.length-1){
+            if(headerIndex<header['id']){
                 headerIndex = header['id']+1;
             }
         }
 
-        if(i==trusts.length-1){
+        if(bodyIndex<body['id']){
             bodyIndex = body['id']+1;
         }
     }
@@ -2070,9 +2123,9 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
             }else{
                 h_x = x + body_width/2 + headerGap_x + header_radius;
             }
-        }else{
-            pre_hx = h_x;
         }
+        pre_hx = h_x;
+
         if(h_y<=0){
             if(pre_hy>=0){
                 h_y = pre_hy + headerGap_y + (header_radius*2);
@@ -2080,13 +2133,49 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
                 h_y = y;
                 y += headerGap_y + (header_radius*2);
             }
-        }else{
-            pre_hy = h_y;
         }
+        pre_hy = h_y;
+
         drawHeader(false,h_x,h_y,header['id'],header['name'],header['head']);
+
+        if(headerIndex<header['id']){
+            headerIndex = header['id']+1;
+        }
     }
 
+    y = 10 + header_radius;
     x+=body_width/2 + headerGap_x + header_radius;
+    for(var i = 0;i<facts.length;i++){
+        var fact = facts[i];
+        var f_x = fact['x'];
+        var f_y = fact['y'];
+
+        if(f_x<=0){
+            if(pre_fx>=0){
+                f_x = pre_fx;
+            }else{
+                f_x = x + header_radius + jointGap + joint_width/2 + body_width/2 + headerGap_x + (joint_width/2);
+            }
+        }
+        pre_fx = f_x;
+
+        if(f_y<=0){
+            if(pre_fy>=0){
+                f_y = pre_jy + body_height + headerGap_y;
+            }else{
+                f_y = y;
+                y+=joint_width + headerGap_y;
+            }
+        }
+        pre_fy = f_y;
+
+        drawFact(false,f_x,f_y,fact['id'],fact['name'],fact['content'],fact['type']);
+        if(factIndex<fact['id']){
+            factIndex = fact['id']+1;
+        }
+    }
+
+    y = 10 + header_radius;
     for(var i = 0;i<joints.length;i++){
         var joint = joints[i];
         var j_x = joint['x'];
@@ -2098,20 +2187,25 @@ function initGraph(trusts,freeHeaders,joints,arrows) {
             }else{
                 j_x = x + header_radius + jointGap + joint_width/2;
             }
-        }else{
-            pre_jx = j_x;
         }
+        pre_jx = j_x;
+
         if(j_y<=0){
             if(pre_jy>=0){
                 j_y = pre_jy + joint_width + headerGap_y;
             }else{
-                j_y = y+(joint_width + headerGap_y)*i;
+                j_y = y;
+                y+=joint_width + headerGap_y;
             }
-        }else{
-            pre_jy = j_y;
         }
+        pre_jy = j_y;
 
-        drawJoint(false,j_x,j_y,joint['id'],joint['name'],joint['content'],joint['type']);
+        var jnode = drawJoint(false,j_x,j_y,joint['id'],joint['name'],joint['content'],joint['type']);
+        if(joint['factID']>=0)
+            addLink(jnode,factList[joint['factID']]['node']);
+        if(jointIndex<joint['id']){
+            jointIndex = joint['id']+1;
+        }
     }
 
     for(var i = 0;i<arrows.length;i++){
@@ -2126,68 +2220,125 @@ function typeSetting() {
     var nodes = [];
     var x = 10 + (body_width/2);
     var y = 10 + header_radius;
-    var headerGap_x = 100;
+    var headerGap_x = 120;
     var headerGap_y = 40;
     var jointGap = 150;
     var t = 0;
 
     for(var bid in bodyList){
+        if(bodyList[bid]!=null){
+            var body = bodyList[bid]['node'];
+            var ox = body.x;
+            var oy = body.y;
+            body.x = x;
 
-        var body = bodyList[bid]['node'];
-        var ox = body.x;
-        var oy = body.y;
-        body.x = x;
+            var outLinks = body.outLinks;
+            if(outLinks!=null)
+                body.y = y+((outLinks.length-1)*(2*header_radius + headerGap_y)/2);
+            else{
+                y+=body_height + headerGap_y;
+                body.y = y;
+            }
 
-        var outLinks = body.outLinks;
-        if(outLinks!=null)
-            body.y = y+((outLinks.length-1)*(2*header_radius + headerGap_y)/2);
-        else
-            body.y = y+(body_height + headerGap_y)*t;
+            nodes.push({'node':body,'x':ox,'y':oy});
 
-        nodes.push({'node':body,'x':ox,'y':oy});
+            if(outLinks!=null){
+                for (var i = 0; i < outLinks.length; i++) {
+                    var header = outLinks[i].nodeZ;
+                    var hox = header.x;
+                    var hoy = header.y;
+                    header.x = x + body_width / 2 + headerGap_x + header_radius;
+                    header.y = y;
+                    y += headerGap_y + (header_radius * 2);
 
-        if(outLinks!=null)
-        for(var i = 0;i<outLinks.length;i++){
-            var header = outLinks[i].nodeZ;
-            var hox = header.x;
-            var hoy = header.y;
-            header.x = x + body_width/2 + headerGap_x + header_radius;
-            header.y = y;
-            y += headerGap_y + (header_radius*2);
-
-            nodes.push({'node':header,'x':hox,'y':hoy});
+                    nodes.push({'node': header, 'x': hox, 'y': hoy});
+                }
+            }
+            t++;
         }
-        t++;
+    }
+
+    x+=body_width/2 + headerGap_x + header_radius;
+    for(var hid in headerList){
+        if(headerList[hid]!=null){
+            var header = headerList[hid];
+            if(header.inLinks==null||header.inLinks.length==0){
+                var hox = header.x;
+                var hoy = header.y;
+                header.x = x;
+                header.y = y;
+                y += headerGap_y + (header_radius*2);
+
+                nodes.push({'node':header,'x':hox,'y':hoy});
+            }
+        }
     }
 
     t = 0;
-    x+=body_width/2 + headerGap_x + header_radius;
+    y = 10 + header_radius;
     for(var jid in jointList){
-        var joint = jointList[jid]['node'];
-        var ox = joint.x;
-        var oy = joint.y;
-        joint.x = x + header_radius + jointGap + joint_width/2;
-        var y_max = 0;
-        var y_min = 10000000;
-        var inLinks = joint.inLinks;
+        if(jointList[jid]!=null){
+            var joint = jointList[jid]['node'];
+            var ox = joint.x;
+            var oy = joint.y;
+            joint.x = x + header_radius + jointGap + joint_width/2;
+            var y_max = 0;
+            var y_min = 10000000;
+            var inLinks = joint.inLinks;
 
-        if(inLinks!=null){
-            for(var i = 0;i<inLinks.length;i++){
-                var header = inLinks[i].nodeA;
-                if(header.y>y_max){
-                    y_max = header.y;
+            if(inLinks!=null&&inLinks.length>0){
+                for(var i = 0;i<inLinks.length;i++){
+                    var header = inLinks[i].nodeA;
+                    if(header.y>y_max){
+                        y_max = header.y;
+                    }
+                    if(header.y<y_min){
+                        y_min = header.y;
+                    }
                 }
-                if(header.y<y_min){
-                    y_min = header.y;
-                }
+                joint.y = (y_min + y_max)/2;
+                y = joint.y;
+            }else{
+                y += joint_width + headerGap_y;
+                joint.y = y;
             }
-            joint.y = (y_min + y_max)/2;
-        }else{
-            joint.y = y+(joint_width + headerGap_y)*t;
+            t++;
+            nodes.push({'node':joint,'x':ox,'y':oy});
         }
-        t++;
+    }
 
-        nodes.push({'node':joint,'x':ox,'y':oy});
+    t = 0;
+    y = 10 + header_radius;
+    x+=header_radius + jointGap + joint_width/2;
+    for(var fid in factList){
+        if(factList[fid]!=null){
+            var fact = factList[fid]['node'];
+            var ox = fact.x;
+            var oy = fact.y;
+            fact.x = x + body_width/2 + headerGap_x + (joint_width/2);
+            var y_max = 0;
+            var y_min = 10000000;
+            var inLinks = fact.inLinks;
+
+            if(inLinks!=null&&inLinks.length>0){
+                for(var i = 0;i<inLinks.length;i++){
+                    var joint = inLinks[i].nodeA;
+                    if(joint.y>y_max){
+                        y_max = joint.y;
+                    }
+                    if(joint.y<y_min){
+                        y_min = joint.y;
+                    }
+                }
+                fact.y = (y_min + y_max)/2;
+                y = fact.y;
+            }else{
+                y+=body_height + headerGap_y;
+                fact.y = y;
+            }
+            t++;
+            nodes.push({'node':fact,'x':ox,'y':oy});
+        }
     }
 
     operationList.push({'type':'typesetting','nodes':nodes});

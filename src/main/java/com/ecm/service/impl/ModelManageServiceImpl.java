@@ -22,6 +22,8 @@ public class ModelManageServiceImpl implements ModelManageService {
     private MOD_JointDao jointDao;
     @Autowired
     private MOD_ArrowDao arrowDao;
+    @Autowired
+    private MOD_FactDao factDao;
 
     @Override
     public JSONObject getEvidences(int cid) {
@@ -68,6 +70,7 @@ public class ModelManageServiceImpl implements ModelManageService {
         res.put("freeHeaders",freeHeaders);
         res.put("joints",jointDao.findAllByCaseID(cid));
         res.put("arrows",arrowDao.findAllByCaseID(cid));
+        res.put("facts",factDao.findAllByCaseID(cid));
 
         return res;
     }
@@ -85,9 +88,9 @@ public class ModelManageServiceImpl implements ModelManageService {
     @Override
     public void saveHeaders(List<Evidence_Head> headers) {
         for(int i = 0;i<headers.size();i++){
-            System.out.println("hid:"+headers.get(i).getId());
+//            System.out.println("hid:"+headers.get(i).getId());
             Evidence_Head head = evidenceHeadDao.save(headers.get(i));
-            System.out.println("hid_new:"+head.getId());
+//            System.out.println("hid_new:"+head.getId());
         }
     }
 
@@ -133,6 +136,19 @@ public class ModelManageServiceImpl implements ModelManageService {
     @Transactional
     public void deleteJointById(int id) {
         jointDao.deleteById(id);
+    }
+
+    @Override
+    public void saveFacts(List<MOD_Fact> facts) {
+        for(int i = 0;i<facts.size();i++){
+            factDao.save(facts.get(i));
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteFactById(int id) {
+        factDao.deleteById(id);
     }
 
     @Override
