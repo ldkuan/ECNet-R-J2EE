@@ -1,14 +1,26 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <title>查看证据链关系图 - 文书可视化工具集</title>
 
     <link rel="stylesheet" th:href="@{css/bootstrap.css}"/>
     <link rel="stylesheet" th:href="@{css/font-awesome.css}"/>
     <link rel="stylesheet" th:href="@{css/index.css}"/>
     <link rel="stylesheet" th:href="@{css/common.css}"/>
-    <link rel="stylesheet" th:href="@{css/custom.css}" />
+    <link rel="stylesheet" th:href="@{css/custom.css}"/>
+
+    <!--&lt;!&ndash; Bootstrap styles &ndash;&gt;-->
+    <!--<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">-->
+    <!-- Generic page styles -->
+    <link rel="stylesheet" th:href="@{css/upload/style.css}">
+    <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+    <link rel="stylesheet" th:href="@{css/upload/jquery.fileupload.css}">
+
+
+
+
+
 
     <script th:src="@{js/ref/jquery-3.2.1.min.js}"></script>
     <script th:src="@{js/ref/jquery-ui.js}"></script>
@@ -26,18 +38,29 @@
 
     <![endif]-->
     <!--[if lt IE 9]>
-    <script>window.location.href='upgrade-browser.html';</script>
+    <script>window.location.href = 'upgrade-browser.html';</script>
     <![endif]-->
 
     <script th:inline="javascript">
         /*<![CDATA[*/
-        if($.session.get('username')==null){
-            window.location.href="/login";
-        }else if($.session.get('cid')==null){
-            window.location.href="/manage";
+        if ($.session.get('username') == null) {
+            window.location.href = "/login";
+        } else if ($.session.get('cid') == null) {
+            window.location.href = "/manage";
         }
         /*]]>*/
     </script>
+
+    <script th:src="@{js/upload/vendor/jquery.ui.widget.js}"></script>
+    <script th:src="@{js/upload/jquery.iframe-transport.js}"></script>
+    <script th:src="@{js/upload/jquery.fileupload.js}"></script>
+    <script th:src="@{js/upload/jquery.fileupload-process.js}"></script>
+    <script th:src="@{js/upload/jquery.fileupload-video.js}"></script>
+    <script th:src="@{js/upload/jquery.fileupload-audio.js}"></script>
+    <script th:src="@{js/upload/jquery.fileupload-image.js}"></script>
+    <script th:src="@{js/upload/jquery.fileupload-validate.js}"></script>
+    <!--<script th:src="@{js/upload/jquery.fileupload-jquery-ui.js}"></script>-->
+    <!--<script th:src="@{js/upload/main.js}"></script>-->
 
 </head>
 <body class="user-select">
@@ -46,12 +69,15 @@
         <nav class="navbar navbar-default navbar-fixed-top">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                        <span class="sr-only">切换导航</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </button>
-                    <a class="navbar-brand" href="">法官工作空间</a> </div>
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                            data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                        <span class="sr-only">切换导航</span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+                        <span class="icon-bar"></span></button>
+                    <a class="navbar-brand" href="">法官工作空间</a></div>
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav navbar-right">
-                        <li class="menu-label"><a id="userLabel" title="查看或修改个人信息" data-toggle="modal" data-target="#seeUserInfo">个人信息</a></li>
+                        <li class="menu-label"><a id="userLabel" title="查看或修改个人信息" data-toggle="modal"
+                                                  data-target="#seeUserInfo">个人信息</a></li>
                         <li><a id='exist_click'>退出登录</a></li>
                     </ul>
 
@@ -59,16 +85,16 @@
             </div>
             <ol class="breadcrumb" style="font-size: 19px">
                 <!--<li><strong>-->
-                    <!--<a class="active" href="/upload">质证与采证</a></strong>-->
+                <!--<a class="active" href="/upload">质证与采证</a></strong>-->
                 <!--</li>-->
                 <li>
                     <a class="active" href="/model">证据链建模</a>
                 </li>
                 <!--<li >-->
-                    <!--<a href="law.html">说理与法条推荐</a>-->
+                <!--<a href="law.html">说理与法条推荐</a>-->
                 <!--</li>-->
                 <!--<li >-->
-                    <!--<a href="text.html">文书展示</a>-->
+                <!--<a href="text.html">文书展示</a>-->
                 <!--</li>-->
 
             </ol>
@@ -77,22 +103,56 @@
 
     <div class="row" style="background: white;padding-top: 150px;padding-left: 4%">
         <div style="font-size: 18px;">
-            <div>案号：<span id="caseNum"></span>, 案由：<span id="caseBrief"></span></div>
-            <div>案件名称：<span id="caseName"></span></div>
-            <div>承办人：<span id="underTaker">XXX</span>，立案日期：<span id="caseDate">XXXX年XX月XX日</span></div>
+            <!--<div>案号：<span id="caseNum"></span>, 案由：<span id="caseBrief"></span></div>-->
+            <!--<div>案件名称：<span id="caseName"></span></div>-->
+            <!--<div>承办人：<span id="underTaker">XXX</span>，立案日期：<span id="caseDate">XXXX年XX月XX日</span></div>-->
 
+            <!--<input id="fileupload" type="file" name="files[]" data-url="server/php/" multiple>-->
+            <!--<div id="progress">-->
+            <!--　-->
+            <!--<div class="bar" style="width: 0%;"></div>-->
+            <!--　-->
+            <!--</div>-->
 
+            <div class="container">
+
+                <h2 class="lead">请选择文件</h2>
+                <!--<ul class="nav nav-tabs">-->
+                    <!--<li class="active"><a href="basic-plus.html">选择文件</a></li>-->
+
+                <!--</ul>-->
+
+                <!-- The fileinput-button span is used to style the file input field as button -->
+                <span class="btn btn-success fileinput-button">
+                        <i class="glyphicon glyphicon-plus"></i>
+                     <span>导入文件...</span>
+                        <!-- The file input field used as target for the file upload widget -->
+                     <input id="fileupload" type="file" name="files[]" multiple>
+                </span>
+                <br>
+                <br>
+                <!-- The global progress bar -->
+                <div id="progress" class="progress">
+                    <div class="progress-bar progress-bar-success"></div>
+                </div>
+                <!-- The container for the uploaded files -->
+                <div id="files" class="files"></div>
+                <br>
+
+            </div>
 
         </div>
 
         <div id="mainPanel" style="margin-top: 40px;">
             <a id="list_hide" style="font-size: 18px;" href="#">隐藏<<</a><br/>
-            <div style="display: inline-block;width: 32%;min-height: 300px;vertical-align: top;margin-top:15px;" id="list_div">
+            <div style="display: inline-block;width: 32%;min-height: 300px;vertical-align: top;margin-top:15px;"
+                 id="list_div">
 
 
             </div>
 
-            <div style="display: inline-block;width: 66%;min-height: 300px;vertical-align: top;margin-top:10px;padding-bottom: 50px;" id="graph_div">
+            <div style="display: inline-block;width: 66%;min-height: 300px;vertical-align: top;margin-top:10px;padding-bottom: 50px;"
+                 id="graph_div">
                 <div class="page-content container10" style="top:0;">
                     <div class="row">
                         <!--&lt;!&ndash;文件选择框以及文件相关操作面板&ndash;&gt;-->
@@ -105,45 +165,51 @@
                             <div id='draggableDiv' class="ui-widget-content" style="z-index: 1000;position: absolute;">
                             </div>
 
-                            <div class = 'btn-group' >
-                                <div id="add-body-btn" class="btn-primary btn-sm btn" title="证据链体是指证据链节中, 除证据链头之外的证据链节的主体部分。   拖拽此按钮或者使用快捷键  b">
-                                    <i class="fa  fa-sticky-note-o" aria-hidden="true"></i> 链体</div>
-                                <button id="add-body-btn-toggle" class="btn-default btn-sm btn toggle" data-toggle="toggle" title="按下快速绘图按钮，可连续绘制">
+                            <div class='btn-group'>
+                                <div id="add-body-btn" class="btn-primary btn-sm btn"
+                                     title="证据链体是指证据链节中, 除证据链头之外的证据链节的主体部分。   拖拽此按钮或者使用快捷键  b">
+                                    <i class="fa  fa-sticky-note-o" aria-hidden="true"></i> 链体
+                                </div>
+                                <button id="add-body-btn-toggle" class="btn-default btn-sm btn toggle"
+                                        data-toggle="toggle" title="按下快速绘图按钮，可连续绘制">
                                     <i class="fa fa-bolt" aria-hidden="true"></i>
                                 </button>
                             </div>
 
-                            <div class = 'btn-group' >
+                            <div class='btn-group'>
                                 <div id="add-header-btn" class="btn-primary btn-sm btn"
                                      title="证据链头是两个相互印证的证据链节中一证据被他证据相印证的部分。   拖拽此按钮">
                                     <i class="fa fa-circle-o" aria-hidden="true"></i> 链头
                                 </div>
-                                <button id="add-header-btn-toggle" class="btn-default btn-sm btn toggle" data-toggle="toggle" title="按下快速绘图按钮，可连续绘制">
+                                <button id="add-header-btn-toggle" class="btn-default btn-sm btn toggle"
+                                        data-toggle="toggle" title="按下快速绘图按钮，可连续绘制">
                                     <i class="fa fa-bolt" aria-hidden="true"></i>
                                 </button>
                             </div>
 
-                            <div class = 'btn-group'>
+                            <div class='btn-group'>
                                 <div id="add-joint-btn" class="btn-primary btn-sm btn"
                                      title="所谓证据联结点, 简而言之, 就是案件中作为证据链节表现形式的证据与证据之间相互印证的地方。  拖拽此按钮">
                                     <i class="fa fa-chain" aria-hidden="true"></i> 联结点
                                 </div>
-                                <button id="add-joint-btn-toggle" class="btn-default btn-sm btn toggle" data-toggle="toggle" title="按下快速绘图按钮，可连续绘制">
+                                <button id="add-joint-btn-toggle" class="btn-default btn-sm btn toggle"
+                                        data-toggle="toggle" title="按下快速绘图按钮，可连续绘制">
                                     <i class="fa fa-bolt" aria-hidden="true"></i>
                                 </button>
                             </div>
 
-                            <div class = 'btn-group'>
+                            <div class='btn-group'>
                                 <div id="add-fact-btn" class="btn-primary btn-sm btn"
                                      title="拖拽此按钮">
                                     <i class="fa fa-square-o" aria-hidden="true"></i> 事实
                                 </div>
-                                <button id="add-fact-btn-toggle" class="btn-default btn-sm btn toggle" data-toggle="toggle" title="按下快速绘图按钮，可连续绘制">
+                                <button id="add-fact-btn-toggle" class="btn-default btn-sm btn toggle"
+                                        data-toggle="toggle" title="按下快速绘图按钮，可连续绘制">
                                     <i class="fa fa-bolt" aria-hidden="true"></i>
                                 </button>
                             </div>
 
-                            <div class = 'btn-group' style="margin-left: 2%;">
+                            <div class='btn-group' style="margin-left: 2%;">
                                 <input class="mui-switch" type="checkbox" id="boxSelection">
                                 <label style="vertical-align:bottom;font-size: 16px;">支持框选</label>
                             </div>
@@ -228,8 +294,8 @@
                                                 <label for="body-evidenceType">证据类型</label>
                                                 <!--<input class="form-control" id="body-evidenceType"/>-->
                                                 <select class="form-control" id="body-evidenceType">
-                                                    <option value ="0">证人证言</option>
-                                                    <option value ="1">被告人供述和辩解</option>
+                                                    <option value="0">证人证言</option>
+                                                    <option value="1">被告人供述和辩解</option>
                                                     <option value="2">书证</option>
                                                     <option value="3">鉴定结论</option>
                                                     <option value="4">勘验、检查笔录</option>
@@ -438,28 +504,159 @@
     var cid = $.session.get('cid');
 
     $('#exist_click').click(function () {
-        if(confirm('是否确认退出？'))
-        {
+        if (confirm('是否确认退出？')) {
             $.session.remove('username');
             window.location.href = '/login';
         }
     });
 
-    $(function(){
+    $(function () {
         $("#list_hide").click(
-            function(){
+            function () {
 
-                if($("#list_div").width()=="0"){
-                    $("#list_div").animate({ opacity: "1",width: "32%"}, { duration: 1000});
-                    $("#graph_div").animate({ width: "66%"}, { duration: 1000});
+                if ($("#list_div").width() == "0") {
+                    $("#list_div").animate({opacity: "1", width: "32%"}, {duration: 1000});
+                    $("#graph_div").animate({width: "66%"}, {duration: 1000});
                     $("#list_hide").html("隐藏<<");
-                }else{
-                    $("#list_div").animate({  opacity: "0",width: "0"}, { duration: 1000});
-                    $("#graph_div").animate({ width: "98%"}, { duration: 1000});
+                } else {
+                    $("#list_div").animate({opacity: "0", width: "0"}, {duration: 1000});
+                    $("#graph_div").animate({width: "98%"}, {duration: 1000});
                     $("#list_hide").html("显示>>");
                 }
             });
+
+        // $('#fileupload').fileupload({
+        //     dataType: 'json',
+        //     progressall: function (e, data) {
+        //         var progress = parseInt(data.loaded / data.total * 100, 10);
+        //         $('#progress .bar').css(
+        //             'width',
+        //             progress + '%'
+        //         );
+        //     },
+        //     done: function (e, data) {
+        //         $.each(data.result.files, function (index, file) {
+        //             $('<p/>').text(file.name).appendTo(document.body);
+        //         });
+        //     }
+        //
+        // });
+        'use strict';
+        // Change this to the location of your server-side upload handler:
+        var url = 'file/upload',
+            uploadButton = $('<button/>')
+                .addClass('btn btn-primary')
+                .prop('disabled', true)
+                .text('Processing...')
+                .on('click', function () {
+                    var $this = $(this),
+                        data = $this.data();
+                    $this
+                        .off('click')
+                        .text('Abort')
+                        .on('click', function () {
+                            $this.remove();
+                            data.abort();
+                        });
+                    data.submit().always(function () {
+                        $this.remove();
+                    });
+                });
+        $('#fileupload').fileupload({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            autoUpload: true,
+            // acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+            maxFileSize: 999000,
+            // Enable image resizing, except for Android and Opera,
+            // which actually support image resizing, but fail to
+            // send Blob objects via XHR requests:
+            // disableImageResize: /Android(?!.*Chrome)|Opera/
+            //     .test(window.navigator.userAgent),
+            // previewMaxWidth: 100,
+            // previewMaxHeight: 100,
+            // previewCrop: true
+        }).on('fileuploadadd', function (e, data) {
+            console.log(data)
+            window.a = data
+            var reader = new FileReader();
+            reader.onload = function()
+            {
+                console.log(reader)
+            };
+            reader.readAsText(a.files[0]);
+
+            data.context = $('<div/>').appendTo('#files');
+            $.each(data.files, function (index, file) {
+                var node = $('<p/>')
+                    .append($('<span/>').text(file.name));
+                if (!index) {
+                    node
+                        .append('<br>')
+                        .append(uploadButton.clone(true).data(data));
+                }
+                node.appendTo(data.context);
+            });
+        }).on('fileuploadprocessalways', function (e, data) {
+            var index = data.index,
+                file = data.files[index],
+                node = $(data.context.children()[index]);
+            if (file.preview) {
+                node
+                    .prepend('<br>')
+                    .prepend(file.preview);
+            }
+            if (file.error) {
+                node
+                    .append('<br>')
+                    .append($('<span class="text-danger"/>').text(file.error));
+            }
+            if (index + 1 === data.files.length) {
+                data.context.find('button')
+                    .text('上传文件')
+                    .prop('disabled', !!data.files.error);
+            }
+        }).on('fileuploadprogress', function (e, data) {
+
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('#progress .progress-bar').css(
+                'width',
+                progress + '%'
+            );
+
+        }).on('fileuploaddone', function (e, data) {
+            $.each(data.result.files, function (index, file) {
+                if (file.url) {
+                    var link = $('<a>')
+                        .attr('target', '_blank')
+                        .prop('href', file.url);
+                    $(data.context.children()[index])
+                        .wrap(link);
+                } else if (file.error) {
+                    var error = $('<span class="text-danger"/>').text(file.error);
+                    $(data.context.children()[index])
+                        .append('<br>')
+                        .append(error);
+                }
+            });
+        }).on('fileuploadfail', function (e, data) {
+            $.each(data.files, function (index) {
+                var error = $('<span class="text-danger"/>').text('上传失败.');
+                $(data.context.children()[index])
+                    .append('<br>')
+                    .append(error);
+            });
+        }).prop('disabled', !$.support.fileInput)
+            .parent().addClass($.support.fileInput ? undefined : 'disabled');
+
+
+
+
+
     });
+
+
     /*]]>*/
 </script>
 </html>
