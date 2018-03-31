@@ -45,8 +45,6 @@
         /*<![CDATA[*/
         if ($.session.get('username') == null) {
             window.location.href = "/login";
-        } else if ($.session.get('cid') == null) {
-            window.location.href = "/manage";
         }
         /*]]>*/
     </script>
@@ -566,7 +564,6 @@
             url: url,
             type: 'POST',
             dataType: 'json',
-            autoUpload: true,
             // acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
             maxFileSize: 999000,
             // Enable image resizing, except for Android and Opera,
@@ -578,14 +575,15 @@
             // previewMaxHeight: 100,
             // previewCrop: true
         }).on('fileuploadadd', function (e, data) {
-            console.log(data)
+
             window.a = data
-            var reader = new FileReader();
-            reader.onload = function()
-            {
-                console.log(reader)
-            };
-            reader.readAsText(a.files[0]);
+            console.log(a)
+            // var reader = new FileReader();
+            // reader.onload = function()
+            // {
+            //     console.log(reader)
+            // };
+            // reader.readAsText(a.files[0]);
 
             data.context = $('<div/>').appendTo('#files');
             $.each(data.files, function (index, file) {
@@ -625,7 +623,14 @@
                 progress + '%'
             );
 
+
+        }).on('fileuploadsubmit', function (e, data) {
+
+
         }).on('fileuploaddone', function (e, data) {
+            console.log('wode',data)
+            console.log(data.result)
+
             $.each(data.result.files, function (index, file) {
                 if (file.url) {
                     var link = $('<a>')

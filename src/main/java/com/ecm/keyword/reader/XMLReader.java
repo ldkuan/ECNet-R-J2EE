@@ -70,8 +70,15 @@ public class XMLReader {
 	public ArrayList<FactModel> getFactlist(String path) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException{
 		return null;
 	}
+	public ArrayList<FactModel> getFactlist(File file) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException{
+		return null;
+	}
 	
 	public ArrayList<EvidenceModel> getEvidencelist(String path) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException{
+		return null;
+	}
+
+	public ArrayList<EvidenceModel> getEvidencelist(File file) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException{
 		return null;
 	}
 }
