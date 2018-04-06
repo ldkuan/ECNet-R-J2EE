@@ -20,20 +20,9 @@ public class ModelController {
     @RequestMapping(value="/getEvidences")
     public JSONObject getEvidences(@RequestParam("cid") int cid){
 
-        return modelManageService.getEvidences(cid);
+        return new JSONObject();
     }
 
-//    @RequestMapping(value="/getJoints")
-//    public List<MOD_Joint> getJoints(@RequestParam("cid") int cid){
-//
-//        return modelManageService.getJoints(cid);
-//    }
-//
-//    @RequestMapping(value="/getArrows")
-//    public List<MOD_Arrow> getArrows(@RequestParam("cid") int cid){
-//
-//        return modelManageService.getArrows(cid);
-//    }
 
 
 }

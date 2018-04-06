@@ -1,11 +1,15 @@
 package com.ecm.controller;
 
+import com.ecm.keyword.manager.HeadCreator;
 import com.ecm.keyword.model.FactModel;
+import com.ecm.keyword.reader.JsonReader;
 import com.ecm.keyword.reader.ReaderFactory;
 import com.ecm.keyword.reader.XMLReader;
 import com.ecm.keyword.reader.XMLReaderCri;
 import com.ecm.keyword.writer.XmlWriter;
+import com.ecm.service.FileManageService;
 import com.ecm.service.ModelManageService;
+import com.google.gson.JsonObject;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -31,13 +35,17 @@ import java.util.*;
 @RequestMapping(value = "/file")
 public class FileController {
 
-//    @Autowired
-//    private ModelManageService modelManageService;
+    @Autowired
+    private FileManageService fileManageService;
+    @Autowired
+    private ModelManageService modelManageService;
+
 
     @RequestMapping(value = "/upload")
     public Map<String, Object> uploadFile(HttpServletRequest request, HttpServletResponse response) throws Exception {
         request.setCharacterEncoding("UTF-8");
 
+        System.out.println("--------------------");
         Map<String, Object> json = new HashMap<String, Object>();
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 
@@ -49,48 +57,33 @@ public class FileController {
             multipartFile = (MultipartFile) map.get(obj);
 
         }
-        /** 获取文件的后缀* */
-        String filename = multipartFile.getOriginalFilename();
-        System.out.println("Uploaded:" + filename);
-
-        File file = new File("file/xml/temp.xml");
-        try {
-            multipartFile.transferTo(file);
-            file.deleteOnExit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        String filePath = "file/xml/";
-        XmlWriter xmlWriter = new XmlWriter();
-        xmlWriter.write(file,filePath+filename);
-
-        System.out.println(file.getName());
-//        ArrayList<FactModel> factList = new ArrayList<FactModel>();
-//        ReaderFactory fac = new ReaderFactory();
-//        XMLReader xmlReader = new XMLReader();
-//        String type = xmlReader.getType(filePath+filename);
-//        xmlReader = fac.createXMLReader(type);
-//        if (factList.size() > 0) {
-//            for (int i = 0; i < factList.size(); i++) {
-//                System.out.println(factList.get(i));
-//            }
-//        }
-
-        String path = "";
+        //得到 接受请求的绝对路径
+        File f = new File("");
+        String absolutePath = f.getAbsolutePath();
 
 
-        json.put("message", "应用上传成功");
+        //存储上传的文件
+        String savePath = fileManageService.saveFileUpload(multipartFile);
+//
+//        //从存储的文件中 得到证据链模型
+//        JSONArray factArray = modelManageService.getModel(absolutePath + "/file/xml/");
+//
+//        //将证据链模型递交 关系计算服务器  返回有事实证据联系的 证据链模型
+//        JSONObject modelsJson = HeadCreator.getHead(factArray);
+//        System.out.println(modelsJson.toString());
+
+
+        File file = new File(absolutePath + "/file/xml/result/a.json");
+        String content= FileUtils.readFileToString(file,"UTF-8");
+        JSONObject jsonObject=JSONObject.fromObject(content);
+
+        json.put("message", "文件上传成功");
         json.put("status", true);
-        json.put("filePath", path);
+        json.put("filePath", absolutePath + "\\file\\xml\\temp.xml");
+        json.put("fileContent",  "");
+        json.put("modelsJson", jsonObject);
         return json;
     }
 
-    public static  void main(String args[]){
-        File f = new File(".");
 
-        String absolutePath = f.getAbsolutePath();
-
-        System.out.println(absolutePath);
-    }
 }

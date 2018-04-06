@@ -10,6 +10,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class ChainCreator {
 	public void creatChain(String folderName, String fileName, ArrayList<FactModel> fList, ArrayList<EvidenceModel> eList){
 		ReaderFactory fac = new ReaderFactory();
 		XMLReader xmlReader = new XMLReader();
-		String filePath = folderName + "/" + fileName;
+		String filePath = folderName + fileName;
 		String type = xmlReader.getType(filePath);
 		xmlReader = fac.createXMLReader(type);
 		
@@ -40,8 +41,8 @@ public class ChainCreator {
 			JsonWriter jsonWriter = new JsonWriter();
 			//构建证据事实关系
 			calcLink(fList, eList);
-			jsonWriter.writeListToJson(fList,folderName+"/result/fact/"+fileName+"fact.json");
-			jsonWriter.writeListToJson(eList,folderName+"/result/evidence/"+fileName+"evidence.json");
+			jsonWriter.writeListToJson(fList,folderName+"/result/fact/"+fileName.substring(0,4)+"fact.json");
+			jsonWriter.writeListToJson(eList,folderName+"/result/evidence/"+fileName.substring(0,4)+"evidence.json");
 			//计算证据链头
 			calcHead(fList);
 			

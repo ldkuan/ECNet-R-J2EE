@@ -29,6 +29,7 @@
     <script th:src="@{js/ref/jtopo-0.4.8-min.js}"></script>
     <script th:src="@{js/mytopo.js}"></script>
     <script th:src="@{js/evidence.js}"></script>
+    <script th:src="@{js/model.js}"></script>
 
     <!--[if gte IE 9]>
     <script th:src="@{js/ref/jquery-1.11.1.min.js}"></script>
@@ -57,6 +58,7 @@
     <script th:src="@{js/upload/jquery.fileupload-audio.js}"></script>
     <script th:src="@{js/upload/jquery.fileupload-image.js}"></script>
     <script th:src="@{js/upload/jquery.fileupload-validate.js}"></script>
+
     <!--<script th:src="@{js/upload/jquery.fileupload-jquery-ui.js}"></script>-->
     <!--<script th:src="@{js/upload/main.js}"></script>-->
 
@@ -566,6 +568,7 @@
             dataType: 'json',
             // acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
             maxFileSize: 999000,
+            limitMultiFileUploads:1,
             // Enable image resizing, except for Android and Opera,
             // which actually support image resizing, but fail to
             // send Blob objects via XHR requests:
@@ -628,8 +631,10 @@
 
 
         }).on('fileuploaddone', function (e, data) {
-            console.log('wode',data)
-            console.log(data.result)
+
+            console.log(data.result);
+
+            modelTransfer(data.result.modelsJson);
 
             $.each(data.result.files, function (index, file) {
                 if (file.url) {

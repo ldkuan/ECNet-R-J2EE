@@ -4,6 +4,7 @@ import org.ansj.domain.Result;
 import org.ansj.domain.Term;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -12,9 +13,9 @@ import java.util.List;
 public class WordFilter {
 
     ArrayList<String> stopWords;
-    //final String stopWordUrl="C:\\Users\\nju\\Downloads\\stopWords.txt";
-    final String stopWordUrl="/Users/sweets/Documents/stopWords.txt";
-    //final String stopWordUrl="D:\\ecm\\stopWords.txt";
+
+    final String stopWordUrl="/file/stopWords.txt";
+
     public WordFilter(){
         stopWords = getStopWords();
     }
@@ -59,12 +60,13 @@ public class WordFilter {
         ArrayList<String> stopWords = new ArrayList<String>();
 
         try {
-            FileInputStream fis = new FileInputStream(stopWordUrl);
+            File f = new File("");
+
+            FileInputStream fis = new FileInputStream(f.getAbsolutePath()+stopWordUrl);
             BufferedReader reader = new BufferedReader(new InputStreamReader(fis,"UTF-8"));
             String tempString = null;
             while ((tempString = reader.readLine())!=null) {
-                String[] str = tempString.split(",");
-                stopWords.add(str[0]);
+                stopWords.add(tempString);
             }
             reader.close();
         } catch (Exception e) {
