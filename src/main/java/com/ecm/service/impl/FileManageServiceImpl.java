@@ -1,6 +1,8 @@
 package com.ecm.service.impl;
 
+
 import com.ecm.service.FileManageService;
+
 import nju.software.wsjx.facade.impl.WsModelFacadeImpl;
 import nju.software.wsjx.model.wsSegmentationModel.WsModel;
 import nju.software.wsjx.util.FileUtil;
@@ -21,7 +23,8 @@ public class FileManageServiceImpl implements FileManageService {
         String filename = multipartFile.getOriginalFilename();
         System.out.println("Uploaded:" + filename);
 
-        String fileType = filename.split("\\.")[1];
+        String[] filenames = filename.split("\\.");
+        String fileType = filenames[filenames.length - 1];
 
 
         //得到 接受请求的绝对路径

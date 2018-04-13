@@ -8,7 +8,8 @@
     <link rel="stylesheet" th:href="@{css/font-awesome.css}"/>
     <link rel="stylesheet" th:href="@{css/index.css}"/>
     <link rel="stylesheet" th:href="@{css/common.css}"/>
-    <link rel="stylesheet" th:href="@{css/custom.css}"/>
+    <!--<link rel="stylesheet" th:href="@{css/custom.css}"/>-->
+    <!--<link rel="stylesheet" th:href="@{css/loading.css}"/>-->
 
     <!--&lt;!&ndash; Bootstrap styles &ndash;&gt;-->
     <!--<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">-->
@@ -16,10 +17,6 @@
     <link rel="stylesheet" th:href="@{css/upload/style.css}">
     <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
     <link rel="stylesheet" th:href="@{css/upload/jquery.fileupload.css}">
-
-
-
-
 
 
     <script th:src="@{js/ref/jquery-3.2.1.min.js}"></script>
@@ -30,6 +27,7 @@
     <script th:src="@{js/mytopo.js}"></script>
     <script th:src="@{js/evidence.js}"></script>
     <script th:src="@{js/model.js}"></script>
+
 
     <!--[if gte IE 9]>
     <script th:src="@{js/ref/jquery-1.11.1.min.js}"></script>
@@ -81,6 +79,16 @@
                         <li><a id='exist_click'>退出登录</a></li>
                     </ul>
 
+                    <form id="excelForm" action="file/upload" method="post" enctype="multipart/form-data"
+                          class="navbar-form navbar-right" role="">
+                        <div class="input-group">
+                            <input type="text" name="ajxh" id="importCaseId" class="hidden form-control" value="41722">
+                            <input type="file" name="file" class="form-control" id="file">
+                            <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" onclick="uploadExcel()">提交</button>
+                            </span></div>
+                    </form>
+
                 </div>
             </div>
             <ol class="breadcrumb" style="font-size: 19px">
@@ -101,57 +109,51 @@
         </nav>
     </div>
 
-    <div class="row" style="background: white;padding-top: 150px;padding-left: 4%">
-        <div style="font-size: 18px;">
-            <!--<div>案号：<span id="caseNum"></span>, 案由：<span id="caseBrief"></span></div>-->
-            <!--<div>案件名称：<span id="caseName"></span></div>-->
-            <!--<div>承办人：<span id="underTaker">XXX</span>，立案日期：<span id="caseDate">XXXX年XX月XX日</span></div>-->
+    <div class="row" style="background: white;padding-top: 50px;padding-left: 4%">
+        <!--<div style="font-size: 18px;">-->
+        <!--&lt;!&ndash;<div>案号：<span id="caseNum"></span>, 案由：<span id="caseBrief"></span></div>&ndash;&gt;-->
+        <!--&lt;!&ndash;<div>案件名称：<span id="caseName"></span></div>&ndash;&gt;-->
+        <!--&lt;!&ndash;<div>承办人：<span id="underTaker">XXX</span>，立案日期：<span id="caseDate">XXXX年XX月XX日</span></div>&ndash;&gt;-->
 
-            <!--<input id="fileupload" type="file" name="files[]" data-url="server/php/" multiple>-->
-            <!--<div id="progress">-->
-            <!--　-->
-            <!--<div class="bar" style="width: 0%;"></div>-->
-            <!--　-->
-            <!--</div>-->
 
-            <div class="container">
+        <!--<div class="container">-->
 
-                <h2 class="lead">请选择文件</h2>
-                <!--<ul class="nav nav-tabs">-->
-                    <!--<li class="active"><a href="basic-plus.html">选择文件</a></li>-->
+        <!--<h2 class="lead">请选择文件</h2>-->
+        <!--&lt;!&ndash;<ul class="nav nav-tabs">&ndash;&gt;-->
+        <!--&lt;!&ndash;<li class="active"><a href="basic-plus.html">选择文件</a></li>&ndash;&gt;-->
 
-                <!--</ul>-->
+        <!--&lt;!&ndash;</ul>&ndash;&gt;-->
 
-                <!-- The fileinput-button span is used to style the file input field as button -->
-                <span class="btn btn-success fileinput-button">
-                        <i class="glyphicon glyphicon-plus"></i>
-                     <span>导入文件...</span>
-                        <!-- The file input field used as target for the file upload widget -->
-                     <input id="fileupload" type="file" name="files[]" multiple>
-                </span>
-                <br>
-                <br>
-                <!-- The global progress bar -->
-                <div id="progress" class="progress">
-                    <div class="progress-bar progress-bar-success"></div>
-                </div>
-                <!-- The container for the uploaded files -->
-                <div id="files" class="files"></div>
-                <br>
+        <!--&lt;!&ndash; The fileinput-button span is used to style the file input field as button &ndash;&gt;-->
+        <!--<span class="btn btn-success fileinput-button">-->
+        <!--<i class="glyphicon glyphicon-plus"></i>-->
+        <!--<span>导入文件...</span>-->
+        <!--&lt;!&ndash; The file input field used as target for the file upload widget &ndash;&gt;-->
+        <!--<input id="fileupload" type="file" name="files[]" multiple>-->
+        <!--</span>-->
+        <!--<br>-->
+        <!--<br>-->
+        <!--&lt;!&ndash; The global progress bar &ndash;&gt;-->
+        <!--<div id="progress" class="progress">-->
+        <!--<div class="progress-bar progress-bar-success"></div>-->
+        <!--</div>-->
+        <!--&lt;!&ndash; The container for the uploaded files &ndash;&gt;-->
+        <!--<div id="files" class="files"></div>-->
+        <!--<br>-->
 
-            </div>
+        <!--</div>-->
 
-        </div>
+        <!--</div>-->
 
         <div id="mainPanel" style="margin-top: 40px;">
-            <a id="list_hide" style="font-size: 18px;" href="#">隐藏<<</a><br/>
-            <div style="display: inline-block;width: 32%;min-height: 300px;vertical-align: top;margin-top:15px;"
+            <!--<a id="list_hide" style="font-size: 18px;" href="#">隐藏<<</a><br/>-->
+            <div style="display: inline-block;width: 0%;min-height: 300px;vertical-align: top;margin-top:15px;"
                  id="list_div">
 
 
             </div>
 
-            <div style="display: inline-block;width: 66%;min-height: 300px;vertical-align: top;margin-top:10px;padding-bottom: 50px;"
+            <div style="display: inline-block;width: 98%;min-height: 300px;vertical-align: top;margin-top:10px;padding-bottom: 50px;"
                  id="graph_div">
                 <div class="page-content container10" style="top:0;">
                     <div class="row">
@@ -497,176 +499,5 @@
 
 </body>
 
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    var username = $.session.get('username');
-    $('#userLabel').text(username);
-    var cid = $.session.get('cid');
 
-    $('#exist_click').click(function () {
-        if (confirm('是否确认退出？')) {
-            $.session.remove('username');
-            window.location.href = '/login';
-        }
-    });
-
-    $(function () {
-        $("#list_hide").click(
-            function () {
-
-                if ($("#list_div").width() == "0") {
-                    $("#list_div").animate({opacity: "1", width: "32%"}, {duration: 1000});
-                    $("#graph_div").animate({width: "66%"}, {duration: 1000});
-                    $("#list_hide").html("隐藏<<");
-                } else {
-                    $("#list_div").animate({opacity: "0", width: "0"}, {duration: 1000});
-                    $("#graph_div").animate({width: "98%"}, {duration: 1000});
-                    $("#list_hide").html("显示>>");
-                }
-            });
-
-        // $('#fileupload').fileupload({
-        //     dataType: 'json',
-        //     progressall: function (e, data) {
-        //         var progress = parseInt(data.loaded / data.total * 100, 10);
-        //         $('#progress .bar').css(
-        //             'width',
-        //             progress + '%'
-        //         );
-        //     },
-        //     done: function (e, data) {
-        //         $.each(data.result.files, function (index, file) {
-        //             $('<p/>').text(file.name).appendTo(document.body);
-        //         });
-        //     }
-        //
-        // });
-        'use strict';
-        // Change this to the location of your server-side upload handler:
-        var url = 'file/upload',
-            uploadButton = $('<button/>')
-                .addClass('btn btn-primary')
-                .prop('disabled', true)
-                .text('Processing...')
-                .on('click', function () {
-                    var $this = $(this),
-                        data = $this.data();
-                    $this
-                        .off('click')
-                        .text('Abort')
-                        .on('click', function () {
-                            $this.remove();
-                            data.abort();
-                        });
-                    data.submit().always(function () {
-                        $this.remove();
-                    });
-                });
-        $('#fileupload').fileupload({
-            url: url,
-            type: 'POST',
-            dataType: 'json',
-            // acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
-            maxFileSize: 999000,
-            limitMultiFileUploads:1,
-            // Enable image resizing, except for Android and Opera,
-            // which actually support image resizing, but fail to
-            // send Blob objects via XHR requests:
-            // disableImageResize: /Android(?!.*Chrome)|Opera/
-            //     .test(window.navigator.userAgent),
-            // previewMaxWidth: 100,
-            // previewMaxHeight: 100,
-            // previewCrop: true
-        }).on('fileuploadadd', function (e, data) {
-
-            window.a = data
-            console.log(a)
-            // var reader = new FileReader();
-            // reader.onload = function()
-            // {
-            //     console.log(reader)
-            // };
-            // reader.readAsText(a.files[0]);
-
-            data.context = $('<div/>').appendTo('#files');
-            $.each(data.files, function (index, file) {
-                var node = $('<p/>')
-                    .append($('<span/>').text(file.name));
-                if (!index) {
-                    node
-                        .append('<br>')
-                        .append(uploadButton.clone(true).data(data));
-                }
-                node.appendTo(data.context);
-            });
-        }).on('fileuploadprocessalways', function (e, data) {
-            var index = data.index,
-                file = data.files[index],
-                node = $(data.context.children()[index]);
-            if (file.preview) {
-                node
-                    .prepend('<br>')
-                    .prepend(file.preview);
-            }
-            if (file.error) {
-                node
-                    .append('<br>')
-                    .append($('<span class="text-danger"/>').text(file.error));
-            }
-            if (index + 1 === data.files.length) {
-                data.context.find('button')
-                    .text('上传文件')
-                    .prop('disabled', !!data.files.error);
-            }
-        }).on('fileuploadprogress', function (e, data) {
-
-            var progress = parseInt(data.loaded / data.total * 100, 10);
-            $('#progress .progress-bar').css(
-                'width',
-                progress + '%'
-            );
-
-
-        }).on('fileuploadsubmit', function (e, data) {
-
-
-        }).on('fileuploaddone', function (e, data) {
-
-            console.log(data.result);
-
-            modelTransfer(data.result.modelsJson);
-
-            $.each(data.result.files, function (index, file) {
-                if (file.url) {
-                    var link = $('<a>')
-                        .attr('target', '_blank')
-                        .prop('href', file.url);
-                    $(data.context.children()[index])
-                        .wrap(link);
-                } else if (file.error) {
-                    var error = $('<span class="text-danger"/>').text(file.error);
-                    $(data.context.children()[index])
-                        .append('<br>')
-                        .append(error);
-                }
-            });
-        }).on('fileuploadfail', function (e, data) {
-            $.each(data.files, function (index) {
-                var error = $('<span class="text-danger"/>').text('上传失败.');
-                $(data.context.children()[index])
-                    .append('<br>')
-                    .append(error);
-            });
-        }).prop('disabled', !$.support.fileInput)
-            .parent().addClass($.support.fileInput ? undefined : 'disabled');
-
-
-
-
-
-    });
-
-
-    /*]]>*/
-</script>
 </html>

@@ -64,24 +64,24 @@ public class FileController {
 
         //存储上传的文件
         String savePath = fileManageService.saveFileUpload(multipartFile);
-//
-//        //从存储的文件中 得到证据链模型
-//        JSONArray factArray = modelManageService.getModel(absolutePath + "/file/xml/");
-//
-//        //将证据链模型递交 关系计算服务器  返回有事实证据联系的 证据链模型
-//        JSONObject modelsJson = HeadCreator.getHead(factArray);
-//        System.out.println(modelsJson.toString());
+
+//        从存储的文件中 得到证据链模型
+        JSONArray factArray = modelManageService.getModel(absolutePath + "/file/xml/");
+
+        //将证据链模型递交 关系计算服务器  返回有事实证据联系的 证据链模型
+        JSONObject modelsJson = HeadCreator.getHead(factArray);
+        System.out.println(modelsJson.toString());
 
 
         File file = new File(absolutePath + "/file/xml/result/a.json");
-        String content= FileUtils.readFileToString(file,"UTF-8");
-        JSONObject jsonObject=JSONObject.fromObject(content);
+        String content = FileUtils.readFileToString(file, "UTF-8");
+        JSONObject jsonObject = JSONObject.fromObject(content);
 
         json.put("message", "文件上传成功");
         json.put("status", true);
         json.put("filePath", absolutePath + "\\file\\xml\\temp.xml");
-        json.put("fileContent",  "");
-        json.put("modelsJson", jsonObject);
+        json.put("fileContent", "");
+        json.put("modelsJson", modelsJson);
         return json;
     }
 

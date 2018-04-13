@@ -99,6 +99,8 @@ public class HeadCreator {
         conn.setRequestProperty("Connection", "Keep-Alive");
         // 设置文件字符集:
         conn.setRequestProperty("Charset", "UTF-8");
+        conn.setConnectTimeout(100000);
+        conn.setReadTimeout(100000);
         //String json="{\"evidenceList\":[{\"id\":296,\"content\":\"test\",\"type\":\"其他\",\"keyWordMap\":{\"what\":[],\"how much\":[],\"where\":[],\"when\":[],\"who\":[]},\"headList\":[]},{\"id\":297,\"content\":\"托尔斯泰\",\"type\":\"其他\",\"keyWordMap\":{\"what\":[],\"how much\":[],\"where\":[],\"when\":[],\"who\":[\"托尔斯泰\"]},\"headList\":[]}]}";
         String json = jsonObject.toString();
         String answer1 = json;
