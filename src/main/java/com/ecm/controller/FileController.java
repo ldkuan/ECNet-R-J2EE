@@ -66,11 +66,12 @@ public class FileController {
         String savePath = fileManageService.saveFileUpload(multipartFile);
 
 //        从存储的文件中 得到证据链模型
-        JSONArray factArray = modelManageService.getModel(absolutePath + "/file/xml/");
-
+//        JSONArray factArray = modelManageService.getModel(absolutePath + "/file/xml/");
+//
         //将证据链模型递交 关系计算服务器  返回有事实证据联系的 证据链模型
-        JSONObject modelsJson = HeadCreator.getHead(factArray);
-        System.out.println(modelsJson.toString());
+//        JSONObject modelsJson = HeadCreator.getHead(factArray);
+//        System.out.println(modelsJson.toString());
+//        fileManageService.writeResultJson(modelsJson, absolutePath + "/file/xml/result/a.json");
 
 
         File file = new File(absolutePath + "/file/xml/result/a.json");
@@ -81,7 +82,7 @@ public class FileController {
         json.put("status", true);
         json.put("filePath", absolutePath + "\\file\\xml\\temp.xml");
         json.put("fileContent", "");
-        json.put("modelsJson", modelsJson);
+        json.put("modelsJson", jsonObject);
         return json;
     }
 

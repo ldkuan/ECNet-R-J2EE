@@ -3,9 +3,7 @@ package com.ecm.keyword.writer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
@@ -18,5 +16,13 @@ public class JsonWriter<T> {
         Gson gson = new GsonBuilder().create();
         gson.toJson(list,writer);
         writer.close();
+    }
+
+    public void writeJsonToFile(String filePath, String sets) throws IOException {
+        FileWriter fw = new FileWriter(filePath);
+        PrintWriter out = new PrintWriter(fw);
+        out.write(sets);
+        fw.close();
+        out.close();
     }
 }

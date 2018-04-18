@@ -1,8 +1,10 @@
 package com.ecm.service.impl;
 
 
+import com.ecm.keyword.writer.JsonWriter;
 import com.ecm.service.FileManageService;
 
+import net.sf.json.JSONObject;
 import nju.software.wsjx.facade.impl.WsModelFacadeImpl;
 import nju.software.wsjx.model.wsSegmentationModel.WsModel;
 import nju.software.wsjx.util.FileUtil;
@@ -50,6 +52,7 @@ public class FileManageServiceImpl implements FileManageService {
         return absolutePath + "/file/xml/temp.xml";
     }
 
+
     private String savefile(MultipartFile multipartFile, String path) throws IOException {
 
         File file = new File(path);
@@ -88,6 +91,15 @@ public class FileManageServiceImpl implements FileManageService {
         else {
             System.out.println("error");
         }
+
+        return "";
+    }
+
+
+    @Override
+    public String writeResultJson(JSONObject jsonObject, String path) throws IOException {
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.writeJsonToFile(path, jsonObject.toString());
 
         return "";
     }

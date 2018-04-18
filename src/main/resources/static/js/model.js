@@ -9,7 +9,18 @@ $('#exist_click').click(function () {
         window.location.href = '/login';
     }
 });
+$(document).ready(function () {
 
+    if ($.session.get('modelsJson') != undefined) {
+        var modelsJson = JSON.parse($.session.get('modelsJson'));
+        if (modelsJson != null) {
+            console.log("modelsJson  exist");
+            console.log(modelsJson);
+            modelTransfer(modelsJson);
+        }
+    }
+
+});
 $(function () {
     // $("#list_hide").click(
     //     function () {
@@ -177,7 +188,7 @@ function uploadExcel() {
         success: function (data) {
             console.log(data);
             // $('#graph_div').reload();
-
+            $.session.set("modelsJson", JSON.stringify(data.modelsJson));
             modelTransfer(data.modelsJson);
         },
         // error : function() {
