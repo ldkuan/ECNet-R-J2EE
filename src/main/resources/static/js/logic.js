@@ -144,6 +144,7 @@ $(document).ready(function() {
 			}
 		}
 		loadData(ss.concat(zj));
+		compose();
 	});
 	prepareConclusionSelect();
 });

@@ -1,54 +1,54 @@
-var headerIndex = 0;//当前链头id
-var headerList = {};//存储链头，{id:node}
-var bodyIndex = 0;//当前链体id
-var bodyList = {};//存储链体，{id:{'node':node,'type':'XXX','committer':'XXX','reason':'XXXXXX',
+var headerIndex = 0;// 当前链头id
+var headerList = {};// 存储链头，{id:node}
+var bodyIndex = 0;// 当前链体id
+var bodyList = {};// 存储链体，{id:{'node':node,'type':'XXX','committer':'XXX','reason':'XXXXXX',
 // 'conclusion':'XXXXXX','documentID':-1,'isDefendant':1,'trust':1}}
-var jointIndex = 0;//当前连接点（事实）id
-var jointList = {};//存储连接点（事实），{id:{'node':node,'type':'XXX'}}
-var factIndex = 0;//当前事实节点id
-var factList = {};//存储事实节点，{id:{'node':node,'type':'XXX'}}
-var arrowIndex = 0;//当前箭头id
-var arrowList = {};//存储箭头，{id:node}
-var linkIndex = 0;//当前连线id
+var jointIndex = 0;// 当前连接点（事实）id
+var jointList = {};// 存储连接点（事实），{id:{'node':node,'type':'XXX'}}
+var factIndex = 0;// 当前事实节点id
+var factList = {};// 存储事实节点，{id:{'node':node,'type':'XXX'}}
+var arrowIndex = 0;// 当前箭头id
+var arrowList = {};// 存储箭头，{id:node}
+var linkIndex = 0;// 当前连线id
 // var linkList = {};//存储连线，{id:node}
-var operationList = [];//存储每一步操作，[{'type':'add/copy','nodes':[]},{'type':'move','nodes':[],'position_origin':[x,y]},
+var operationList = [];// 存储每一步操作，[{'type':'add/copy','nodes':[]},{'type':'move','nodes':[],'position_origin':[x,y]},
 // {'type':'delete','nodes':[{'node':node,'content':{'',''}}]},{'type':'typesetting','nodes':[{'node':node,'x':x,'y':y}]}]
-var header_delete = [];//删除的链头id
-var body_delete = [];//删除的链体id
-var joint_delete = [];//删除的连接点id
-var fact_delete = [];//删除的事实节点id
+var header_delete = [];// 删除的链头id
+var body_delete = [];// 删除的链体id
+var joint_delete = [];// 删除的连接点id
+var fact_delete = [];// 删除的事实节点id
 
-var isNodeClicked_right = false;//节点（链头、链体、连接点、连线、箭头）右键点击
-var isNodeClicked_left = false;//节点（链头、链体、连接点、连线、箭头）左键点击
+var isNodeClicked_right = false;// 节点（链头、链体、连接点、连线、箭头）右键点击
+var isNodeClicked_left = false;// 节点（链头、链体、连接点、连线、箭头）左键点击
 // var nodeList_selected = [];//已选中的节点（链头、链体、连接点、连线、箭头），[node]
 // var isCtrlPressed = false;//ctrl键是否按下
-var nodeFroms = [];//连线or箭头链头节点（允许同时创建多个连线或箭头），存储在nodeList_selected中的index
-var nodeTo;//连线链体节点or箭头连接点节点
-var header_radius = 20;//链头节点半径
-var body_width = 80;//链体节点长
-var body_height = 30;//链体节点宽
-var joint_width = 30;//连接点边长
-var fact_borderRadius = 6;//事实节点borderRadius
-var header_color = 'rgba(127,185,136,0.8)';//链头边框颜色
+var nodeFroms = [];// 连线or箭头链头节点（允许同时创建多个连线或箭头），存储在nodeList_selected中的index
+var nodeTo;// 连线链体节点or箭头连接点节点
+var header_radius = 20;// 链头节点半径
+var body_width = 80;// 链体节点长
+var body_height = 30;// 链体节点宽
+var joint_width = 30;// 连接点边长
+var fact_borderRadius = 6;// 事实节点borderRadius
+var header_color = 'rgba(127,185,136,0.8)';// 链头边框颜色
 var header_color_num = '127,185,136';
-var body_color = 'rgba(97,158,255,0.8)';//链体边框颜色
+var body_color = 'rgba(97,158,255,0.8)';// 链体边框颜色
 var body_color_num = '97,158,255';
-var joint_color = 'rgba(101,43,105,0.8)';//连接点边框颜色
+var joint_color = 'rgba(101,43,105,0.8)';// 连接点边框颜色
 var joint_color_num = '101,43,105';
-var fact_color = 'rgba(253, 185, 51,0.8)';//连接点边框颜色
+var fact_color = 'rgba(253, 185, 51,0.8)';// 连接点边框颜色
 var fact_color_num = '253, 185, 51';
-var continuous_header = false;//是否连续绘制链头
-var continuous_body = false;//是否连续绘制链体
-var continuous_joint = false;//是否连续绘制连接点
-var continuous_fact = false;//是否连续绘制事实
-var isCopied = false;//是否点击复制图元
-var nodeList_copied = [];//已选中复制的节点
-var x_origin, y_origin = 0;//拖拽节点的初始位置
-var tranX_scene, tranY_scene = 0;//拖拽场景的初始位置
+var continuous_header = false;// 是否连续绘制链头
+var continuous_body = false;// 是否连续绘制链体
+var continuous_joint = false;// 是否连续绘制连接点
+var continuous_fact = false;// 是否连续绘制事实
+var isCopied = false;// 是否点击复制图元
+var nodeList_copied = [];// 已选中复制的节点
+var x_origin, y_origin = 0;// 拖拽节点的初始位置
+var tranX_scene, tranY_scene = 0;// 拖拽场景的初始位置
 // var x_now,y_now = 0;
-var sourceNode;//拖拽节点（当选中多个节点进行拖拽时，鼠标拖拽的节点即参照节点）
-var mouseX, mouseY;//鼠标位置
-var hasDragged = false;//是否已拖拽图标（为了处理点击效果）
+var sourceNode;// 拖拽节点（当选中多个节点进行拖拽时，鼠标拖拽的节点即参照节点）
+var mouseX, mouseY;// 鼠标位置
+var hasDragged = false;// 是否已拖拽图标（为了处理点击效果）
 
 $(document).ready(function () {
 
@@ -59,11 +59,11 @@ $(document).ready(function () {
     oContext = canvas.getContext("2d");
 
     stage.addEventListener("mouseover", function (event) {
-        console.log("鼠标进入");
+// console.log("鼠标进入");
     });
 
     stage.addEventListener("mousedrag", function (event) {
-        console.log("拖拽");
+// console.log("拖拽");
 
         continuous_header = false;
         continuous_body = false;
@@ -77,7 +77,7 @@ $(document).ready(function () {
     });
 
     stage.addEventListener("mousedown", function (event) {
-        console.log("mouse down");
+// console.log("mouse down");
 
         tranX_scene = scene.translateX;
         tranY_scene = scene.translateY;
@@ -85,10 +85,10 @@ $(document).ready(function () {
     });
 
     stage.addEventListener("mouseup", function (event) {
-        console.log("mouse up");
+// console.log("mouse up");
 
         if (event.button == 2) {
-            console.log('松开右键');
+// console.log('松开右键');
 
             if (!isNodeClicked_right) {
                 $("#nodeMenu").hide();
@@ -110,7 +110,7 @@ $(document).ready(function () {
         }
 
         if (event.button == 0) {
-            console.log('松开左键');
+// console.log('松开左键');
 
             // 关闭弹出菜单
             $("#stageMenu").hide();
@@ -231,7 +231,7 @@ $(document).ready(function () {
 
 });
 
-//存储链头
+// 存储链头
 function saveHeaders() {
     var hList = [];
     for (var hid in headerList) {
@@ -288,7 +288,7 @@ function saveHeaders() {
     });
 }
 
-//存储链体
+// 存储链体
 function saveBodies() {
     var bList = [];
     for (var bid in bodyList) {
@@ -348,7 +348,7 @@ function saveBodies() {
     });
 }
 
-//存储连接点
+// 存储连接点
 function saveJoints() {
     var jList = [];
     for (var jid in jointList) {
@@ -408,7 +408,7 @@ function saveJoints() {
     });
 }
 
-//存储连接点
+// 存储连接点
 function saveArrows() {
     var aList = [];
     for (var aid in arrowList) {
@@ -456,7 +456,7 @@ function saveArrows() {
     });
 }
 
-//存储事实
+// 存储事实
 function saveFacts() {
     var fList = [];
     for (var fid in factList) {
@@ -511,7 +511,7 @@ function saveFacts() {
     });
 }
 
-//将移动操作加入operationList
+// 将移动操作加入operationList
 function addMoveOperations() {
     var x_now, y_now;
     var nodeList_selected = scene.selectedElements;
@@ -537,7 +537,7 @@ function addMoveOperations() {
     }
 }
 
-//撤销
+// 撤销
 function undo() {
     if (operationList.length <= 0)
         return -1;
@@ -625,7 +625,7 @@ function undo() {
     }
 }
 
-//连续画图
+// 连续画图
 function quickDraw() {
     $('#add-header-btn-toggle').click(function () {
         if (continuous_header) {
@@ -699,7 +699,7 @@ function quickDraw() {
     });
 }
 
-//button拖拽方法
+// button拖拽方法
 function dragHandle() {
 
     $("#draggableDiv").mouseup(function (event) {
@@ -717,7 +717,7 @@ function dragHandle() {
             // console.log('drag');
         },
         stop: function () {
-            //拖拽结束，将拖拽容器内容清空
+            // 拖拽结束，将拖拽容器内容清空
             // console.log('drag stop');
             hasDragged = false;
             $("#draggableDiv").html("");
@@ -731,7 +731,7 @@ function dragHandle() {
         }
     });
 
-    //“放”的操作代码
+    // “放”的操作代码
     $("#canvas").droppable({
         drop: function (event) {
 
@@ -756,7 +756,7 @@ function dragHandle() {
     });
 }
 
-//add-header-btn与拖拽方法绑定
+// add-header-btn与拖拽方法绑定
 function dragHeader() {
     $("#add-header-btn").bind("mousedown", function (event) {
 
@@ -778,12 +778,12 @@ function dragHeader() {
             $("#draggableDiv").html(clickElement);
             draggableDiv.trigger(event);
         }
-        //取消默认行为
+        // 取消默认行为
         return false;
     });
 }
 
-//add-body-btn与拖拽方法绑定
+// add-body-btn与拖拽方法绑定
 function dragBody() {
     $("#add-body-btn").bind("mousedown", function (event) {
 
@@ -802,12 +802,12 @@ function dragBody() {
 
             draggableDiv.trigger(event);
         }
-        //取消默认行为
+        // 取消默认行为
         return false;
     });
 }
 
-//add-joint-btn与拖拽方法绑定
+// add-joint-btn与拖拽方法绑定
 function dragJoint() {
     $("#add-joint-btn").bind("mousedown", function (event) {
 
@@ -827,16 +827,17 @@ function dragJoint() {
             });
             $(draggableDiv).attr('data-eType', 'joint');
 
-            // var clickElement = "<i class=\"fa fa-square-o\" aria-hidden=\"true\"></i>";
+            // var clickElement = "<i class=\"fa fa-square-o\"
+			// aria-hidden=\"true\"></i>";
             // $("#draggableDiv").html(clickElement);
             draggableDiv.trigger(event);
         }
-        //取消默认行为
+        // 取消默认行为
         return false;
     });
 }
 
-//add-fact-btn与拖拽方法绑定
+// add-fact-btn与拖拽方法绑定
 function dragFact() {
     $("#add-fact-btn").bind("mousedown", function (event) {
 
@@ -856,12 +857,12 @@ function dragFact() {
 
             draggableDiv.trigger(event);
         }
-        //取消默认行为
+        // 取消默认行为
         return false;
     });
 }
 
-//获取鼠标指针坐标
+// 获取鼠标指针坐标
 function getMousePosition_Canvas(evt) {
     var rect = canvas.getBoundingClientRect();
     return {
@@ -870,7 +871,7 @@ function getMousePosition_Canvas(evt) {
     };
 }
 
-//获取鼠标相对右侧div位置
+// 获取鼠标相对右侧div位置
 function getMousePosition_rdiv(event) {
     var p = $('#canvas').parent().parent();
     // console.log('px:'+p.offset().left+';py:'+p.offset().top);
@@ -882,7 +883,7 @@ function getMousePosition_rdiv(event) {
     };
 }
 
-//获取新增节点的位置
+// 获取新增节点的位置
 function getNodePosition(event) {
     return {
         x: event.pageX - $("#canvas").offset().left - scene.translateX,
@@ -890,7 +891,7 @@ function getNodePosition(event) {
     };
 }
 
-//处理节点多选不同右键菜单显示
+// 处理节点多选不同右键菜单显示
 function handleMultipleSelected(event) {
     var nodeList_selected = scene.selectedElements;
 
@@ -936,7 +937,7 @@ function handleMultipleSelected(event) {
     }
     // console.log("header_num:"+header_num+";body_num:"+body_num+";link_num:"+link_num+";arrow_num:"+arrow_num+";joint_num:"+joint_num);
 
-    if (header_num >= 1 && body_num == 1 && link_num == 0 && arrow_num == 0 && joint_num == 0 && fact_num == 0) {//多个链头一个链体可以创建连线
+    if (header_num >= 1 && body_num == 1 && link_num == 0 && arrow_num == 0 && joint_num == 0 && fact_num == 0) {// 多个链头一个链体可以创建连线
         $("#nodeMenu2").css({
             top: getMousePosition_rdiv(event).y,
             left: getMousePosition_rdiv(event).x
@@ -946,7 +947,7 @@ function handleMultipleSelected(event) {
         nodeTo = nodeList_selected[body_index[0]];
         return 1;
 
-    } else if (header_num >= 1 && body_num == 0 && link_num == 0 && arrow_num == 0 && joint_num == 1 && fact_num == 0) {//多个链头一个连接点可以创建箭头
+    } else if (header_num >= 1 && body_num == 0 && link_num == 0 && arrow_num == 0 && joint_num == 1 && fact_num == 0) {// 多个链头一个连接点可以创建箭头
         $("#nodeMenu3").css({
             top: getMousePosition_rdiv(event).y,
             left: getMousePosition_rdiv(event).x
@@ -956,7 +957,7 @@ function handleMultipleSelected(event) {
         nodeTo = nodeList_selected[joint_index[0]];
         return 2;
 
-    } else if (header_num == 0 && body_num == 0 && link_num == 0 && arrow_num == 0 && joint_num >= 1 && fact_num == 1) {//多个连接点一个事实节点可以创建连线
+    } else if (header_num == 0 && body_num == 0 && link_num == 0 && arrow_num == 0 && joint_num >= 1 && fact_num == 1) {// 多个连接点一个事实节点可以创建连线
         $("#nodeMenu2").css({
             top: getMousePosition_rdiv(event).y,
             left: getMousePosition_rdiv(event).x
@@ -975,7 +976,7 @@ function handleMultipleSelected(event) {
     }
 }
 
-//处理节点右键菜单显示
+// 处理节点右键菜单显示
 function handleNodeMenu(event, type, node) {
 
     if (event.button == 0) {// 左键
@@ -1018,37 +1019,37 @@ function handleNodeMenu(event, type, node) {
     }
 }
 
-//右键菜单方法调用
+// 右键菜单方法调用
 function bindMenuClick() {
-    //新增图元-链头
+    // 新增图元-链头
     $('#add-header-li').click(function (event) {
         $('#stageMenu').hide();
         var nodePosition = getNodePosition(event);
         drawHeader(true, nodePosition.x, nodePosition.y);
     });
 
-    //新增图元-链体
+    // 新增图元-链体
     $('#add-body-li').click(function (event) {
         $('#stageMenu').hide();
         var nodePosition = getNodePosition(event);
         drawBody(true, nodePosition.x, nodePosition.y);
     });
 
-    //新增图元-连接点
+    // 新增图元-连接点
     $('#add-joint-li').click(function (event) {
         $('#stageMenu').hide();
         var nodePosition = getNodePosition(event);
         drawJoint(true, nodePosition.x, nodePosition.y);
     });
 
-    //新增图元-事实
+    // 新增图元-事实
     $('#add-fact-li').click(function (event) {
         $('#stageMenu').hide();
         var nodePosition = getNodePosition(event);
         drawFact(true, nodePosition.x, nodePosition.y);
     });
 
-    //创建连线
+    // 创建连线
     $('#add-link-li').click(function () {
         $(this).parent().hide();
 
@@ -1070,11 +1071,11 @@ function bindMenuClick() {
             }
         }
 
-        //添加操作至operationList
+        // 添加操作至operationList
         operationList.push({'type': 'add', 'nodes': nodes});
     });
 
-    //创建箭头
+    // 创建箭头
     $('#add-arrow-li').click(function () {
         $(this).parent().hide();
 
@@ -1087,11 +1088,11 @@ function bindMenuClick() {
             }
         }
 
-        //添加操作至operationList
+        // 添加操作至operationList
         operationList.push({'type': 'add', 'nodes': nodes});
     });
 
-    //复制图元
+    // 复制图元
     $('.copy-element-li').click(function () {
         $(this).parent().hide();
 
@@ -1099,34 +1100,34 @@ function bindMenuClick() {
         nodeList_copied = scene.selectedElements.concat();
     });
 
-    //粘贴图元
+    // 粘贴图元
     $('#paste-element-li').click(function (event) {
         $(this).parent().hide();
         var nodePosition = getNodePosition(event);
         paste(nodePosition.x, nodePosition.y);
     });
 
-    //删除连线
+    // 删除连线
     $('#delete-link-li').click(function () {
         $(this).parent().hide();
 
         deleteLink(scene.selectedElements[0]);
 
-        //添加操作至operationList
+        // 添加操作至operationList
         operationList.push({'type': 'delete', 'nodes': [scene.selectedElements[0]]});
     });
 
-    //删除箭头
+    // 删除箭头
     $('#delete-arrow-li').click(function () {
         $(this).parent().hide();
 
         deleteArrow(scene.selectedElements[0]);
 
-        //添加操作至operationList
+        // 添加操作至operationList
         operationList.push({'type': 'delete', 'nodes': [scene.selectedElements[0]]});
     });
 
-    //删除图元
+    // 删除图元
     $('.delete-element-li').click(function () {
         $(this).parent().hide();
         var nodeList_selected = scene.selectedElements;
@@ -1171,22 +1172,22 @@ function bindMenuClick() {
             nodes.push(n);
         }
 
-        //添加操作至operationList
+        // 添加操作至operationList
         operationList.push({'type': 'delete', 'nodes': nodes});
     });
 }
 
-//粘贴图元
+// 粘贴图元
 function paste(mouse_x, mouse_y) {
 
     var toPasted = nodeList_copied.concat();
-    var middleX, middleY = 0;//中心点坐标
+    var middleX, middleY = 0;// 中心点坐标
     var minX = 10000000;
     var minY = 10000000;
     var maxX = -1;
     var maxY = -1;
     var nodes = [];
-    var hs = {};//{old_id:new_id};
+    var hs = {};// {old_id:new_id};
     var bs = {};
     var js = {};
     var fs = {};
@@ -1409,13 +1410,13 @@ function paste(mouse_x, mouse_y) {
         }
     }
 
-    //添加操作至operationList
+    // 添加操作至operationList
     operationList.push({'type': 'copy', 'nodes': nodes});
 }
 
-//右侧链体、链头、箭头、连接点button绑定
+// 右侧链体、链头、箭头、连接点button绑定
 function bindRightPanel() {
-    //链体
+    // 链体
     $('#body-save-btn').click(function () {
         var bid = $('#body-panel').attr('data-bid');
         bodyList[bid]['node'].text = $('#body-name').val();
@@ -1463,13 +1464,13 @@ function bindRightPanel() {
                 'isDefendant': body['isDefendant'],
                 'trust': body['trust']
             };
-            //添加操作至operationList
+            // 添加操作至operationList
             operationList.push({'type': 'delete', 'nodes': [{'node': body['node'], 'content': cont}]});
             deleteBody(bid);
         }
     });
 
-    //链头
+    // 链头
     $('#head-save-btn').click(function () {
         var hid = $('#head-panel').attr('data-hid');
         headerList[hid].text = $('#head-name').val();
@@ -1500,13 +1501,13 @@ function bindRightPanel() {
     $('#head-del-btn').click(function () {
         var hid = $('#head-panel').attr('data-hid');
         if (headerList[hid] != null) {
-            //添加操作至operationList
+            // 添加操作至operationList
             operationList.push({'type': 'delete', 'nodes': [{'node': headerList[hid]}]});
             deleteHeader(hid);
         }
     });
 
-    //箭头
+    // 箭头
     $('#arrow-save-btn').click(function () {
         var aid = $('#arrow-panel').attr('data-aid');
         arrowList[aid].text = $('#arrow-name').val();
@@ -1521,12 +1522,12 @@ function bindRightPanel() {
 
     $('#arrow-del-btn').click(function () {
         var aid = $('#arrow-panel').attr('data-aid');
-        //添加操作至operationList
+        // 添加操作至operationList
         operationList.push({'type': 'delete', 'nodes': [{'node': arrowList[aid]}]});
         deleteArrow(arrowList[aid]);
     });
 
-    //连接点
+    // 连接点
     $('#joint-save-btn').click(function () {
         var jid = $('#joint-panel').attr('data-jid');
         jointList[jid]['node'].text = $('#joint-name').val();
@@ -1543,7 +1544,7 @@ function bindRightPanel() {
 
     $('#joint-del-btn').click(function () {
         var jid = $('#joint-panel').attr('data-jid');
-        //添加操作至operationList
+        // 添加操作至operationList
         operationList.push({
             'type': 'delete', 'nodes': [{
                 'node': jointList[jid]['node'],
@@ -1553,7 +1554,7 @@ function bindRightPanel() {
         deleteJoint(jid);
     });
 
-    //事实节点
+    // 事实节点
     $('#fact-save-btn').click(function () {
         var fid = $('#fact-panel').attr('data-fid');
         factList[fid]['node'].text = $('#fact-name').val();
@@ -1570,7 +1571,7 @@ function bindRightPanel() {
 
     $('#fact-del-btn').click(function () {
         var fid = $('#fact-panel').attr('data-fid');
-        //添加操作至operationList
+        // 添加操作至operationList
         operationList.push({
             'type': 'delete', 'nodes': [{
                 'node': factList[fid]['node'],
@@ -1581,28 +1582,28 @@ function bindRightPanel() {
     });
 }
 
-//添加连线(链体，链头，id)/(连接点，事实，id)
+// 添加连线(链体，链头，id)/(连接点，事实，id)
 function addLink(nodeFrom, nodeTo, id) {
     var hasLink = false;
 
     // if(nodeFrom.node_type=='body'){
-    //     if(nodeTo.inLinks!=null&&nodeTo.inLinks.length>0){
-    //         hasLink = true;
-    //     }
+    // if(nodeTo.inLinks!=null&&nodeTo.inLinks.length>0){
+    // hasLink = true;
+    // }
     // }else if(nodeTo.node_type=='fact'){
-    //     if(nodeFrom.outLinks!=null&&nodeFrom.outLinks.length>0){
-    //         hasLink = true;
-    //     }
+    // if(nodeFrom.outLinks!=null&&nodeFrom.outLinks.length>0){
+    // hasLink = true;
+    // }
     // }
 
     // //判断是否已存在连线
     // if(nodeFrom.outLinks!=null)
-    //     for(var i = 0;i<nodeFrom.outLinks.length;i++){
-    //         if(nodeFrom.outLinks[i].nodeZ.node_type=='body'){
-    //             hasLink = true;
-    //             break;
-    //         }
-    //     }
+    // for(var i = 0;i<nodeFrom.outLinks.length;i++){
+    // if(nodeFrom.outLinks[i].nodeZ.node_type=='body'){
+    // hasLink = true;
+    // break;
+    // }
+    // }
 
     if (!hasLink) {
         if (id == null)
@@ -1639,25 +1640,25 @@ function addLink(nodeFrom, nodeTo, id) {
     return -1;
 }
 
-//删除连线
+// 删除连线
 function deleteLink(link) {
     // linkList[link.id] = null;
     scene.remove(link);
 }
 
-//添加箭头(链头，连接点)，返回箭头节点，未创建返回-1
+// 添加箭头(链头，连接点)，返回箭头节点，未创建返回-1
 function addArrow(nodeFrom, nodeTo, id, name, content) {
 
     // var hasArrow = false;
     //
     // //判断是否已存在箭头
     // if(nodeFrom.outLinks!=null)
-    //     for(var i = 0;i<nodeFrom.outLinks.length;i++){
-    //         if(nodeFrom.outLinks[i].nodeZ==nodeTo){
-    //             hasArrow = true;
-    //             break;
-    //         }
-    //     }
+    // for(var i = 0;i<nodeFrom.outLinks.length;i++){
+    // if(nodeFrom.outLinks[i].nodeZ==nodeTo){
+    // hasArrow = true;
+    // break;
+    // }
+    // }
 
     // if(nodeFrom.outLinks==null||nodeFrom.outLinks.length==0){
     if (1) {
@@ -1709,14 +1710,14 @@ function addArrow(nodeFrom, nodeTo, id, name, content) {
     return -1;
 }
 
-//删除箭头
+// 删除箭头
 function deleteArrow(arrow) {
     arrowList[arrow.id] = null;
     scene.remove(arrow);
     $('#arrow-panel').attr('hidden', 'hidden');
 }
 
-//绘制链头，返回链头节点
+// 绘制链头，返回链头节点
 function drawHeader(isNew, x, y, id, name, content) {
 
     if (id == null)
@@ -1748,7 +1749,7 @@ function drawHeader(isNew, x, y, id, name, content) {
 
     headerList[circleNode.id] = circleNode;
     scene.add(circleNode);
-    //添加操作至operationList
+    // 添加操作至operationList
     if (isNew == true) {
         operationList.push({'type': 'add', 'nodes': [circleNode]});
     }
@@ -1785,7 +1786,7 @@ function drawHeader(isNew, x, y, id, name, content) {
     return circleNode;
 }
 
-//删除链头
+// 删除链头
 function deleteHeader(headerID) {
     header_delete.push(headerID);
     var header = headerList[headerID];
@@ -1808,7 +1809,7 @@ function deleteHeader(headerID) {
     }
 }
 
-//绘制链体，返回链体节点
+// 绘制链体，返回链体节点
 function drawBody(isNew, x, y, id, name, content, type, committer, reason, conclusion, documentID, isDefendant, trust) {
 
     if (id == null)
@@ -1849,7 +1850,7 @@ function drawBody(isNew, x, y, id, name, content, type, committer, reason, concl
         'documentID': documentID, 'isDefendant': isDefendant, 'trust': trust
     };
     scene.add(node);
-    //添加操作至operationList
+    // 添加操作至operationList
     if (isNew == true)
         operationList.push({'type': 'add', 'nodes': [node]});
 
@@ -1893,7 +1894,7 @@ function drawBody(isNew, x, y, id, name, content, type, committer, reason, concl
     return node;
 }
 
-//删除链体
+// 删除链体
 function deleteBody(bodyID) {
     body_delete.push(bodyID);
     scene.remove(bodyList[bodyID]['node']);
@@ -1909,7 +1910,7 @@ function deleteBody(bodyID) {
     }
 }
 
-//绘制连接点，返回连接点节点
+// 绘制连接点，返回连接点节点
 function drawJoint(isNew, x, y, id, name, content, type) {
 
     if (id == null)
@@ -1938,7 +1939,7 @@ function drawJoint(isNew, x, y, id, name, content, type) {
 
     jointList[node.id] = {'node': node, 'type': type};
     scene.add(node);
-    //添加操作至operationList
+    // 添加操作至operationList
     if (isNew)
         operationList.push({'type': 'add', 'nodes': [node]});
 
@@ -1972,7 +1973,7 @@ function drawJoint(isNew, x, y, id, name, content, type) {
     return node;
 }
 
-//删除连接点
+// 删除连接点
 function deleteJoint(jointID) {
     joint_delete.push(jointID);
     var joint = jointList[jointID]['node'];
@@ -1984,7 +1985,7 @@ function deleteJoint(jointID) {
         }
     }
     // if(joint.outLinks!=null&&joint.outLinks.length>0){
-    //     deleteLink(joint.outLinks[0]);
+    // deleteLink(joint.outLinks[0]);
     // }
 
     scene.remove(joint);
@@ -1992,7 +1993,7 @@ function deleteJoint(jointID) {
     $('#joint-panel').attr('hidden', 'hidden');
 }
 
-//绘制事实，返回事实节点
+// 绘制事实，返回事实节点
 function drawFact(isNew, x, y, id, name, content, type) {
     if (id == null)
         id = factIndex++;
@@ -2021,7 +2022,7 @@ function drawFact(isNew, x, y, id, name, content, type) {
 
     factList[node.id] = {'node': node, 'type': type};
     scene.add(node);
-    //添加操作至operationList
+    // 添加操作至operationList
     if (isNew)
         operationList.push({'type': 'add', 'nodes': [node]});
 
@@ -2055,7 +2056,7 @@ function drawFact(isNew, x, y, id, name, content, type) {
     return node;
 }
 
-//删除事实节点
+// 删除事实节点
 function deleteFact(factID) {
     fact_delete.push(factID);
     var fact = factList[factID]['node'];
@@ -2065,7 +2066,7 @@ function deleteFact(factID) {
     $('#fact-panel').attr('hidden', 'hidden');
 }
 
-//点击图元左侧列表相应证据高亮
+// 点击图元左侧列表相应证据高亮
 function highlightEvidence() {
     $('.evidence').css('background-color', 'white');
     $('.evidence_plaintiff').css('background-color', '#5ed7e5');
@@ -2097,7 +2098,7 @@ function highlightEvidence() {
     }
 }
 
-//初始化右侧建模图
+// 初始化右侧建模图
 function initGraph(trusts, freeHeaders, joints, arrows, facts) {
 
     var x = 10 + (body_width / 2);
@@ -2282,7 +2283,7 @@ function initGraph(trusts, freeHeaders, joints, arrows, facts) {
 
 }
 
-//排版
+// 排版
 function typeSetting() {
     var nodes = [];
     var x = 10 + (body_width / 2);

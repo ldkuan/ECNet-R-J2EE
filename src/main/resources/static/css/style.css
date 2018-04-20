@@ -474,7 +474,7 @@ th span.visible-lg {
     display: inline-block !important;
 }
 }
-input[type=checkbox], input[type=radio] {
+/* input[type=checkbox], input[type=radio] {
     cursor: pointer;
     display: inline-block;
     line-height: 0;
@@ -485,7 +485,7 @@ input[type=checkbox], input[type=radio] {
     vertical-align: middle;
     width: 16px;
     min-width: 16px;
-}
+} */
 /*summernote富文本编辑器样式*/
 .note-editor.note-frame {
     border:none !important;
