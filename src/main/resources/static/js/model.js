@@ -20,15 +20,15 @@ function exportExcel() {
             url: "file/exportExcel",//url
             data: {'modelsJsonStr': modelsJsonStr},
             success: function (response, status, request) {
-                // console.log(response.data);
-                var blob = new Blob([response], {type: 'application/vnd.ms-excel;charset=UTF-8;'});
+
                 var a = document.createElement('a');
-                var url = window.URL.createObjectURL(blob);
+                // var url = window.URL.createObjectURL(blob);
+                var url = "file/downloadExcel";
                 var filename = 'model.xls';
                 a.href = url;
                 a.download = filename;
                 a.click();
-                window.URL.revokeObjectURL(url);
+
             },
             error: function () {
                 alert("异常！");
