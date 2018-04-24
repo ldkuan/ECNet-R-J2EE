@@ -14,7 +14,12 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,9 +31,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.*;
+
 
 @RestController
 @RequestMapping(value = "/file")
@@ -38,6 +45,7 @@ public class FileController {
 	private FileManageService fileManageService;
 	@Autowired
 	private ModelManageService modelManageService;
+
 
 	@RequestMapping(value = "/upload")
 	public Map<String, Object> uploadFile(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -50,28 +58,27 @@ public class FileController {
 		/** 页面控件的文件流* */
 		MultipartFile multipartFile = null;
 		Map map = multipartRequest.getFileMap();
-		for (Iterator i = map.keySet().iterator(); i.hasNext();) {
+		for (Iterator i = map.keySet().iterator(); i.hasNext(); ) {
 			Object obj = i.next();
 			multipartFile = (MultipartFile) map.get(obj);
 
 		}
-		// 得到 接受请求的绝对路径
+		//得到 接受请求的绝对路径
 		File f = new File("");
 		String absolutePath = f.getAbsolutePath();
 
-		// 存储上传的文件
-		String savePath = fileManageService.saveFileUpload(multipartFile);
 
-		// 从存储的文件中 得到证据链模型
-		// JSONArray factArray = modelManageService.getModel(absolutePath +
-		// "/file/xml/");
-		// System.out.println(factArray.toString());
-		//
-		// 将证据链模型递交 关系计算服务器 返回有事实证据联系的 证据链模型
-		// JSONObject modelsJson = HeadCreator.getHead(factArray);
-		// System.out.println(modelsJson.toString());
-		// fileManageService.writeResultJson(modelsJson, absolutePath +
-		// "/file/xml/result/a.json");
+		//存储上传的文件
+		String savePath = fileManageService.saveFileUpload(multipartFile);
+//
+////        从存储的文件中 得到证据链模型
+//        JSONArray factArray = modelManageService.getModel(absolutePath + "/file/xml/");
+//
+////        将证据链模型递交 关系计算服务器  返回有事实证据联系的 证据链模型
+//        JSONObject modelsJson = HeadCreator.getHead(factArray);
+//        System.out.println(modelsJson.toString());
+//        fileManageService.writeResultJson(modelsJson, absolutePath + "/file/xml/result/a.json");
+
 
 		File file = new File(absolutePath + "/file/xml/result/a.json");
 		String content = FileUtils.readFileToString(file, "UTF-8");
@@ -85,4 +92,65 @@ public class FileController {
 		return json;
 	}
 
+	@RequestMapping(value = "/exportExcel")
+	public ResponseEntity<byte[]> exportExcel(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		request.setCharacterEncoding("UTF-8");
+//        Map<String, Object> json = new HashMap<String, Object>();
+
+		System.out.println("--------------------/exportExcel controller");
+
+		String modelsJsonStr = request.getParameter("modelsJsonStr");
+
+		String result = fileManageService.exportExcel(modelsJsonStr);
+
+		//设置返回值信息
+		String fileName = "model.xls";
+		File f = new File("");
+		String absolutePath = f.getAbsolutePath();
+		String filePath = absolutePath + "/file/excel/";
+		byte[] body = null;
+		InputStream is = new FileInputStream(filePath + fileName);
+		body = new byte[is.available()];
+		is.read(body);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Content-Disposition", "attchement;filename=" + fileName);
+		HttpStatus statusCode = HttpStatus.OK;
+		ResponseEntity<byte[]> entity = new ResponseEntity<byte[]>(body, headers, statusCode);
+		return entity;
+//        json.put("message", "导出Excel成功");
+//        json.put("status", true);
+
+	}
+
+
+	public void download(HttpServletResponse response) {
+		try {
+			//设置返回值信息
+			String fileName = "model.xls";
+			File f = new File("");
+			String absolutePath = f.getAbsolutePath();
+			String filePath = absolutePath + "/file/excel/";
+			// 告诉浏览器用什么软件可以打开此文件
+			response.setHeader("content-Type", "application/vnd.ms-excel");
+			// 下载文件的默认名称
+			response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+			InputStream in = new FileInputStream(new File(filePath));
+			int len = 0;
+//5.创建数据缓冲区
+			byte[] buffer = new byte[1024];
+//6.通过response对象获取OutputStream流
+			OutputStream out = response.getOutputStream();
+//7.将FileInputStream流写入到buffer缓冲区
+			while ((len = in.read(buffer)) > 0) {
+				//8.使用OutputStream将缓冲区的数据输出到客户端浏览器
+				out.write(buffer, 0, len);
+			}
+			in.close();
+			out.flush();
+			response.flushBuffer();//不可少
+			out.close();
+		} catch (Exception e) {
+
+		}
+	}
 }

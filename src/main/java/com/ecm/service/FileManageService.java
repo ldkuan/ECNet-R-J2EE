@@ -11,4 +11,6 @@ public interface FileManageService {
 
     public String writeResultJson(JSONObject jsonObject, String path) throws IOException;
 
+    public String exportExcel(String modelsJsonStr);
+
 }
