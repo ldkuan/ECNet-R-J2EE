@@ -44,6 +44,10 @@ public class LogicExcelGenerator {
 		}
 	}
 
+	public void generateReportFile() {
+		HSSFWorkbook workbook = new HSSFWorkbook();
+	}
+
 	public void generateExcelFile() {
 		HSSFWorkbook workbook = new HSSFWorkbook();
 		HSSFSheet sheet = workbook.createSheet(SHEET_NAME);

@@ -10,5 +10,8 @@ import com.ecm.model.LogicNode;
 public interface LogicService {
 	List<LogicNode> getAllNodesByCaseID(int caseID);
 
-	String generateExcelFile(int caseID);
+	// String generateExcelFile(int caseID);
+	String generateExcelFile(String logicJson);
+
+	String generateReportFile(String modelsJson, String logicJson);
 }

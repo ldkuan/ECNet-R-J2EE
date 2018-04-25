@@ -1,8 +1,5 @@
 package com.ecm.controller;
 
-/*import com.ecm.model.LogicNode;
-import com.ecm.service.LogicService;*/
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.xml.XMLSerializer;
@@ -18,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.ecm.model.LogicNode;
+import com.ecm.service.FileManageService;
 import com.ecm.service.LogicService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +37,8 @@ import java.util.Map;
 public class LogicController {
 	@Autowired
 	private LogicService logicService;
+	@Autowired
+	private FileManageService fileManageService;
 
 	@RequestMapping(value = "getAll")
 	public List<LogicNode> getAll(@RequestParam("caseID") int caseID) {
@@ -113,9 +113,67 @@ public class LogicController {
 
 	@RequestMapping(value = "generateExcel")
 	@ResponseBody
-	public String generateExcel(HttpServletResponse response, @RequestParam("caseID") int caseID) {
-		String completePath = logicService.generateExcelFile(caseID);
-		File file = new File(completePath);
+	public String generateExcel(HttpServletRequest request, HttpServletResponse response,
+			@RequestParam("logicJson") String logicJson) throws Exception {
+		request.setCharacterEncoding("UTF-8");
+		String completePath = logicService.generateExcelFile(logicJson);
+		return "";
+	}
+
+	@RequestMapping(value = "/downloadExcel")
+	@ResponseBody
+	public String downloadExcel(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		File file = new File("file/excel/logic.xls");
+		if (file.exists()) {
+			response.setContentType("multipart/form-data");
+			response.setCharacterEncoding("utf-8");
+			response.addHeader("Content-Disposition", "attachment;fileName=" + file.getName());// 设置文件名
+			byte[] buffer = new byte[1024];
+			FileInputStream fis = null;
+			BufferedInputStream bis = null;
+			try {
+				fis = new FileInputStream(file);
+				bis = new BufferedInputStream(fis);
+				OutputStream os = response.getOutputStream();
+				int i = bis.read(buffer);
+				while (i != -1) {
+					os.write(buffer, 0, i);
+					i = bis.read(buffer);
+				}
+				os.flush();
+			} catch (Exception e) {
+				e.printStackTrace();
+				return "failed";
+			} finally {
+				try {
+					if (bis != null) {
+						bis.close();
+					}
+					if (fis != null) {
+						fis.close();
+					}
+				} catch (IOException e) {
+					return "failed:" + e.getMessage();
+				}
+			}
+		}
+		return "";
+	}
+
+	@RequestMapping(value = "generateReport")
+	@ResponseBody
+	public String generateReport(HttpServletRequest request, HttpServletResponse response,
+			@RequestParam("modelsJson") String modelsJson, @RequestParam("logicJson") String logicJson)
+			throws Exception {
+		request.setCharacterEncoding("UTF-8");
+		String res = logicService.generateReportFile(modelsJson, logicJson);
+		return "";
+	}
+
+	@RequestMapping(value = "/downloadReport")
+	@ResponseBody
+	public String downloadReport(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		File file = new File("file/excel/report.xls");
 		if (file.exists()) {
 			response.setContentType("multipart/form-data");
 			response.setCharacterEncoding("utf-8");
