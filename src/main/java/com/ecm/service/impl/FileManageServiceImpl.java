@@ -335,7 +335,7 @@ public class FileManageServiceImpl implements FileManageService {
         c1.setCellStyle(titleStyle);
 
         HSSFRow r2 = sheet2.createRow(1);
-        String[] titles2 = {"序号", "事实名称", "事实明细(较长文本)", "来自事实的链头（联结点）", "来自证据的链头", "证据序号(引用证据清单的序号)", "与链头相关的证据中的关键文本(短句)"};
+        String[] titles2 = {"序号", "事实名称", "事实明细(较长文本)", "来自事实的链头（联结点）", "证据序号(引用证据清单的序号)", "来自证据的链头", "与链头相关的证据中的关键文本(短句)"};
         for (int i = 1; i <= titles2.length; i++) {
             HSSFCell cell2 = r2.createCell(i);
             //加载单元格样式
@@ -409,66 +409,85 @@ public class FileManageServiceImpl implements FileManageService {
                     rowtemp = sheet2.createRow(endRow);
                 }
 
-                if (hNum > 1) {
-                    CellRangeAddress cra = new CellRangeAddress(endRow, endRow + hNum - 1, 4, 4);
-                    sheet2.addMergedRegion(cra);
+//                if (hNum > 1) {
+//                    CellRangeAddress cra = new CellRangeAddress(endRow, endRow + hNum - 1, 4, 4);
+//                    sheet2.addMergedRegion(cra);
 //                    RegionUtil.setBorderBottom(1,cra, sheet1);
 //                    RegionUtil.setBorderLeft(1,cra, sheet1);
 //                    RegionUtil.setBorderRight(1,cra, sheet1);
 //                    RegionUtil.setBorderTop(1,cra, sheet1);
 //                   setRegionStyle(sheet2,cra,style);
-                }
-                HSSFCell ctemp4 = rowtemp.getCell(4);
-                if (ctemp4 == null) {
-                    ctemp4 = rowtemp.createCell(4);
-                    ctemp4.setCellStyle(style);
-                }
+//                }
+                HSSFCell ctemp4 = rowtemp.createCell(4);
                 ctemp4.setCellValue(joint.getValue());
 
-                for (int k = 0; k < hNum; k++) {
-                    int hid = hids.get(k);
-//                    System.out.println(hid);
-                    String head = headList.get(hid);
-                    HSSFRow rtmp;
-                    if (k == 0) {
-                        rtmp = rowtemp;
-                    } else {
-                        rtmp = sheet2.createRow(endRow);
-                    }
-                    HSSFCell ctemp5 = rtmp.createCell(5);
-                    ctemp5.setCellValue(head);
-                    ctemp5.setCellStyle(style);
 
-                    HSSFCell ctemp6 = rtmp.createCell(6);
-                    EvidenceModel key = new EvidenceModel();
-                    //Map,HashMap并没有实现Iteratable接口.不能用于增强for循环.
-                    for (EvidenceModel evidenceModel : evidenceMap.keySet()) {
-                        if (evidenceMap.get(evidenceModel).contains(hid)) {
-                            key = evidenceModel;
-                        }
-                    }
-                    ctemp6.setCellValue(evidenceModelList.indexOf(key));
-                    ctemp6.setCellStyle(style);
+                HSSFCell ctemp5 = rowtemp.createCell(5);
+                ctemp5.setCellValue(joint.getIndex() + 1);
+                ctemp5.setCellStyle(style);
 
-                    HSSFCell ctemp7 = rtmp.createCell(7);
-                    ctemp7.setCellValue(head);
-                    ctemp7.setCellStyle(style);
-                    endRow++;
-                }
-                if (hNum == 0) {
-                    HSSFCell ctemp5 = rowtemp.createCell(5);
-                    ctemp5.setCellStyle(style);
-                    HSSFCell ctemp6 = rowtemp.createCell(6);
-                    ctemp6.setCellStyle(style);
-                    HSSFCell ctemp7 = rowtemp.createCell(7);
-                    ctemp7.setCellStyle(style);
-                    endRow++;
-                }
+                HSSFCell ctemp6 = rowtemp.createCell(6);
+                ctemp6.setCellValue(joint.getValue());
+                ctemp6.setCellStyle(style);
+
+                HSSFCell ctemp7 = rowtemp.createCell(7);
+                ctemp7.setCellValue(evidenceModelList.get(joint.getIndex()).getContent());
+                ctemp7.setCellStyle(style);
+                endRow++;
+//                for (int k = 0; k < hNum; k++) {
+//                    int hid = hids.get(k);
+////                    System.out.println(hid);
+//                    String head = headList.get(hid);
+//                    HSSFRow rtmp;
+//                    if (k == 0) {
+//                        rtmp = rowtemp;
+//                    } else {
+//                        rtmp = sheet2.createRow(endRow);
+//                    }
+//                    HSSFCell ctemp5 = rtmp.createCell(5);
+//
+//                    EvidenceModel key = new EvidenceModel();
+//                    //Map,HashMap并没有实现Iteratable接口.不能用于增强for循环.
+//                    for (EvidenceModel evidenceModel : evidenceMap.keySet()) {
+//                        if (evidenceMap.get(evidenceModel).contains(hid)) {
+//                            key = evidenceModel;
+//                        }
+//                    }
+//                    ctemp5.setCellValue(evidenceModelList.indexOf(key));
+//                    ctemp5.setCellStyle(style);
+//
+//                    HSSFCell ctemp6 = rtmp.createCell(6);
+//                    ctemp6.setCellValue(head);
+//                    ctemp6.setCellStyle(style);
+//
+//                    HSSFCell ctemp7 = rtmp.createCell(7);
+//                    ctemp7.setCellValue(key.getContent());
+//                    ctemp7.setCellStyle(style);
+//                    endRow++;
+//                }
+
+//                if (hNum == 0) {
+//                    HSSFCell ctemp5 = rowtemp.createCell(5);
+//                    ctemp5.setCellStyle(style);
+//                    HSSFCell ctemp6 = rowtemp.createCell(6);
+//                    ctemp6.setCellStyle(style);
+//                    HSSFCell ctemp7 = rowtemp.createCell(7);
+//                    ctemp7.setCellStyle(style);
+//                    endRow++;
+//                }
             }
             if (jNum == 0) {
                 HSSFCell ctemp4 = hrow.createCell(4);
                 ctemp4.setCellStyle(style);
+                HSSFCell ctemp5 = hrow.createCell(5);
+                ctemp4.setCellStyle(style);
+                HSSFCell ctemp6 = hrow.createCell(6);
+                ctemp4.setCellStyle(style);
+                HSSFCell ctemp7 = hrow.createCell(7);
+                ctemp4.setCellStyle(style);
                 endRow++;
+
+
             }
 
             if (endRow - 1 > startRow) {
