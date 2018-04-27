@@ -72,12 +72,14 @@ public class LogicServiceImpl implements LogicService {
 	public String generateReportFile(String modelsJson, String logicJson) {
 		JSONObject jsonObject1 = JSONObject.fromObject(modelsJson);
 		String factListString = jsonObject1.getString("factList");
+
 		List<FactRelationModel> factRelationModelList = new ArrayList<>();
 		if (!factListString.equals("")) {
 			Gson gson = new GsonBuilder().create();
 			FactRelationModel[] arr = gson.fromJson(factListString, FactRelationModel[].class);
 			factRelationModelList = Arrays.asList(arr);
 		}
+
 		List<EvidenceModel> evidenceModelList = new ArrayList<>();
 		if (factRelationModelList.size() > 0) {
 			evidenceModelList = factRelationModelList.get(0).getEvidenceList();
@@ -85,7 +87,7 @@ public class LogicServiceImpl implements LogicService {
 
 		// 创建workbook
 		HSSFWorkbook workbook = new HSSFWorkbook();
-		Map number = new HashMap();
+		Map number = new HashMap();// 链体id与证据清单序号
 
 		// 标题字体对象
 		HSSFFont titleFont = workbook.createFont();
@@ -107,7 +109,7 @@ public class LogicServiceImpl implements LogicService {
 		titleStyle.setAlignment(CellStyle.ALIGN_CENTER);
 		titleStyle.setVerticalAlignment(CellStyle.ALIGN_CENTER);
 		titleStyle.setFont(titleFont);
-		titleStyle.setWrapText(true);
+		titleStyle.setWrapText(true);// 自动换行
 
 		// 列名样式
 		HSSFCellStyle cStyle = workbook.createCellStyle();
@@ -136,9 +138,11 @@ public class LogicServiceImpl implements LogicService {
 		String[] titles = { "序号", "证据名称", "证据明细", "证据种类（下拉）", "提交人", "质证理由", "质证结论（下拉）", "链头信息", "该链头在证据中的关键文本（短句）" };
 		for (int i = 1; i <= titles.length; i++) {
 			HSSFCell cell2 = row2.createCell(i);
+			// 加载单元格样式
 			cell2.setCellStyle(cStyle);
 			cell2.setCellValue(titles[i - 1]);
 		}
+
 		int rowNum = 2;
 		for (int i = 0; i < evidenceModelList.size(); i++) {
 			HSSFRow hrow = sheet1.createRow(rowNum);
@@ -146,6 +150,7 @@ public class LogicServiceImpl implements LogicService {
 			int bid = body.getId();
 			List<String> headers = body.getHeadList();
 			int hNum = headers.size();
+
 			if (hNum > 1)
 				for (int j = 1; j <= 7; j++) {
 					CellRangeAddress cra = new CellRangeAddress(rowNum, rowNum + hNum - 1, j, j);
@@ -158,42 +163,49 @@ public class LogicServiceImpl implements LogicService {
 			}
 			ctemp1.setCellValue(i + 1);
 			number.put(bid, i + 1);
+
 			HSSFCell ctemp2 = hrow.getCell(2);
 			if (ctemp2 == null) {
 				ctemp2 = hrow.createCell(2);
 				ctemp2.setCellStyle(style);
 			}
 			ctemp2.setCellValue(body.getName());
+
 			HSSFCell ctemp3 = hrow.getCell(3);
 			if (ctemp3 == null) {
 				ctemp3 = hrow.createCell(3);
 				ctemp3.setCellStyle(style);
 			}
 			ctemp3.setCellValue(body.getContent());
+
 			HSSFCell ctemp4 = hrow.getCell(4);
 			if (ctemp4 == null) {
 				ctemp4 = hrow.createCell(4);
 				ctemp4.setCellStyle(style);
 			}
 			ctemp4.setCellValue(body.getType());
+
 			HSSFCell ctemp5 = hrow.getCell(5);
 			if (ctemp5 == null) {
 				ctemp5 = hrow.createCell(5);
 				ctemp5.setCellStyle(style);
 			}
 			ctemp5.setCellValue(body.getSubmitter());
+
 			HSSFCell ctemp6 = hrow.getCell(6);
 			if (ctemp6 == null) {
 				ctemp6 = hrow.createCell(6);
 				ctemp6.setCellStyle(style);
 			}
 			ctemp6.setCellValue(body.getReason());
+
 			HSSFCell ctemp7 = hrow.getCell(7);
 			if (ctemp7 == null) {
 				ctemp7 = hrow.createCell(7);
 				ctemp7.setCellStyle(style);
 			}
 			ctemp7.setCellValue("Trust");
+
 			for (int k = 0; k < hNum; k++) {
 				String h = headers.get(k);
 				HSSFRow rowtemp;
@@ -223,16 +235,20 @@ public class LogicServiceImpl implements LogicService {
 		HSSFCell c1 = r1.createCell(1);
 		c1.setCellValue("事实清单");
 		c1.setCellStyle(titleStyle);
+
 		HSSFRow r2 = sheet2.createRow(1);
-		String[] titles2 = { "序号", "事实名称", "事实明细(较长文本)", "来自事实的链头（联结点）", "来自证据的链头", "证据序号(引用证据清单的序号)",
+		String[] titles2 = { "序号", "事实名称", "事实明细(较长文本)", "来自事实的链头（联结点）", "证据序号(引用证据清单的序号)", "来自证据的链头",
 				"与链头相关的证据中的关键文本(短句)" };
 		for (int i = 1; i <= titles2.length; i++) {
 			HSSFCell cell2 = r2.createCell(i);
+			// 加载单元格样式
 			cell2.setCellStyle(cStyle);
 			cell2.setCellValue(titles2[i - 1]);
 		}
+
 		int startRow = 2;
 		int endRow = 2;
+
 		for (int i = 0; i < factRelationModelList.size(); i++) {
 			startRow = endRow;
 			HSSFRow hrow = sheet2.createRow(endRow);
@@ -243,7 +259,6 @@ public class LogicServiceImpl implements LogicService {
 
 			HashMap<String, List<Integer>> map = new HashMap<>();
 			for (LinkPointModel linkPointModel : joints) {
-
 				if (!map.containsKey(linkPointModel.getValue())) {
 					List<Integer> list = new ArrayList<>();
 					list.add(linkPointModel.getIndex());
@@ -274,9 +289,9 @@ public class LogicServiceImpl implements LogicService {
 					count++;
 				}
 				evidenceMap.put(evidenceModel, headIds);
-
 				headList.addAll(evidenceModel.getHeadList());
 			}
+
 			for (int j = 0; j < jNum; j++) {
 				LinkPointModel joint = joints.get(j);
 				int evidenceIndex = joint.getIndex();
@@ -289,65 +304,42 @@ public class LogicServiceImpl implements LogicService {
 					rowtemp = sheet2.createRow(endRow);
 				}
 
-				if (hNum > 1) {
-					CellRangeAddress cra = new CellRangeAddress(endRow, endRow + hNum - 1, 4, 4);
-					sheet2.addMergedRegion(cra);
-				}
-				HSSFCell ctemp4 = rowtemp.getCell(4);
-				if (ctemp4 == null) {
-					ctemp4 = rowtemp.createCell(4);
-					ctemp4.setCellStyle(style);
-				}
+				HSSFCell ctemp4 = rowtemp.createCell(4);
 				ctemp4.setCellValue(joint.getValue());
-				for (int k = 0; k < hNum; k++) {
-					int hid = hids.get(k);
-					String head = headList.get(hid);
-					HSSFRow rtmp;
-					if (k == 0) {
-						rtmp = rowtemp;
-					} else {
-						rtmp = sheet2.createRow(endRow);
-					}
-					HSSFCell ctemp5 = rtmp.createCell(5);
-					ctemp5.setCellValue(head);
-					ctemp5.setCellStyle(style);
 
-					HSSFCell ctemp6 = rtmp.createCell(6);
-					EvidenceModel key = new EvidenceModel();
-					for (EvidenceModel evidenceModel : evidenceMap.keySet()) {
-						if (evidenceMap.get(evidenceModel).contains(hid)) {
-							key = evidenceModel;
-						}
-					}
-					ctemp6.setCellValue(evidenceModelList.indexOf(key));
-					ctemp6.setCellStyle(style);
+				HSSFCell ctemp5 = rowtemp.createCell(5);
+				ctemp5.setCellValue(joint.getIndex() + 1);
+				ctemp5.setCellStyle(style);
 
-					HSSFCell ctemp7 = rtmp.createCell(7);
-					ctemp7.setCellValue(head);
-					ctemp7.setCellStyle(style);
-					endRow++;
-				}
-				if (hNum == 0) {
-					HSSFCell ctemp5 = rowtemp.createCell(5);
-					ctemp5.setCellStyle(style);
-					HSSFCell ctemp6 = rowtemp.createCell(6);
-					ctemp6.setCellStyle(style);
-					HSSFCell ctemp7 = rowtemp.createCell(7);
-					ctemp7.setCellStyle(style);
-					endRow++;
-				}
+				HSSFCell ctemp6 = rowtemp.createCell(6);
+				ctemp6.setCellValue(joint.getValue());
+				ctemp6.setCellStyle(style);
+
+				HSSFCell ctemp7 = rowtemp.createCell(7);
+				ctemp7.setCellValue(evidenceModelList.get(joint.getIndex()).getContent());
+				ctemp7.setCellStyle(style);
+				endRow++;
 			}
+
 			if (jNum == 0) {
 				HSSFCell ctemp4 = hrow.createCell(4);
 				ctemp4.setCellStyle(style);
+				HSSFCell ctemp5 = hrow.createCell(5);
+				ctemp4.setCellStyle(style);
+				HSSFCell ctemp6 = hrow.createCell(6);
+				ctemp4.setCellStyle(style);
+				HSSFCell ctemp7 = hrow.createCell(7);
+				ctemp4.setCellStyle(style);
 				endRow++;
 			}
+
 			if (endRow - 1 > startRow) {
 				for (int m = 1; m <= 3; m++) {
 					CellRangeAddress crat = new CellRangeAddress(startRow, endRow - 1, m, m);
 					sheet2.addMergedRegion(crat);
 				}
 			}
+
 			HSSFCell ctemp1 = hrow.getCell(1);
 			if (ctemp1 == null) {
 				ctemp1 = hrow.createCell(1);

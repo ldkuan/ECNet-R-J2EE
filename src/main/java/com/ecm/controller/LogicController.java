@@ -24,6 +24,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -127,7 +128,7 @@ public class LogicController {
 		if (file.exists()) {
 			response.setContentType("multipart/form-data");
 			response.setCharacterEncoding("utf-8");
-			response.addHeader("Content-Disposition", "attachment;fileName=" + file.getName());// 设置文件名
+			response.addHeader("Content-Disposition", "attachment;fileName=" + URLEncoder.encode("说理逻辑表.xls", "UTF-8"));// 设置文件名
 			byte[] buffer = new byte[1024];
 			FileInputStream fis = null;
 			BufferedInputStream bis = null;
@@ -177,7 +178,8 @@ public class LogicController {
 		if (file.exists()) {
 			response.setContentType("multipart/form-data");
 			response.setCharacterEncoding("utf-8");
-			response.addHeader("Content-Disposition", "attachment;fileName=" + file.getName());// 设置文件名
+			response.addHeader("Content-Disposition",
+					"attachment;fileName=" + URLEncoder.encode("证据分析报告.xls", "UTF-8"));// 设置文件名
 			byte[] buffer = new byte[1024];
 			FileInputStream fis = null;
 			BufferedInputStream bis = null;
