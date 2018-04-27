@@ -1,5 +1,6 @@
 .git
 data/
+file/
 target/
 src/main/resources/data/
 src/main/resources/HanLP.properties
