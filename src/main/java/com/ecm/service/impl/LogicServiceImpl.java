@@ -136,6 +136,7 @@ public class LogicServiceImpl implements LogicService {
 
 		HSSFRow row2 = sheet1.createRow(1);
 		String[] titles = { "序号", "证据名称", "证据明细", "证据种类（下拉）", "提交人", "质证理由", "质证结论（下拉）", "链头信息", "该链头在证据中的关键文本（短句）" };
+
 		for (int i = 1; i <= titles.length; i++) {
 			HSSFCell cell2 = row2.createCell(i);
 			// 加载单元格样式
@@ -144,18 +145,20 @@ public class LogicServiceImpl implements LogicService {
 		}
 
 		int rowNum = 2;
+
 		for (int i = 0; i < evidenceModelList.size(); i++) {
 			HSSFRow hrow = sheet1.createRow(rowNum);
 			EvidenceModel body = evidenceModelList.get(i);
 			int bid = body.getId();
 			List<String> headers = body.getHeadList();
-			int hNum = headers.size();
 
+			int hNum = headers.size();
 			if (hNum > 1)
 				for (int j = 1; j <= 7; j++) {
 					CellRangeAddress cra = new CellRangeAddress(rowNum, rowNum + hNum - 1, j, j);
 					sheet1.addMergedRegion(cra);
 				}
+
 			HSSFCell ctemp1 = hrow.getCell(1);
 			if (ctemp1 == null) {
 				ctemp1 = hrow.createCell(1);
@@ -239,6 +242,7 @@ public class LogicServiceImpl implements LogicService {
 		HSSFRow r2 = sheet2.createRow(1);
 		String[] titles2 = { "序号", "事实名称", "事实明细(较长文本)", "来自事实的链头（联结点）", "证据序号(引用证据清单的序号)", "来自证据的链头",
 				"与链头相关的证据中的关键文本(短句)" };
+
 		for (int i = 1; i <= titles2.length; i++) {
 			HSSFCell cell2 = r2.createCell(i);
 			// 加载单元格样式
