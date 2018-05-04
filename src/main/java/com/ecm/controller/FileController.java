@@ -47,96 +47,96 @@ public class FileController {
     private ModelManageService modelManageService;
 
 
-    @RequestMapping(value = "/upload")
-    public Map<String, Object> uploadFile(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        request.setCharacterEncoding("UTF-8");
-
-        System.out.println("--------------------");
-        Map<String, Object> json = new HashMap<String, Object>();
-        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-
-        /** 页面控件的文件流* */
-        MultipartFile multipartFile = null;
-        Map map = multipartRequest.getFileMap();
-        for (Iterator i = map.keySet().iterator(); i.hasNext(); ) {
-            Object obj = i.next();
-            multipartFile = (MultipartFile) map.get(obj);
-
-        }
-        //得到 接受请求的绝对路径
-        File f = new File("");
-        String absolutePath = f.getAbsolutePath();
-
-
-        //存储上传的文件
-        String savePath = fileManageService.saveFileUpload(multipartFile);
-
-//       从存储的文件中 得到证据链模型
-        JSONArray factArray = modelManageService.getModel(absolutePath + "/file/xml/");
-
-//        将证据链模型递交 关系计算服务器  返回有事实证据联系的 证据链模型
-        JSONObject modelsJson = HeadCreator.getHead(factArray);
-        System.out.println(modelsJson.toString());
-        fileManageService.writeResultJson(modelsJson, absolutePath + "/file/xml/result/a.json");
-
-
-        File file = new File(absolutePath + "/file/xml/result/a.json");
-        String content = FileUtils.readFileToString(file, "UTF-8");
-        JSONObject jsonObject = JSONObject.fromObject(content);
-
-        json.put("message", "文件上传成功");
-        json.put("status", true);
-        json.put("filePath", absolutePath + "\\file\\xml\\temp.xml");
-        json.put("fileContent", "");
-        json.put("modelsJson", modelsJson);
-        return json;
-    }
-
-    @RequestMapping(value = "/exportExcel")
-    public Map<String, Object> exportExcel(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        request.setCharacterEncoding("UTF-8");
-        Map<String, Object> json = new HashMap<String, Object>();
-
-        System.out.println("--------------------/exportExcel controller");
-
-        String modelsJsonStr = request.getParameter("modelsJsonStr");
-
-        String result = fileManageService.exportExcel(modelsJsonStr);
-
-
-        json.put("message", "导出Excel成功");
-        json.put("status", true);
-
-        return json;
-
-    }
-
-    @RequestMapping(value = "/downloadExcel")
-    public ResponseEntity<byte[]> downloadExcel(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        request.setCharacterEncoding("UTF-8");
+//    @RequestMapping(value = "/upload")
+//    public Map<String, Object> uploadFile(HttpServletRequest request, HttpServletResponse response) throws Exception {
+//        request.setCharacterEncoding("UTF-8");
+//
+//        System.out.println("--------------------");
 //        Map<String, Object> json = new HashMap<String, Object>();
-
-        System.out.println("--------------------/downloadExcel controller");
-
-
-        //设置返回值信息
-        String fileName = "model.xls";
-        File f = new File("");
-        String absolutePath = f.getAbsolutePath();
-        String filePath = absolutePath + "/file/excel/";
-        byte[] body = null;
-        InputStream is = new FileInputStream(filePath + fileName);
-        body = new byte[is.available()];
-        is.read(body);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attchement;filename=" + fileName);
-        HttpStatus statusCode = HttpStatus.OK;
-        ResponseEntity<byte[]> entity = new ResponseEntity<byte[]>(body, headers, statusCode);
-        return entity;
+//        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+//
+//        /** 页面控件的文件流* */
+//        MultipartFile multipartFile = null;
+//        Map map = multipartRequest.getFileMap();
+//        for (Iterator i = map.keySet().iterator(); i.hasNext(); ) {
+//            Object obj = i.next();
+//            multipartFile = (MultipartFile) map.get(obj);
+//
+//        }
+//        //得到 接受请求的绝对路径
+//        File f = new File("");
+//        String absolutePath = f.getAbsolutePath();
+//
+//
+//        //存储上传的文件
+//        String savePath = fileManageService.saveFileUpload(multipartFile);
+//
+////       从存储的文件中 得到证据链模型
+//        JSONArray factArray = modelManageService.getModel(absolutePath + "/file/xml/");
+//
+////        将证据链模型递交 关系计算服务器  返回有事实证据联系的 证据链模型
+//        JSONObject modelsJson = HeadCreator.getHead(factArray);
+//        System.out.println(modelsJson.toString());
+//        fileManageService.writeResultJson(modelsJson, absolutePath + "/file/xml/result/a.json");
+//
+//
+//        File file = new File(absolutePath + "/file/xml/result/a.json");
+//        String content = FileUtils.readFileToString(file, "UTF-8");
+//        JSONObject jsonObject = JSONObject.fromObject(content);
+//
+//        json.put("message", "文件上传成功");
+//        json.put("status", true);
+//        json.put("filePath", absolutePath + "\\file\\xml\\temp.xml");
+//        json.put("fileContent", "");
+//        json.put("modelsJson", modelsJson);
+//        return json;
+//    }
+//
+//    @RequestMapping(value = "/exportExcel")
+//    public Map<String, Object> exportExcel(HttpServletRequest request, HttpServletResponse response) throws Exception {
+//        request.setCharacterEncoding("UTF-8");
+//        Map<String, Object> json = new HashMap<String, Object>();
+//
+//        System.out.println("--------------------/exportExcel controller");
+//
+//        String modelsJsonStr = request.getParameter("modelsJsonStr");
+//
+//        String result = fileManageService.exportExcel(modelsJsonStr);
+//
+//
 //        json.put("message", "导出Excel成功");
 //        json.put("status", true);
-
-    }
+//
+//        return json;
+//
+//    }
+//
+//    @RequestMapping(value = "/downloadExcel")
+//    public ResponseEntity<byte[]> downloadExcel(HttpServletRequest request, HttpServletResponse response) throws Exception {
+//        request.setCharacterEncoding("UTF-8");
+////        Map<String, Object> json = new HashMap<String, Object>();
+//
+//        System.out.println("--------------------/downloadExcel controller");
+//
+//
+//        //设置返回值信息
+//        String fileName = "model.xls";
+//        File f = new File("");
+//        String absolutePath = f.getAbsolutePath();
+//        String filePath = absolutePath + "/file/excel/";
+//        byte[] body = null;
+//        InputStream is = new FileInputStream(filePath + fileName);
+//        body = new byte[is.available()];
+//        is.read(body);
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.add("Content-Disposition", "attchement;filename=" + fileName);
+//        HttpStatus statusCode = HttpStatus.OK;
+//        ResponseEntity<byte[]> entity = new ResponseEntity<byte[]>(body, headers, statusCode);
+//        return entity;
+////        json.put("message", "导出Excel成功");
+////        json.put("status", true);
+//
+//    }
 
 
 }

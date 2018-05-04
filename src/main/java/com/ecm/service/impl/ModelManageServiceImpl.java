@@ -62,14 +62,12 @@ public class ModelManageServiceImpl implements ModelManageService {
 
             //转json
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("content",factModel.getContent());
-            jsonObject.put("keyWordMap",factModel.getKeyWordMap());
-            jsonObject.put("evidenceList",factModel.getEvidenceList());
-            System.out.println("JsonObject"+jsonObject.toString());
+            jsonObject.put("content", factModel.getContent());
+            jsonObject.put("keyWordMap", factModel.getKeyWordMap());
+            jsonObject.put("evidenceList", factModel.getEvidenceList());
+            System.out.println("JsonObject" + jsonObject.toString());
             jsonArray.add(jsonObject);
         }
-
-
 
 
         return jsonArray;
@@ -94,7 +92,7 @@ public class ModelManageServiceImpl implements ModelManageService {
         for (FactModel factModel : factModels) {
             String content = factModel.getContent();
             String[] contents = content.split("。");
-            for (int i = 0; i < contents.length; i++) {
+            for (int i = 0; i < contents.length - 1; i++) {
                 String factContent = contents[i];
                 FactModel temp = new FactModel();
                 temp.setContent(factContent);

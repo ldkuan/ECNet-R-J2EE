@@ -19,13 +19,13 @@ function exportExcel() {
 
             type: "POST",//方法类型
             // dataType: "json",//预期服务器返回的数据类型
-            url: "file/exportExcel",//url
+            url: "model/exportExcel",//url
             data: {'modelsJsonStr': modelsJsonStr},
             success: function (response, status, request) {
 
                 var a = document.createElement('a');
                 // var url = window.URL.createObjectURL(blob);
-                var url = "file/downloadExcel";
+                var url = "model/downloadExcel";
                 var filename = 'model.xls';
                 a.href = url;
                 a.download = filename;
@@ -226,7 +226,7 @@ function uploadExcel() {
 
         type: "POST",//方法类型
         dataType: "json",//预期服务器返回的数据类型
-        url: "file/upload",//url
+        url: "model/upload",//url
         data: data,
         async: false,
         cache: false,
