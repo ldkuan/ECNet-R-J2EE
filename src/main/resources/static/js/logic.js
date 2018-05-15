@@ -36,7 +36,7 @@ function getRelation() {
 		dataType : "json",
 		url : "logic/upload",
 		data : {
-			path : 'C:/Users/peilin/Desktop/毕业设计/中期检查/test/src/341.xml'
+			path : ''
 		},
 		// async : false,
 		// cache : false,
@@ -44,7 +44,8 @@ function getRelation() {
 		// processData : false,
 		success : function(data) {
 			// console.log(data);
-			loadData(data.json);
+			// loadData(data.json);
+			// compose();
 		},
 	});
 }
@@ -112,45 +113,45 @@ $(document).ready(function() {
 	// 每五秒自动保存
 	// setInterval("saveData()",5000);
 
-	// loadLogicNodes();
+	loadLogicNodes();
 	// getRelation();
-	let ss = [];
-	let zj = [];
-	$.getJSON("logic/getJson", function(data) {
-		var evidence = data.json.factList;
-		var len = evidence.length;
-		for (var i = 0; i < evidence.length; i++) {
-			ss.push({
-				"id" : i + 1,
-				"caseID" : 41722,
-				"nodeID" : i + 1,
-				"parentNodeID" : -1,
-				"topic" : "事实" + (i + 1),
-				"detail" : evidence[i].content,
-				"type" : 1,
-				"x" : 80,
-				"y" : 50 * (i + 1)
-			});
-			var link = evidence[i].linkPointList;
-			for (var j = 0; j < link.length; j++) {
-				zj.push({
-					"id" : len + zj.length + 1,
-					"caseID" : 41722,
-					"nodeID" : len + zj.length + 1,
-					"parentNodeID" : i + 1,
-					"topic" : evidence[i].evidenceList[link[j].index].name,
-					"detail" : evidence[i].evidenceList[link[j].index].content,
-					"type" : 0,
-					"x" : 80,
-					"y" : 50 * (len + zj.length + 1)
-				})
-			}
-		}
-		logicJson = ss.concat(zj);
-		loadData(logicJson);
-		compose();
-		json.json = logicJson;
-	});
+	// let ss = [];
+	// let zj = [];
+	// $.getJSON("logic/getJson", function(data) {
+	// var evidence = data.json.factList;
+	// var len = evidence.length;
+	// for (var i = 0; i < evidence.length; i++) {
+	// ss.push({
+	// "id" : i + 1,
+	// "caseID" : 41722,
+	// "nodeID" : i + 1,
+	// "parentNodeID" : -1,
+	// "topic" : "事实" + (i + 1),
+	// "detail" : evidence[i].content,
+	// "type" : 1,
+	// "x" : 80,
+	// "y" : 50 * (i + 1)
+	// });
+	// var link = evidence[i].linkPointList;
+	// for (var j = 0; j < link.length; j++) {
+	// zj.push({
+	// "id" : len + zj.length + 1,
+	// "caseID" : 41722,
+	// "nodeID" : len + zj.length + 1,
+	// "parentNodeID" : i + 1,
+	// "topic" : evidence[i].evidenceList[link[j].index].name,
+	// "detail" : evidence[i].evidenceList[link[j].index].content,
+	// "type" : 0,
+	// "x" : 80,
+	// "y" : 50 * (len + zj.length + 1)
+	// })
+	// }
+	// }
+	// logicJson = ss.concat(zj);
+	// loadData(logicJson);
+	// compose();
+	// json.json = logicJson;
+	// });
 	prepareConclusionSelect();
 });
 

@@ -7,6 +7,7 @@ import net.sf.json.xml.XMLSerializer;
 import org.apache.commons.io.IOUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ClassUtils;
@@ -52,11 +53,41 @@ public class LogicController {
 			@RequestParam("path") String path) throws Exception {
 		Map<String, Object> json = new HashMap<String, Object>();
 		JSONObject jsonObject = new JSONObject();
-		SAXReader saxReader = new SAXReader();
-		Document doc = saxReader.read(new FileInputStream(new File(path)));
-		String str = doc.asXML();
-		// URL url = new URL("http://192.168.0.23:5000/getHeadOfFactAndEvi");
-
+		InputStream is = new FileInputStream(new File("file/xml/result/a.json"));
+		String ssStr = IOUtils.toString(is, "UTF-8");
+		JSONObject ssJSON = JSONObject.fromObject(ssStr);
+		JSONArray ss = new JSONArray();
+		for (int i = 0; i < ssJSON.getJSONArray("factList").size(); i++) {
+			ss.add(ssJSON.getJSONArray("factList").getJSONObject(i).get("content").toString().trim());
+		}
+		jsonObject.put("ss", ss);
+		SAXReader reader = new SAXReader();
+		Document document = reader.read(new File("file/xml/3562.xml"));
+		Element root = document.getRootElement();
+		String temp = root.element("QW").element("CPFXGC").attributeValue("value")
+				+ root.element("QW").element("PJJG").attributeValue("value");
+		String[] arr = temp.replace(" ", "").split("；|。");
+		JSONArray jl = new JSONArray();
+		for (int j = 0; j < arr.length; j++) {
+			jl.add(arr[j]);
+		}
+		jsonObject.put("jl", jl);
+		List<Element> list = root.element("QW").element("YYFLNR").elements();
+		JSONArray ftmc = new JSONArray();
+		JSONArray ftnr = new JSONArray();
+		for (Element e : list) {
+			if (!"NOT FOUND".equals(e.element("FLNR").attributeValue("value"))) {
+				ftmc.add(e.element("FLMC").attributeValue("value"));
+				ftnr.add(e.element("FLNR").attributeValue("value"));
+			}
+		}
+		jsonObject.put("ftmc", ftmc);
+		jsonObject.put("ftnr", ftnr);
+		String str = jsonObject.toString();
+		// SAXReader saxReader = new SAXReader();
+		// Document doc = saxReader.read(new FileInputStream(new
+		// File("file/xml/temp.xml")));
+		// String str = doc.asXML();
 		URL url = new URL("http://127.0.0.1:5000/getRelation");
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 		conn.setDoOutput(true);
@@ -82,20 +113,16 @@ public class LogicController {
 			while ((line = br.readLine()) != null) {
 				res += line;
 			}
-			// jsonObject.put("data", JSONArray.fromObject(res));
-			// jsonObject = JSONObject.fromObject(result);
 			json.put("message", "文件上传成功");
 			json.put("json", JSONArray.fromObject(res));
 		} else if (conn.getResponseCode() == 500) {
 			System.out.println("计算服务器内部错误");
 			json.put("message", "文件上传失败");
 			json.put("json", res);
-			// jsonObject = null;
 		} else {
 			System.out.println("计算服务器连接失败");
 			json.put("message", "文件上传失败");
 			json.put("json", res);
-			// jsonObject = null;
 		}
 		return json;
 	}
