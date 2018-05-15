@@ -83,7 +83,7 @@ public class HeadCreator {
     public static JSONObject getHead(JSONArray factList) throws IOException {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("factList",factList);
-        URL url = new URL("http://192.168.0.23:5000/getHeadOfFactAndEvi");
+        URL url = new URL("http://114.212.240.199:5000/getHeadOfFactAndEvi");
         // 建立http连接
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         // 设置允许输出
