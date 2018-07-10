@@ -229,6 +229,68 @@ $(document).ready(function () {
         typeSetting();
     });
 
+
+    $('#zoomOut-btn').click(function () {
+        stage.zoomOut(0.85);
+        scene.translateToCenter();
+        $("#canvasDiv").scrollLeft((canvas.width - $("#canvasDiv").width()) / 2);
+        $("#canvasDiv").scrollTop((canvas.height - $("#canvasDiv").height()) / 2);
+    });
+    $('#zoomIn-btn').click(function () {
+        stage.zoomIn(0.85);
+        scene.translateToCenter();
+        $("#canvasDiv").scrollLeft((canvas.width - $("#canvasDiv").width()) / 2);
+        $("#canvasDiv").scrollTop((canvas.height - $("#canvasDiv").height()) / 2);
+    });
+    $("#zoomSelection").change(function () {
+        if ($(this).is(':checked') == true) {
+            stage.wheelZoom = 0.85; //缩放比例为0.85
+            scene.translateToCenter();
+            $("#canvasDiv").scrollLeft((canvas.width - $("#canvasDiv").width()) / 2);
+            $("#canvasDiv").scrollTop((canvas.height - $("#canvasDiv").height()) / 2);
+        } else {
+            stage.wheelZoom = null;
+        }
+    });
+
+    $("#factSelector").change(function () {
+        var fid = $("#factSelector").val() - 1;
+        console.log("------------");
+        console.log(fid);
+        console.log(factshows[fid]);
+        if (fid >= 0) {
+            var x = factshows[fid].x;
+            var y = factshows[fid].y;
+            var div_width = $("#canvasDiv").width();
+            var div_height = $("#canvasDiv").height();
+            var canvas_width = canvas.width;
+            var canvas_height = canvas.height;
+
+            var leftOffset = x - (div_width / 2) + body_width;
+            var topOffset = y - (div_height / 2) + body_height;
+
+            // if (leftOffset > canvas_width) {
+            //     scene.translateX = leftOffset - canvas_width;
+            //     leftOffset = canvas_width;
+            // }
+            // if (topOffset > canvas_height) {
+            //     scene.translateY = topOffset - canvas_height;
+            //     topOffset = canvas_height;
+            // }
+            $("#canvasDiv").scrollLeft(leftOffset);
+            $("#canvasDiv").scrollTop(topOffset);
+            factshows[fid].click();
+            scene.cancleAllSelected();
+            scene.addToSelected(factList[fid]);
+            factshows[fid].selected = 1;
+        } else {
+            scene.translateX = 0;
+            scene.translateY = 0;
+            $("#canvasDiv").scrollLeft(0);
+            $("#canvasDiv").scrollTop(0);
+        }
+    });
+
 });
 
 // 存储链头
@@ -828,7 +890,7 @@ function dragJoint() {
             $(draggableDiv).attr('data-eType', 'joint');
 
             // var clickElement = "<i class=\"fa fa-square-o\"
-			// aria-hidden=\"true\"></i>";
+            // aria-hidden=\"true\"></i>";
             // $("#draggableDiv").html(clickElement);
             draggableDiv.trigger(event);
         }

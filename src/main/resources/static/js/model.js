@@ -11,6 +11,7 @@ $('#exist_click').click(function () {
 });
 
 var modelsJson;
+var factshows = [];
 
 function exportExcel() {
     if ($.session.get('modelsJson') != undefined) {
@@ -26,7 +27,7 @@ function exportExcel() {
                 var a = document.createElement('a');
                 // var url = window.URL.createObjectURL(blob);
                 var url = "model/downloadExcel";
-                var filename = 'model.xls';
+                var filename = '证据链关系表.xls';
                 a.href = url;
                 a.download = filename;
                 a.click();
@@ -238,6 +239,11 @@ function uploadExcel() {
             $.session.set("modelsJson", JSON.stringify(data.modelsJson));
             modelsJson = JSON.stringify(data.modelsJson);
             modelTransfer(data.modelsJson);
+            console.log(factshows);
+
+            for (var i = 0; i < factshows.length; i++) {
+                document.getElementById("factSelector").options.add(new Option(factshows[i].text, i + 1));
+            }
         },
         // error : function() {
         //     alert("异常！");
@@ -351,7 +357,7 @@ function modelTransfer(modelJson) {
         var joint_count = joint_entry_list.length;
         //draw facts
         var fact_show = drawFact(true, pre_fx + gap_x * 6, pre_fy + (gap_y * joint_count) / 2, tempFact["id"], tempFact["name"], tempFact["content"], tempFact["type"]);
-
+        factshows.push(fact_show);
         fy_times++;
 
 
