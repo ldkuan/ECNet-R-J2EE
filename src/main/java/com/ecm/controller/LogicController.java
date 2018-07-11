@@ -62,7 +62,7 @@ public class LogicController {
 		}
 		jsonObject.put("ss", ss);
 		SAXReader reader = new SAXReader();
-		Document document = reader.read(new File("file/xml/1104.xml"));
+		Document document = reader.read(new File("file/xml/temp.xml"));
 		Element root = document.getRootElement();
 		String temp = root.element("QW").element("CPFXGC").attributeValue("value")
 				+ root.element("QW").element("PJJG").attributeValue("value");
