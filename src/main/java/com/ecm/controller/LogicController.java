@@ -62,7 +62,7 @@ public class LogicController {
 		}
 		jsonObject.put("ss", ss);
 		SAXReader reader = new SAXReader();
-		Document document = reader.read(new File("file/xml/3562.xml"));
+		Document document = reader.read(new File("file/xml/1104.xml"));
 		Element root = document.getRootElement();
 		String temp = root.element("QW").element("CPFXGC").attributeValue("value")
 				+ root.element("QW").element("PJJG").attributeValue("value");
@@ -72,17 +72,25 @@ public class LogicController {
 			jl.add(arr[j]);
 		}
 		jsonObject.put("jl", jl);
-		List<Element> list = root.element("QW").element("YYFLNR").elements();
+		List<Element> list = root.element("QW").element("CPFXGC").element("FLFTYY").elements();
 		JSONArray ftmc = new JSONArray();
 		JSONArray ftnr = new JSONArray();
+		// for (Element e : list) {
+		// if (!"NOT FOUND".equals(e.element("FLNR").attributeValue("value"))) {
+		// ftmc.add(e.element("FLMC").attributeValue("value"));
+		// // ftnr.add(e.element("FLNR").attributeValue("value"));
+		// }
+		// }
 		for (Element e : list) {
-			if (!"NOT FOUND".equals(e.element("FLNR").attributeValue("value"))) {
-				ftmc.add(e.element("FLMC").attributeValue("value"));
-				ftnr.add(e.element("FLNR").attributeValue("value"));
+			String head = e.element("MC").attributeValue("value");
+			List<Element> l = e.elements("T");
+			for (Element a : l) {
+				ftmc.add(head + a.attributeValue("value"));
 			}
 		}
 		jsonObject.put("ftmc", ftmc);
-		jsonObject.put("ftnr", ftnr);
+		// jsonObject.put("ftnr", ftnr);
+		jsonObject.put("zz", ssJSON);
 		String str = jsonObject.toString();
 		// SAXReader saxReader = new SAXReader();
 		// Document doc = saxReader.read(new FileInputStream(new
